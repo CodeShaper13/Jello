@@ -3,12 +3,17 @@ package com.codeshaper.jello.engine.asset;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
+import com.codeshaper.jello.engine.AssetFileExtension;
+
 import java.io.File;
 import java.nio.*;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL30.*;
 
+@AssetFileExtension(".fbx")
+@AssetFileExtension(".obj")
+@AssetFileExtension(".blend")
 public class Mesh extends Asset {
 
 	private int numVertices;

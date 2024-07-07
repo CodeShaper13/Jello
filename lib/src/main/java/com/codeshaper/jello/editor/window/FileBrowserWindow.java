@@ -1,16 +1,11 @@
 package com.codeshaper.jello.editor.window;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,16 +15,13 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -40,13 +32,9 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.swing.WrapLayout;
 import com.codeshaper.jello.editor.util.FolderFilter;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.asset.TextAsset;
-
-import ModernDocking.Dockable;
-import ModernDocking.app.Docking;
+import com.codeshaper.jello.engine.asset.Asset;
 
 public class FileBrowserWindow extends EditorWindow {
 
@@ -63,16 +51,16 @@ public class FileBrowserWindow extends EditorWindow {
 
 		this.fileListModel = new DefaultListModel<File>();
 		this.fileList = new JFileList(this.fileListModel);
-		
+
 		this.fileTreeModel = new FileTreeModel(rootFolder);
 		this.fileTree = new JFolderTree(this.fileTreeModel);
-		
+
 		JScrollPane fileListScrollBar = new JScrollPane(this.fileTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		JScrollPane folderContentsScrollBar = new JScrollPane(this.fileList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		
+
 		this.setLayout(new BorderLayout());
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileListScrollBar, folderContentsScrollBar);
 		splitPane.setAutoscrolls(false);
@@ -101,7 +89,6 @@ public class FileBrowserWindow extends EditorWindow {
 
 		if (folder != null) {
 			for (File file : folder.file.listFiles()) {
-				System.out.println(file.toString());
 				if (file.isFile()) {
 					this.fileListModel.addElement(file);
 				}
@@ -233,7 +220,7 @@ public class FileBrowserWindow extends EditorWindow {
 			return this.file.isDirectory();
 		}
 
-		public AssetFolder[] getSubFolders() {			
+		public AssetFolder[] getSubFolders() {
 			File[] directories = this.file.listFiles(new FolderFilter());
 			AssetFolder[] folders = new AssetFolder[directories.length];
 			for (int i = 0; i < directories.length; i++) {
@@ -250,15 +237,15 @@ public class FileBrowserWindow extends EditorWindow {
 	}
 
 	private class JFolderTree extends JTree {
-		
+
 		private JPopupMenu menu;
-		
+
 		private JMenuItem menuDelete;
 		private JMenuItem menuRename;
-		
+
 		public JFolderTree(FileTreeModel fileTreeModel) {
 			super(fileTreeModel);
-		
+
 			this.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 				@Override
 				public void valueChanged(TreeSelectionEvent e) {
@@ -270,9 +257,9 @@ public class FileBrowserWindow extends EditorWindow {
 			});
 			this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			this.setEditable(true);
-			
+
 			this.menu = new JPopupMenu();
-			
+
 			JMenu createMenu = new JMenu("Create");
 			// TODO
 			this.menu.add(createMenu);
@@ -331,11 +318,11 @@ public class FileBrowserWindow extends EditorWindow {
 			});
 			menu.add(copyPath);
 		}
-		
+
 		@Override
 		public JPopupMenu getComponentPopupMenu() {
 			AssetFolder folder = (AssetFolder) fileTree.getLastSelectedPathComponent();
-			if(folder != null) {
+			if (folder != null) {
 				boolean isRoot = folder == rootFolder;
 				this.menuDelete.setEnabled(!isRoot);
 				this.menuRename.setEnabled(!isRoot);
@@ -343,20 +330,20 @@ public class FileBrowserWindow extends EditorWindow {
 			} else {
 				return super.getComponentPopupMenu();
 			}
-		}	
-		
+		}
+
 		private AssetFolder getSelectedFolder() {
 			return (AssetFolder) fileTree.getLastSelectedPathComponent();
 		}
 	}
-	
+
 	private class JFileList extends JList<File> {
 
 		private JPopupMenu menu;
-		
+
 		public JFileList(DefaultListModel<File> model) {
 			super(model);
-			
+
 			this.setCellRenderer(new ListFileRenderer());
 			this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			this.setLayoutOrientation(JList.HORIZONTAL_WRAP);
@@ -365,10 +352,11 @@ public class FileBrowserWindow extends EditorWindow {
 				InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
 				File file = this.getSelectedValue();
 				if (file != null) {
-					inspector.setTarget(new TextAsset(file));
+					Asset asset = JelloEditor.instance.assetDatabase.getAsset(file);
+					inspector.setTarget(asset);
 				}
 			});
-			
+
 			this.menu = new JPopupMenu();
 			JMenuItem delete = new JMenuItem("Delete");
 			delete.addActionListener(e -> {
@@ -380,16 +368,16 @@ public class FileBrowserWindow extends EditorWindow {
 						model.removeElement(file);
 					}
 				}
-			});			
-			this.menu.add(delete);			
+			});
+			this.menu.add(delete);
 		}
-		
+
 		@Override
 		public JPopupMenu getComponentPopupMenu() {
 			File selected = fileList.getSelectedValue();
 			return selected != null ? this.menu : super.getComponentPopupMenu();
 		}
-		
+
 		private class ListFileRenderer extends JLabel implements ListCellRenderer<File> {
 
 			public ListFileRenderer() {

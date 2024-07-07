@@ -11,8 +11,10 @@ import javax.swing.SwingUtilities;
 
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.reflections.Reflections;
 
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
+import com.codeshaper.jello.engine.AssetDatabase;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.ISceneProvider;
@@ -65,6 +67,7 @@ public class JelloEditor implements ISceneProvider {
 	}
 
 	public final File rootProjectFolder;
+	public final AssetDatabase assetDatabase;
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
@@ -86,6 +89,9 @@ public class JelloEditor implements ISceneProvider {
 			file.mkdirs();
 		}
 		this.writeEditorVersionFile();
+		
+		this.assetDatabase = new AssetDatabase(this.rootProjectFolder);
+		this.assetDatabase.cacheAssets();
 
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
