@@ -16,7 +16,8 @@ public class LoggerOutputStream extends OutputStream {
 	@Override
 	public void write(byte[] buffer, int offset, int length) throws IOException {
 		String text = new String(buffer, offset, length);
-		this.logHandler.log(this.logType, null, text, null);
+		LogEntry entry = new LogEntry(this.logType, null, text, null);
+		this.logHandler.log(entry);
 	}
 
 	@Override
