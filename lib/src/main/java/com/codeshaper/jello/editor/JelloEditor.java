@@ -4,14 +4,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.reflections.Reflections;
 
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.engine.AssetDatabase;
@@ -35,11 +36,15 @@ public class JelloEditor implements ISceneProvider {
 	public static JelloEditor instance;
 
 	public static void main(String[] args) {
+		if(args.length == 0) {
+			args = new String[] {"D:\\Jello\\Projects\\devProject"};
+		}
+		
 		if (args.length > 0) {
 			// A path was supplied.
 			String path = args[0];
 			SwingUtilities.invokeLater(() -> {
-				new JelloEditor(new File(path));
+				new JelloEditor(Paths.get(path));
 			});
 		} else {
 			System.err.println(
@@ -66,7 +71,8 @@ public class JelloEditor implements ISceneProvider {
 		return null;
 	}
 
-	public final File rootProjectFolder;
+	public final Path rootProjectFolder;
+	public final Path assetsFolder;
 	public final AssetDatabase assetDatabase;
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
@@ -79,18 +85,22 @@ public class JelloEditor implements ISceneProvider {
 	 */
 	private final List<Scene> loadedScene;
 
-	private JelloEditor(File projectFolder) {
+	private JelloEditor(Path projectFolder) {
 		instance = this;
 
 		// Create the /assets folder if it doesn't exist.
 		this.rootProjectFolder = projectFolder;
-		File file = new File(this.rootProjectFolder, "assets");
-		if (!file.exists()) {
-			file.mkdirs();
+		this.assetsFolder = this.rootProjectFolder.resolve("assets");
+		if (!Files.exists(this.assetsFolder)) {
+			try {
+				Files.createDirectories(this.assetsFolder);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		this.writeEditorVersionFile();
 		
-		this.assetDatabase = new AssetDatabase(this.rootProjectFolder);
+		this.assetDatabase = new AssetDatabase(this.assetsFolder);
 		this.assetDatabase.cacheAssets();
 
 		this.filedDrawers = new FieldDrawerRegistry();
@@ -182,7 +192,7 @@ public class JelloEditor implements ISceneProvider {
 	 * Creates a version file that contains the version of the Editor.
 	 */
 	private void writeEditorVersionFile() {
-		File file = new File(this.rootProjectFolder, "version.txt");
+		File file = new File(this.rootProjectFolder.toFile(), "version.txt");
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
 			writer.write(EDITOR_VERSION);
 		} catch (IOException e) {

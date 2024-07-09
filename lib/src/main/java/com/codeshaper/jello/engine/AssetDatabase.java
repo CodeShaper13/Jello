@@ -4,8 +4,8 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -22,18 +22,29 @@ import static org.reflections.scanners.Scanners.*;
 
 public class AssetDatabase {
 
-	private final File projectFolder;
+	private final String[] builtinAsset = new String[] {
+			// Meshes:
+
+			// Shaders:
+			"builtin/shaders/scene.vert",
+			"builtin/shaders/scene.frag",
+			// Textures:
+			"builtin/textures/placeholderTexture.png", };
+
+	private final Path assetsFolder;
 	private final HashMap<String, Class<Asset>> extenstionToBuiltinAssetMapping;
 	private final HashMap<String, Class<Asset>> extenstionTo3rdPartyAssetMapping;
 
 	/**
 	 * A collection of all assets in the project folder. If the asset hasn't been
 	 * loaded yet, the {@linkplain value} is null.
+	 * 
+	 * The key is a path to the asset, relative to the /assets folder.
 	 */
-	private final HashMap<File, Asset> assets;
+	private final HashMap<Path, Asset> assets;
 
-	public AssetDatabase(File projectFolder) {
-		this.projectFolder = projectFolder;
+	public AssetDatabase(Path projectFolder) {
+		this.assetsFolder = projectFolder;
 		this.extenstionToBuiltinAssetMapping = new HashMap<String, Class<Asset>>();
 		this.extenstionTo3rdPartyAssetMapping = new HashMap<String, Class<Asset>>();
 
@@ -62,13 +73,30 @@ public class AssetDatabase {
 			}
 		}
 
-		// Debug
-		for (var kvp : this.extenstionToBuiltinAssetMapping.keySet()) {
-			System.out.println(kvp + " -> " + this.extenstionToBuiltinAssetMapping.get(kvp));
+		this.assets = new HashMap<Path, Asset>();
+	}
+
+	/*
+	private List<Path> getBuiltinAssetPaths() {
+		Reflections reflections = new Reflections(
+				new ConfigurationBuilder().forPackage("com.codeshaper.jello").setScanners(Resources));
+		Set<String> stringPaths = reflections.get(Resources.with(".*").filter(s -> s.startsWith("builtin")));
+
+		List<Path> array = new ArrayList<Path>();
+		for (String s : stringPaths) {
+			//array.add(Paths.get(s));
+			URL url = getClass().getResource("/" + s);
+			try {
+				array.add(Paths.get(url.toURI()));
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+
 		}
 
-		this.assets = new HashMap<File, Asset>();
+		return array;
 	}
+	*/
 
 	public void cacheAssets() {
 		this.assets.forEach((file, asset) -> {
@@ -79,14 +107,19 @@ public class AssetDatabase {
 
 		this.assets.clear();
 
-		Iterator<File> iter = FileUtils.iterateFiles(this.projectFolder, null, true);
+		// Builtin assets.
+		for (String s : this.builtinAsset) {
+			this.assets.put(Path.of(s), null);
+		}
+
+		// Project folder assets.
+		Iterator<File> iter = FileUtils.iterateFiles(this.assetsFolder.toFile(), null, true);
 		File file;
 		while (iter.hasNext()) {
 			file = iter.next();
 
-			this.assets.put(file, null);
+			this.assets.put(file.toPath(), null);
 		}
-
 	}
 
 	/**
@@ -97,7 +130,7 @@ public class AssetDatabase {
 	 * @return {@link true} if the asset has been loaded, {@link false} if it has
 	 *         not been.
 	 */
-	public boolean isLoaded(File assetFile) {
+	public boolean isLoaded(Path assetFile) {
 		if (this.assets.containsKey(assetFile)) {
 			return false;
 		}
@@ -105,28 +138,26 @@ public class AssetDatabase {
 		return this.assets.get(assetFile) != null;
 	}
 
-	/**
-	 * 
-	 * @param assetFilePath
-	 * @return
-	 */
-	public Asset getAsset(String assetFilePath) {
-		return this.getAsset(new File(assetFilePath));
+	public Asset getAsset(Path assetFile) {
+		return this.getAssetInternal(assetFile);
 	}
 
-	/**
-	 * 
-	 * @param assetFile
-	 * @return
-	 */
-	public Asset getAsset(File assetFile) {
+	private Asset getAssetInternal(Path assetFile) {
+		if (assetFile.startsWith("builtin")) {
+			// Don't modify the path.
+		} else {
+			// Make it a full path.
+			assetFile = this.assetsFolder.resolve(assetFile);
+		}
+
 		if (this.assets.containsKey(assetFile)) {
 			Asset asset = this.assets.get(assetFile);
 			if (asset == null) {
 				// Create an instance of the asset.
-				Class<? extends Asset> clazz = this.getAssetClass(FilenameUtils.getExtension(assetFile.getName()));
+				Class<? extends Asset> clazz = this
+						.getAssetClass(FilenameUtils.getExtension(assetFile.getFileName().toString()));
 				try {
-					Constructor<? extends Asset> ctor = clazz.getDeclaredConstructor(File.class);
+					Constructor<? extends Asset> ctor = clazz.getDeclaredConstructor(Path.class);
 					asset = ctor.newInstance(assetFile);
 					this.assets.put(assetFile, asset);
 				} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
@@ -138,21 +169,21 @@ public class AssetDatabase {
 
 			return asset;
 		} else {
-			Debug.logError("No asset could be found at %s", assetFile.getPath());
+			Debug.logError("No asset could be found at %s", assetFile.toString());
 		}
 
 		return null;
 	}
 
 	/**
-	 * Unloads teh asset by preforming any cleanup with {@link Asset#cleanup()}.
+	 * Unloads the asset by performing any cleanup with {@link Asset#cleanup()}.
 	 * This should remove any references that the asset holds to native objects. If
 	 * any references exist to the java object, the asset will still be kept in
 	 * memory until the references are gone like any java object.
 	 * 
 	 * @param assetFile
 	 */
-	public void unload(File assetFile) {
+	public void unload(Path assetFile) {
 		if (!this.isLoaded(assetFile)) {
 			return;
 		}

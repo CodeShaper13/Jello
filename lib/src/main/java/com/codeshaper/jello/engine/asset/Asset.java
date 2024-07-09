@@ -1,6 +1,6 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JPanel;
 
@@ -14,9 +14,9 @@ public abstract class Asset implements IInspectable {
 	 * The file that provides this asset. May be null if the asset was created at
 	 * runtime.
 	 */
-	public final File file;
+	public final Path file;
 	
-	public Asset(File file) {
+	public Asset(Path file) {
 		this.file = file;
 	}
 
@@ -32,7 +32,7 @@ public abstract class Asset implements IInspectable {
 	 */
 	public String getAssetName() {
 		if (this.hasProvidingFile()) {
-			return this.file.getName();
+			return this.file.getFileName().toString();
 		} else {
 			return null;
 		}

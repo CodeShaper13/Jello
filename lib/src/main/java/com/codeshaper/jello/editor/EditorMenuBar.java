@@ -3,10 +3,10 @@ package com.codeshaper.jello.editor;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -54,11 +54,11 @@ public class EditorMenuBar extends JMenuBar {
         JMenuItem openInExplorer = new JMenuItem("Open In Explorer");
         openInExplorer.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-            	File assetsFolder = JelloEditor.instance.rootProjectFolder;
+            	Path assetsFolder = JelloEditor.instance.rootProjectFolder;
             	try {
-					Desktop.getDesktop().open(assetsFolder);
+					Desktop.getDesktop().open(assetsFolder.toFile());
 				} catch (IOException e1) {
-					Debug.logWarning("Couldn't open %s", assetsFolder.getPath());
+					Debug.logWarning("Couldn't open %s", assetsFolder);
 				}
             }});
         fileMenu.add(openInExplorer);

@@ -2,6 +2,7 @@ package com.codeshaper.jello.engine.render;
 
 import static org.lwjgl.opengl.GL20.*;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,5 +80,5 @@ public class ShaderProgram {
         }
     }
 
-    public record ShaderModuleData(String shaderFile, int shaderType) { }
+    public record ShaderModuleData(Path shaderFile, int shaderType) { }
 }

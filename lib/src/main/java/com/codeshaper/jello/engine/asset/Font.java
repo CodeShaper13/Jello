@@ -1,13 +1,13 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import com.codeshaper.jello.engine.AssetFileExtension;
 
 @AssetFileExtension(".ttf")
 public class Font extends Asset {
 
-	public Font(File file) {
+	public Font(Path file) {
 		super(file);
 	}
 }

@@ -1,11 +1,10 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class Material extends Asset {
 
-	public Material(File file) {
+	public Material(Path file) {
 		super(file);
 	}
-
 }
