@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.joml.Math;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
@@ -35,6 +36,7 @@ public class Camera extends JelloComponent {
 		super(owner);
 
 		this.projectionMatrix = new Matrix4f();
+				
 		this.refreshProjectionMatrix(100, 100);
 	}
 

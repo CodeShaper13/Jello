@@ -21,6 +21,7 @@ import static org.lwjgl.opengl.GL30.*;
 public class Renderer {
 	
 	private static final String PROJECTION_MATRIX = "projectionMatrix";
+	private static final String VIEW_MATRIX = "viewMatrix";
 	private static final String GAME_OBJECT_MATRIX = "modelMatrix";
 	private static final String TXT_SAMPLER = "txtSampler";
 
@@ -49,6 +50,7 @@ public class Renderer {
         
         this.uniformsMap = new UniformsMap(shaderProgram.getProgramId());
         this.uniformsMap.createUniform(PROJECTION_MATRIX);
+        this.uniformsMap.createUniform(VIEW_MATRIX);
         this.uniformsMap.createUniform(GAME_OBJECT_MATRIX);
         this.uniformsMap.createUniform(TXT_SAMPLER);
 	}
@@ -57,7 +59,7 @@ public class Renderer {
 		this.shaderProgram.cleanup();
 	}
 
-	public void render(ISceneProvider sceneProvider, Camera camera, int w, int h) {
+	public void render(ISceneProvider sceneProvider, Camera camera, Matrix4f viewMatrix, int w, int h) {
 		camera.refreshProjectionMatrix(w, h);
 		
         Color clearColor = camera.backgroundColor;
@@ -67,7 +69,8 @@ public class Renderer {
 
 		shaderProgram.bind();
 		
-        uniformsMap.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());        
+        uniformsMap.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
+        uniformsMap.setUniform(VIEW_MATRIX, viewMatrix);
         uniformsMap.setUniform(TXT_SAMPLER, 0);
         
          Matrix4f matrix = new Matrix4f();

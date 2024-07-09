@@ -1,6 +1,7 @@
 package com.codeshaper.jello.engine;
 
 import org.joml.Math;
+import org.joml.Matrix4f;
 
 import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.component.Camera;
@@ -109,7 +110,7 @@ public class Application {
             if (this.appSettings.targetFps <= 0 || deltaFps >= 1) {
             	for(Camera camera : Camera.getAllCameras()) {
             		if(camera.isEnabled) {
-            			this.renderer.render(SceneManager.instance, camera, this.window.getWidth(), this.window.getHeight());
+            			this.renderer.render(SceneManager.instance, camera, new Matrix4f(), this.window.getWidth(), this.window.getHeight());
             		}
             	}
             	
