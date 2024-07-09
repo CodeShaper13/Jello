@@ -40,9 +40,9 @@ import com.codeshaper.jello.engine.component.JelloComponent;
 
 public class ComponentPanel extends JPanel {
 
-	private static ImageIcon helpIcon = new ImageIcon("resources/images/editor/component_help.png");
-	private static ImageIcon editIcon = new ImageIcon("resources/images/editor/component_edit.png");
-	private static ImageIcon removeIcon = new ImageIcon("resources/images/editor/component_remove.png");
+	private static ImageIcon helpIcon = new ImageIcon(ComponentPanel.class.getResource("/editorIcons/component_help.png"));
+	private static ImageIcon editIcon = new ImageIcon(ComponentPanel.class.getResource("/editorIcons/component_edit.png"));
+	private static ImageIcon removeIcon = new ImageIcon(ComponentPanel.class.getResource("/editorIcons/component_remove.png"));
 
 	private final JelloComponent component;
 

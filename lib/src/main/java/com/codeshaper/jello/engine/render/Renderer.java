@@ -1,5 +1,8 @@
 package com.codeshaper.jello.engine.render;
 
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +21,8 @@ import static org.lwjgl.opengl.GL30.*;
 public class Renderer {
 	
 	private static final String PROJECTION_MATRIX = "projectionMatrix";
-	private static final String GAME_OBJECT_MATRIX = "modelMatrix";;
+	private static final String GAME_OBJECT_MATRIX = "modelMatrix";
+	private static final String TXT_SAMPLER = "txtSampler";
 
 	public final ShaderProgram shaderProgram;
     public final UniformsMap uniformsMap;
@@ -29,13 +33,24 @@ public class Renderer {
         glEnable(GL_DEPTH_TEST);
 
 		List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("resources/shaders/scene.vert", GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData("resources/shaders/scene.frag", GL_FRAGMENT_SHADER));
+		
+		Path vertPath = null;
+		Path fragPath = null;
+		try {
+			vertPath = Paths.get(getClass().getResource("/builtin/shaders/scene.vert").toURI());
+			fragPath = Paths.get(getClass().getResource("/builtin/shaders/scene.frag").toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertPath, GL_VERTEX_SHADER));
+        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragPath, GL_FRAGMENT_SHADER));
         this.shaderProgram = new ShaderProgram(shaderModuleDataList);
         
         this.uniformsMap = new UniformsMap(shaderProgram.getProgramId());
         this.uniformsMap.createUniform(PROJECTION_MATRIX);
         this.uniformsMap.createUniform(GAME_OBJECT_MATRIX);
+        this.uniformsMap.createUniform(TXT_SAMPLER);
 	}
 
 	public void cleanup() {
@@ -53,6 +68,7 @@ public class Renderer {
 		shaderProgram.bind();
 		
         uniformsMap.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());        
+        uniformsMap.setUniform(TXT_SAMPLER, 0);
         
          Matrix4f matrix = new Matrix4f();
         

@@ -5,8 +5,9 @@ import org.lwjgl.system.MemoryStack;
 
 import com.codeshaper.jello.engine.AssetFileExtension;
 
-import java.io.File;
-import java.nio.*;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.file.Path;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -20,11 +21,11 @@ public class Mesh extends Asset {
 	private int vaoId;
 	private List<Integer> vboIdList;
 
-	public Mesh(File path) {
-		super(path);
+	public Mesh(Path file) {
+		super(file);
 	}
 
-	public Mesh(float[] positions, float[] colors, int[] indices) {
+	public Mesh(float[] positions, float[] textCoords, int[] indices) {
 		super(null);
 
 		try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -44,6 +45,7 @@ public class Mesh extends Asset {
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
+			/*
 			// Color VBO
 			vboId = glGenBuffers();
 			vboIdList.add(vboId);
@@ -53,6 +55,17 @@ public class Mesh extends Asset {
 			glBufferData(GL_ARRAY_BUFFER, colorsBuffer, GL_STATIC_DRAW);
 			glEnableVertexAttribArray(1);
 			glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+			*/
+			
+            // Texture coordinates VBO
+            vboId = glGenBuffers();
+            vboIdList.add(vboId);
+            FloatBuffer textCoordsBuffer = stack.callocFloat(textCoords.length);
+            textCoordsBuffer.put(0, textCoords);
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
 			// Index VBO
 			vboId = glGenBuffers();

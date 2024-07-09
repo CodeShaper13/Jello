@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -47,7 +48,7 @@ public class FileBrowserWindow extends EditorWindow {
 	public FileBrowserWindow() {
 		super("Project", "fileViewer");
 
-		this.rootFolder = new AssetFolder(new File(JelloEditor.instance.rootProjectFolder, "assets"));
+		this.rootFolder = new AssetFolder(JelloEditor.instance.rootProjectFolder.resolve("assets").toFile());
 
 		this.fileListModel = new DefaultListModel<File>();
 		this.fileList = new JFileList(this.fileListModel);
@@ -352,7 +353,12 @@ public class FileBrowserWindow extends EditorWindow {
 				InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
 				File file = this.getSelectedValue();
 				if (file != null) {
-					Asset asset = JelloEditor.instance.assetDatabase.getAsset(file);
+					// Convert to a relative path.
+					Path pathAbsolute = file.toPath();
+			        Path pathBase = JelloEditor.instance.assetsFolder;
+			        Path pathRelative = pathBase.relativize(pathAbsolute);
+					
+					Asset asset = JelloEditor.instance.assetDatabase.getAsset(pathRelative);
 					inspector.setTarget(asset);
 				}
 			});

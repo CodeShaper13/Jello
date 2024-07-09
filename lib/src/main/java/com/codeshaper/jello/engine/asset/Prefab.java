@@ -1,12 +1,12 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import com.codeshaper.jello.engine.GameObject;
 
 public class Prefab extends Asset {
 
-	public Prefab(File file) {
+	public Prefab(Path file) {
 		super(file);
 	}
 	

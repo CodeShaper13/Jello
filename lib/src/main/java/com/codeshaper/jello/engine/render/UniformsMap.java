@@ -26,13 +26,21 @@ public class UniformsMap {
 		this.uniforms.put(uniformName, uniformLocation);
 	}
 
-	public void setUniform(String uniformName, Matrix4f value) {
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			Integer location = this.uniforms.get(uniformName);
-			if (location == null) {
-				throw new RuntimeException("Could not find uniform [" + uniformName + "]");
-			}
-			glUniformMatrix4fv(location.intValue(), false, value.get(stack.mallocFloat(16)));
-		}
-	}
+	public void setUniform(String uniformName, int value) {
+        glUniform1i(this.getUniformLocation(uniformName), value);
+    }
+
+    public void setUniform(String uniformName, Matrix4f value) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            glUniformMatrix4fv(this.getUniformLocation(uniformName), false, value.get(stack.mallocFloat(16)));
+        }
+    }
+	
+	private int getUniformLocation(String uniformName) {
+        Integer location = this.uniforms.get(uniformName);
+        if (location == null) {
+            throw new RuntimeException("Could not find uniform [" + uniformName + "]");
+        }
+        return location.intValue();
+    }
 }

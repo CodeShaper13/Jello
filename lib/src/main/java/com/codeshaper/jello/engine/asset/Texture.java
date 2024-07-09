@@ -1,12 +1,17 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
 
+import org.apache.commons.io.IOUtils;
 import org.lwjgl.system.MemoryStack;
 
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.Debug;
 
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.stb.STBImage.*;
@@ -16,65 +21,61 @@ import static org.lwjgl.stb.STBImage.*;
 @AssetFileExtension(".gif")
 public class Texture extends Asset {
 
-	public Texture(File file) {
-		super(file);
-	}
-	
 	private int textureId;
-    private String texturePath;
 
-    public Texture(int width, int height, ByteBuffer buf) {
-    	super(null);
-    	
-        this.texturePath = "";
-        generateTexture(width, height, buf);
-    }
+	public Texture(Path file) {
+		super(file);
+		
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			IntBuffer w = stack.mallocInt(1);
+			IntBuffer h = stack.mallocInt(1);
+			IntBuffer channels = stack.mallocInt(1);
 
-    public Texture(String texturePath) {
-    	super(null);
-    	
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            this.texturePath = texturePath;
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer channels = stack.mallocInt(1);
+			String texturePath = this.file.toString();						
+			try(InputStream stream = texturePath.startsWith("builtin") ? this.getClass().getResourceAsStream("/" + texturePath) :new FileInputStream(texturePath)) {
+				byte[] byteArray = IOUtils.toByteArray(stream);
+				ByteBuffer bytes = stack.bytes(byteArray);
+				ByteBuffer buf = stbi_load_from_memory(bytes, w, h, channels, 4);
 
-            ByteBuffer buf = stbi_load(texturePath, w, h, channels, 4);
-            if (buf == null) {
-                throw new RuntimeException("Image file [" + texturePath + "] not loaded: " + stbi_failure_reason());
-            }
+				if (buf == null) {
+					Debug.logError("Image file [" + texturePath + "] not loaded: " + stbi_failure_reason());
+				}
 
-            int width = w.get();
-            int height = h.get();
+				int width = w.get();
+				int height = h.get();
 
-            generateTexture(width, height, buf);
+				this.generateTexture(width, height, buf);
 
-            stbi_image_free(buf);
-        }
-    }
+				stbi_image_free(buf);	
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
-    public void bind() {
-        glBindTexture(GL_TEXTURE_2D, textureId);
-    }
+	public Texture(int width, int height, ByteBuffer buf) {
+		super(null);
 
-    @Override
-    public void cleanup() {
-        glDeleteTextures(textureId);
-    }
+		generateTexture(width, height, buf);
+	}
 
-    private void generateTexture(int width, int height, ByteBuffer buf) {
-        textureId = glGenTextures();
+	public void bind() {
+		glBindTexture(GL_TEXTURE_2D, textureId);
+	}
 
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, buf);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
+	@Override
+	public void cleanup() {
+		glDeleteTextures(textureId);
+	}
 
-    public String getTexturePath() {
-        return texturePath;
-    }
+	private void generateTexture(int width, int height, ByteBuffer buf) {
+		textureId = glGenTextures();
+
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
 }

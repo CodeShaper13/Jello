@@ -42,7 +42,7 @@ public class EditorMainFrame extends JFrame {
 		this.setPreferredSize(new Dimension(1000, 800));
 
 		Docking.initialize(this);
-		AppState.setPersistFile(new File(editor.rootProjectFolder, "layout.xml"));
+		AppState.setPersistFile(new File(editor.rootProjectFolder.toFile(), "layout.xml"));
 
 		this.sceneView = new SceneView();
 

@@ -1,11 +1,9 @@
 package com.codeshaper.jello.engine.asset;
 
 import java.awt.BorderLayout;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class TextAsset extends Asset {
 
 	private List<String> lines;
 
-	public TextAsset(File file) {
+	public TextAsset(Path file) {
 		super(file);
 
 		this.lines = new ArrayList<String>();
@@ -62,15 +60,8 @@ public class TextAsset extends Asset {
 	}
 
 	private void read() {
-		try (BufferedReader br = new BufferedReader(new FileReader(this.file))) {
-			String line = br.readLine();
-
-			while (line != null) {
-				this.lines.add(line);
-				line = br.readLine();
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		try {
+			this.lines = Files.readAllLines(this.file);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
