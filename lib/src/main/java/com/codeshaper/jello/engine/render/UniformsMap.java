@@ -5,7 +5,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.util.*;
 
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 public class UniformsMap {
 
@@ -20,8 +20,7 @@ public class UniformsMap {
 	public void createUniform(String uniformName) {
 		int uniformLocation = glGetUniformLocation(this.programId, uniformName);
 		if (uniformLocation < 0) {
-			throw new RuntimeException(
-					"Could not find uniform [" + uniformName + "] in shader program [" + this.programId + "]");
+			System.out.println("Could not find uniform [" + uniformName + "] in shader program [" + this.programId + "]");
 		}
 		this.uniforms.put(uniformName, uniformLocation);
 	}
@@ -30,16 +29,20 @@ public class UniformsMap {
         glUniform1i(this.getUniformLocation(uniformName), value);
     }
 
+    public void setUniform(String uniformName, float value) {
+        glUniform1f(getUniformLocation(uniformName), value);
+    }
+
     public void setUniform(String uniformName, Matrix4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             glUniformMatrix4fv(this.getUniformLocation(uniformName), false, value.get(stack.mallocFloat(16)));
         }
     }
-	
+    
 	private int getUniformLocation(String uniformName) {
         Integer location = this.uniforms.get(uniformName);
         if (location == null) {
-            throw new RuntimeException("Could not find uniform [" + uniformName + "]");
+        	System.out.println("Could not find uniform [" + uniformName + "]");
         }
         return location.intValue();
     }

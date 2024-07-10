@@ -1,8 +1,11 @@
 package com.codeshaper.jello.engine.render;
 
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,15 +17,21 @@ public class ShaderProgram {
 
 	private final int programId;
 
-    public ShaderProgram(List<ShaderModuleData> shaderModuleDataList) {
+    public ShaderProgram(ShaderModuleData... shaderModuleDataList) {
         programId = glCreateProgram();
         if (programId == 0) {
             throw new RuntimeException("Could not create Shader");
         }
 
         List<Integer> shaderModules = new ArrayList<>();
-        shaderModuleDataList.forEach(s -> shaderModules.add(createShader(Utils.readFile(s.shaderFile), s.shaderType)));
-
+        for(int i = 0; i < shaderModuleDataList.length; i++) {
+        	ShaderModuleData data = shaderModuleDataList[i];
+        	if(data != null) {
+        		String code = Utils.readFile(data.shaderFile);
+        		shaderModules.add(createShader(code, data.shaderType));
+        	}
+        }
+        
         link(shaderModules);
     }
 
@@ -40,14 +49,14 @@ public class ShaderProgram {
     protected int createShader(String shaderCode, int shaderType) {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
-            throw new RuntimeException("Error creating shader. Type: " + shaderType);
+        	System.out.println("Error creating shader. Type: " + shaderType);
         }
 
         glShaderSource(shaderId, shaderCode);
         glCompileShader(shaderId);
 
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
-            throw new RuntimeException("Error compiling Shader code: " + glGetShaderInfoLog(shaderId, 1024));
+        	System.out.println("Error compiling Shader code: " + glGetShaderInfoLog(shaderId, 1024));
         }
 
         glAttachShader(programId, shaderId);
@@ -62,7 +71,7 @@ public class ShaderProgram {
     private void link(List<Integer> shaderModules) {
         glLinkProgram(programId);
         if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
-            throw new RuntimeException("Error linking Shader code: " + glGetProgramInfoLog(programId, 1024));
+            System.out.println("Error linking Shader code: " + glGetProgramInfoLog(programId, 1024));
         }
 
         shaderModules.forEach(s -> glDetachShader(programId, s));
@@ -76,9 +85,35 @@ public class ShaderProgram {
     public void validate() {
         glValidateProgram(programId);
         if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
-            throw new RuntimeException("Error validating Shader code: " + glGetProgramInfoLog(programId, 1024));
+        	System.out.println("Error validating Shader code: " + glGetProgramInfoLog(programId, 1024));
         }
     }
-
-    public record ShaderModuleData(Path shaderFile, int shaderType) { }
+    
+    public static class ShaderModuleData {
+    	
+    	public final int shaderType;
+    	public final Path shaderFile;
+    	
+    	public static ShaderModuleData fromAssets(Path path, int shaderType) {
+    		return new ShaderModuleData(path, shaderType);
+    	}
+    	
+    	public static ShaderModuleData fromResources(String resourceLocation, int shaderType) {
+    		Path path = null;
+    		try {
+    			URL url = ShaderModuleData.class.getResource(resourceLocation);
+    			path = Paths.get(url.toURI());
+    			return new ShaderModuleData(path, shaderType);
+    		} catch (URISyntaxException e) {
+    			e.printStackTrace();
+    		}
+    		
+    		return null;
+    	}
+    	
+    	private ShaderModuleData(Path shaderFile, int shaderType) {
+    		this.shaderFile = shaderFile;
+    		this.shaderType = shaderType;
+       	}
+    }
 }

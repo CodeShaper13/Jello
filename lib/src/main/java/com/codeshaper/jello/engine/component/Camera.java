@@ -21,7 +21,7 @@ public class Camera extends JelloComponent {
 		return Camera.cameras;
 	}
 
-	public Color backgroundColor = Color.blue;
+	public Color backgroundColor = new Color(0, 0, 0);
 	public Perspective perspective = Perspective.PERSPECTVE;
 	@Range(min = 0f, max = 180f)
 	public float fov = 60f;

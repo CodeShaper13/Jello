@@ -1,11 +1,5 @@
 package com.codeshaper.jello.engine.render;
 
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL;
 
@@ -20,40 +14,31 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class Renderer {
 	
-	private static final String PROJECTION_MATRIX = "projectionMatrix";
-	private static final String VIEW_MATRIX = "viewMatrix";
-	private static final String GAME_OBJECT_MATRIX = "modelMatrix";
-	private static final String TXT_SAMPLER = "txtSampler";
+	public static final String PROJECTION_MATRIX = "projectionMatrix";
+	public static final String VIEW_MATRIX = "viewMatrix";
+	public static final String GAME_OBJECT_MATRIX = "modelMatrix";
+	public static final String TXT_SAMPLER = "txtSampler";
 
 	public final ShaderProgram shaderProgram;
     public final UniformsMap uniformsMap;
-
+        
 	public Renderer() {
 		GL.createCapabilities();
 		
-        glEnable(GL_DEPTH_TEST);
-
-		List<ShaderProgram.ShaderModuleData> shaderModuleDataList = new ArrayList<>();
-		
-		Path vertPath = null;
-		Path fragPath = null;
-		try {
-			vertPath = Paths.get(getClass().getResource("/builtin/shaders/scene.vert").toURI());
-			fragPath = Paths.get(getClass().getResource("/builtin/shaders/scene.frag").toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(vertPath, GL_VERTEX_SHADER));
-        shaderModuleDataList.add(new ShaderProgram.ShaderModuleData(fragPath, GL_FRAGMENT_SHADER));
-        this.shaderProgram = new ShaderProgram(shaderModuleDataList);
+        glEnable(GL_DEPTH_TEST);  
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        
+        this.shaderProgram = new ShaderProgram(
+        		ShaderProgram.ShaderModuleData.fromResources("/builtin/shaders/scene.vert", GL_VERTEX_SHADER),
+        		ShaderProgram.ShaderModuleData.fromResources("/builtin/shaders/scene.frag", GL_FRAGMENT_SHADER));
         
         this.uniformsMap = new UniformsMap(shaderProgram.getProgramId());
         this.uniformsMap.createUniform(PROJECTION_MATRIX);
         this.uniformsMap.createUniform(VIEW_MATRIX);
         this.uniformsMap.createUniform(GAME_OBJECT_MATRIX);
         this.uniformsMap.createUniform(TXT_SAMPLER);
-	}
+   	}
 
 	public void cleanup() {
 		this.shaderProgram.cleanup();
@@ -78,7 +63,7 @@ public class Renderer {
         for(Scene scene : sceneProvider.getScenes()) {
     		for(GameObject obj : scene.getRootGameObjects()) {
     			matrix.translationRotateScale(obj.getPosition(), obj.getRotation(), obj.getScale());
-                uniformsMap.setUniform("modelMatrix", matrix);
+                uniformsMap.setUniform(GAME_OBJECT_MATRIX, matrix);
 
         		for(JelloComponent component : obj.getAllComponents()) {
         			component.onRender();

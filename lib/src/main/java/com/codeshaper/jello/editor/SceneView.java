@@ -1,13 +1,10 @@
 package com.codeshaper.jello.editor;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -24,23 +21,19 @@ import javax.swing.SwingUtilities;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.awt.AWTGLCanvas;
 import org.lwjgl.opengl.awt.GLData;
 
-import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Perspective;
-import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.component.Camera;
-import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.render.Renderer;
+import com.codeshaper.jello.engine.render.ShaderProgram;
+import com.codeshaper.jello.engine.render.UniformsMap;
 
 public class SceneView extends JPanel {
 
-	private JToggleButton toggleLighting;
-	private JToggleButton toggleWireframe;
-	private JToggleButton toggleGrid;
-	private JToggleButton toggleGizmos;
+	private final SceneViewToolbar toolbar;
 	private final CameraController cc;
 	private final SceneAWTGLCanvas canvas;
 
@@ -53,9 +46,11 @@ public class SceneView extends JPanel {
 		this.setLayout(new BorderLayout());
 
 		this.sceneCamera = new Camera(null);
+		this.canvas = new SceneAWTGLCanvas(new GLData());
+		this.toolbar = new SceneViewToolbar();
 
-		this.add(this.canvas = new SceneAWTGLCanvas(new GLData()), BorderLayout.CENTER);
-		this.add(this.createToolbar(), BorderLayout.NORTH);
+		this.add(this.toolbar, BorderLayout.NORTH);
+		this.add(this.canvas, BorderLayout.CENTER);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -91,8 +86,9 @@ public class SceneView extends JPanel {
 			return this.canvas.executeInContext(new Callable<Renderer>() {
 				@Override
 				public Renderer call() throws Exception {
+					Renderer renderer = new Renderer();
 					canvas.initGL();
-					return new Renderer();
+					return renderer;
 				}
 
 			});
@@ -104,87 +100,75 @@ public class SceneView extends JPanel {
 	public void makeContextCurrent() {
 		this.canvas.makeContextCurrent();
 	}
+	
+	private class SceneViewToolbar extends JToolBar {
 
-	private JToolBar createToolbar() {
-		JToolBar toolbar = new JToolBar();
-		toolbar.setFloatable(false);
+		private final JToggleButton toggleLighting;
+		private final JToggleButton toggleWireframe;
+		private final JToggleButton toggleGrid;
+		private final JToggleButton toggleGizmos;
+		private final JComboBox<Perspective> dropdownPerspective;
+		
+		public SceneViewToolbar() {
+			this.setFloatable(false);
+			
+			this.toggleLighting = new JToggleButton("Lighting");
+			this.toggleLighting.setSelected(true);
+			this.add(this.toggleLighting);
 
-		this.toggleLighting = new JToggleButton("Lighting");
-		toolbar.add(this.toggleLighting);
+			this.toggleWireframe = new JToggleButton("Wireframe");
+			this.add(this.toggleWireframe);
 
-		this.toggleWireframe = new JToggleButton("Wireframe");
-		toolbar.add(this.toggleWireframe);
+			this.toggleGrid = new JToggleButton("Grid");
+			this.toggleGrid.setSelected(true);
+			this.add(this.toggleGrid);
 
-		this.toggleGrid = new JToggleButton("Grid");
-		toolbar.add(this.toggleGrid);
+			this.toggleGizmos = new JToggleButton("Gizmos");
+			this.toggleGizmos.setSelected(true);
+			this.add(this.toggleGizmos);
 
-		this.toggleGizmos = new JToggleButton("Gizmos");
-		toolbar.add(this.toggleGizmos);
-
-		JComboBox<Perspective> comboBoxPerspective = new JComboBox<Perspective>(Perspective.values());
-		comboBoxPerspective.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (comboBoxPerspective.getSelectedIndex() == 0) {
-					sceneCamera.perspective = Perspective.PERSPECTVE;
-				} else {
-					sceneCamera.perspective = Perspective.ORTHOGRAPHIC;
-				}
-			}
-		});
-		toolbar.add(comboBoxPerspective);
-
-		return toolbar;
-	}
-
-	public class SceneAWTGLCanvas extends AWTGLCanvas {
-
-		public SceneAWTGLCanvas(GLData glData) {
-			super(glData);
+			this.dropdownPerspective = new JComboBox<Perspective>(Perspective.values());
+			this.add(this.dropdownPerspective);
+		}
+		
+		public boolean isLightingEnabled() {
+			return this.toggleLighting.isEnabled();
+		}
+		
+		public boolean isWireframeEnabled() {
+			return this.toggleWireframe.isSelected();
+		}
+		
+		public boolean isGridEnabled() {
+			return this.toggleGrid.isSelected();
+		}
+		
+		public boolean isGizmosEnabled() {
+			return this.toggleGizmos.isSelected();
 		}
 
-		@Override
-		public void initGL() {
-			this.initCalled = true;
-		}
-
-		@Override
-		public void paintGL() {
-			if (toggleWireframe.isSelected()) {
-				glPolygonMode(GL11.GL_FRONT_AND_BACK, GL_LINE);
-			} else {
-				glPolygonMode(GL11.GL_FRONT_AND_BACK, GL_FILL);
-			}
-
-			JelloEditor.instance.renderer.render(JelloEditor.instance, sceneCamera, cc.getViewMatrix(), this.getWidth(), this.getHeight());
-
-			this.swapBuffers();
-		}
-
-		public void makeContextCurrent() {
-			this.platformCanvas.makeCurrent(this.context);
+		public Perspective getPerspective() {
+			return this.dropdownPerspective.getSelectedIndex() == 0 ? Perspective.PERSPECTVE : Perspective.ORTHOGRAPHIC;
 		}
 	}
 
 	/**
-	 * Provides controls for moving 
+	 * Provides controls for moving the scene view camera.
 	 * 
-	 * Controls:
-	 * Scroll Wheel: Zooms in and out.
-	 * MMB + Move Cursor: Pan camera.
-	 * RMB + Move Cursor: Rotate camera.
+	 * Controls: Scroll Wheel: Zooms in and out. MMB + Move Cursor: Pan camera. RMB
+	 * + Move Cursor: Rotate camera.
 	 */
-	private class CameraController implements MouseListener, MouseMotionListener, MouseWheelListener {
+	public class CameraController implements MouseListener, MouseMotionListener, MouseWheelListener {
 
 		private static final float ZOOM_SPEED = 1f;
 		private static final float ROTATE_SPEED = 0.01f;
 		private static final float PAN_SPEED = 0.02f;
-		
+
 		private Vector3f position;
 		private float xRot = 0f;
 		private float yRot = 0f;
 		private Matrix4f viewMatrix;
-		
+
 		/**
 		 * Is the middle mouse button pressed?
 		 */
@@ -200,12 +184,17 @@ public class SceneView extends JPanel {
 			this.viewMatrix = new Matrix4f();
 		}
 
-		public Matrix4f getViewMatrix() {			
+		/**
+		 * Gets the Camera's view matrix.
+		 * 
+		 * @return the Camera's view matrix.
+		 */
+		public Matrix4f getViewMatrix() {
 			return this.viewMatrix;
 		}
 
 		@Override
-		public void mouseWheelMoved(MouseWheelEvent e) {			
+		public void mouseWheelMoved(MouseWheelEvent e) {
 			float scroll = e.getWheelRotation();
 			Vector3f direction = new Vector3f();
 			this.viewMatrix.positiveZ(direction).mul(scroll * ZOOM_SPEED);
@@ -216,100 +205,152 @@ public class SceneView extends JPanel {
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			Point current = e.getPoint();
+			Point motion = new Point(current.x - this.pointLastPos.x, current.y - this.pointLastPos.y);
 
-			Point motion = new Point(current.x - this.pointLastPos.x,  current.y - this.pointLastPos.y);			
-			
-			Vector3f vec = new Vector3f();
-
-			if(this.isMMBDown) {
+			if (this.isMMBDown) {
 				// Pan.
+				Vector3f vec = new Vector3f();
 				
 				// Up/down.
-				viewMatrix.positiveY(vec).mul(motion.y * PAN_SPEED);
-		        position.add(vec);
-		        
-		        // Left/right.
-		        viewMatrix.positiveX(vec).mul((motion.x * -1) * PAN_SPEED);
-		        position.add(vec);
+				this.viewMatrix.positiveY(vec).mul(motion.y * PAN_SPEED);
+				this.position.add(vec);
+
+				// Left/right.
+				this.viewMatrix.positiveX(vec).mul((motion.x * -1) * PAN_SPEED);
+				this.position.add(vec);
 			}
-			
-			if(this.isRMBDown) {
+
+			if (this.isRMBDown) {
 				// Rotate.
 				this.xRot += motion.y * -1f * ROTATE_SPEED;
 				this.yRot += motion.x * -1f * ROTATE_SPEED;
 			}
-	        
-	        this.recalculate();
-			
+
+			this.recalculate();
+
 			this.pointLastPos = current;
 		}
 
 		@Override
-		public void mouseMoved(MouseEvent e) { }
+		public void mouseMoved(MouseEvent e) {
+		}
 
 		@Override
-		public void mouseClicked(MouseEvent e) { }
+		public void mouseClicked(MouseEvent e) {
+		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
 			this.pointLastPos = e.getPoint();
-			
-			if(e.getButton() == MouseEvent.BUTTON3) {
+
+			if (e.getButton() == MouseEvent.BUTTON3) {
 				this.isRMBDown = true;
 			}
-			
-			if(e.getButton() == MouseEvent.BUTTON2) {
+
+			if (e.getButton() == MouseEvent.BUTTON2) {
 				this.isMMBDown = true;
 			}
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent e) {			
-			if(e.getButton() == MouseEvent.BUTTON3) {
+		public void mouseReleased(MouseEvent e) {
+			if (e.getButton() == MouseEvent.BUTTON3) {
 				this.isRMBDown = false;
 			}
-			
-			if(e.getButton() == MouseEvent.BUTTON2) {
+
+			if (e.getButton() == MouseEvent.BUTTON2) {
 				this.isMMBDown = false;
 			}
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent e) { }
+		public void mouseEntered(MouseEvent e) {
+		}
 
 		@Override
-		public void mouseExited(MouseEvent e) { }
-		
+		public void mouseExited(MouseEvent e) {
+		}
+
+		/**
+		 * Recalculates the controllers view matrix. This should be called whenever the
+		 * {@link CameraController#position}, {@link CameraController#xRot}, or
+		 * {@link CameraController#yRot} is changed.
+		 */
 		private void recalculate() {
 			this.viewMatrix.identity().rotateX(this.xRot).rotateY(this.yRot);
-			this.viewMatrix.translate(-position.x, -position.y, -position.z);
+			this.viewMatrix.translate(-this.position.x, -this.position.y, -this.position.z);
 		}
 	}
 
-	// Unused.
-	private void func() {
-		Scene scene = JelloEditor.instance.getScene();
-		for (GameObject object : scene.getRootGameObjects()) {
-			for (JelloComponent component : object.getAllComponents()) {
-				GL11.glPushMatrix();
-				GL11.glEnable(GL_CULL_FACE);
+	private class SceneAWTGLCanvas extends AWTGLCanvas {
+		
+		private static final String NEAR = "near";
+		private static final String FAR = "far";
 
-				Vector3f scale = object.getScale();
-				GL11.glScaled(scale.x, scale.y, scale.z);
+	    private ShaderProgram gridShaderProgram;
+	    private UniformsMap gridUniformsMap;
+		
+		public SceneAWTGLCanvas(GLData glData) {
+			super(glData);
+		}
 
-				// TODO rotation
-				GL11.glRotatef(30.0F, 1.0F, 0.0F, 0.0F);
-				double now = System.nanoTime() / 1_000_000_000f;
-				GL11.glRotatef(45f, 0f, 1f, 0f);
-				GL11.glRotatef((float) now * 30f, 0f, 1f, 0f);
+		@Override
+		public void initGL() {
+	        this.gridShaderProgram = new ShaderProgram(
+	        		ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.vert", GL_VERTEX_SHADER),
+	        		ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.frag", GL_FRAGMENT_SHADER));
+	        this.gridUniformsMap = new UniformsMap(gridShaderProgram.getProgramId());
+	        this.gridUniformsMap.createUniform(Renderer.PROJECTION_MATRIX);
+	        this.gridUniformsMap.createUniform(Renderer.VIEW_MATRIX);
+	        this.gridUniformsMap.createUniform(NEAR);
+	        this.gridUniformsMap.createUniform(FAR);
+			
+			this.initCalled = true;
+		}
 
-				Vector3f pos = object.getPosition();
-				GL11.glTranslated(pos.x, pos.y, pos.z);
-
-				component.onRender();
-
-				GL11.glPopMatrix();
+		@Override
+		public void paintGL() {
+			boolean isWireframeEnabled = toolbar.isWireframeEnabled();
+			if (isWireframeEnabled) {
+				glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+			} else {
+				glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
 			}
+			
+			sceneCamera.perspective = toolbar.getPerspective();
+
+			Matrix4f viewMatrix = cc.getViewMatrix();
+			JelloEditor.instance.renderer.render(JelloEditor.instance, sceneCamera, viewMatrix, this.getWidth(), this.getHeight());
+
+			if(toolbar.isGridEnabled()) {
+				if(isWireframeEnabled) {
+					glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
+				}
+				this.drawGrid(sceneCamera, viewMatrix);			
+			}
+			
+			this.swapBuffers();
+		}
+
+		public void makeContextCurrent() {
+			this.platformCanvas.makeCurrent(this.context);
+		}
+		
+		private void drawGrid(Camera camera, Matrix4f viewMatrix) {
+			this.gridShaderProgram.bind();
+	        this.gridUniformsMap.setUniform(Renderer.PROJECTION_MATRIX, camera.getProjectionMatrix());   
+	        this.gridUniformsMap.setUniform(Renderer.VIEW_MATRIX, viewMatrix);
+	        this.gridUniformsMap.setUniform(NEAR, camera.nearPlane);
+	        this.gridUniformsMap.setUniform(FAR, camera.farPlane);  
+	        
+	        glBegin(GL_QUADS);
+	        glVertex2f(-1f, -1f);
+	        glVertex2f(-1f, 1f);
+	        glVertex2f(1f, 1f);
+	        glVertex2f(1f, -1f);
+	        glEnd(); 
+	        
+	        this.gridShaderProgram.unbind();
 		}
 	}
 }
