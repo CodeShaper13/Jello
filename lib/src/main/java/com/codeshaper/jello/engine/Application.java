@@ -14,6 +14,7 @@ public class Application {
 	private AppSettings appSettings;
     private Window window;
     private Renderer renderer;
+    private SceneManager sceneManager;
 	
 	private boolean running;
 	
@@ -38,14 +39,15 @@ public class Application {
 			return;
 		}
         
+		this.sceneManager = new SceneManager();
 		
 		// Jello
-		Scene scene = new Scene();
+		Scene scene = new Scene(null); // TODO
 		GameObject obj = scene.instantiateGameObject("GameObj1");
 		Camera camera = obj.addComponent(Camera.class);
 		camera.onStart();
 		obj.addComponent(MeshRenderer.class);
-		SceneManager.loadScene(scene);
+		this.sceneManager.loadScene(scene);
 		
 		this.running = true;
 		this.run();
@@ -96,7 +98,7 @@ public class Application {
 
             if (deltaUpdate >= 1) {
                 long diffTimeMillis = now - updateTime;
-                for(Scene scene : SceneManager.getAllScenes()) {
+                for(Scene scene : this.sceneManager.getScenes()) {
                 	for(GameObject obj : scene.getRootGameObjects()) {
                 		for(JelloComponent component : obj.getAllComponents()) {
                 			component.onUpdate(diffTimeMillis);
@@ -110,7 +112,7 @@ public class Application {
             if (this.appSettings.targetFps <= 0 || deltaFps >= 1) {
             	for(Camera camera : Camera.getAllCameras()) {
             		if(camera.isEnabled) {
-            			this.renderer.render(SceneManager.instance, camera, new Matrix4f(), this.window.getWidth(), this.window.getHeight());
+            			this.renderer.render(this.sceneManager, camera, new Matrix4f(), this.window.getWidth(), this.window.getHeight());
             		}
             	}
             	

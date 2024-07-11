@@ -1,55 +1,46 @@
 package com.codeshaper.jello.editor.inspector;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
+import javax.swing.JScrollPane;
 
 import com.codeshaper.jello.engine.asset.Asset;
 
-public class AssetEditor extends Editor<Asset> {
+public class AssetEditor<T extends Asset> extends Editor<T> {
 
-	public AssetEditor(Asset target, JPanel panel) {
-		super(target, panel);
+	public AssetEditor(T target) {
+		super(target);
 	}
 	
 	@Override
-	public void draw() {
-		super.draw();
+	public void draw(JPanel panel) {
+		super.draw(panel);
 		
-		this.panel.setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1;
+        panel.setLayout(new BorderLayout());
 		
-		// Header
+		// Header.
 		JPanel headerPanel = new JPanel();
-		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
 		this.drawHeader(headerPanel);
-		gbc.gridy = 0;
-		this.panel.add(headerPanel, gbc);
+		panel.add(headerPanel, BorderLayout.NORTH);		
 		
-		JPanel p = new JPanel();
-		this.drawAsset(p);
-		gbc.gridy = 1;
-		this.panel.add(p, gbc);
-		
-		// Filler panel.
-		gbc.weighty = 1;
-		gbc.gridy = 2;
-		panel.add(new JPanel(), gbc);
+		// Asset fields.
+		JPanel contents = new JPanel();
+		contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
+		this.drawInspector(contents);
+		JScrollPane scrollPane = new JScrollPane(contents);
+		panel.add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	protected void drawAsset(JPanel panel) {
+	protected void drawInspector(JPanel panel) {
 		
 	}
 	
-	protected void drawHeader(JPanel panel) {
+	protected void drawHeader(JPanel headerPanel) {
 		JLabel label = new JLabel(this.target.getAssetName());
-		panel.add(label);
-		panel.add(new JSeparator());
+		headerPanel.add(label);
 	}
 }

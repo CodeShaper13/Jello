@@ -30,7 +30,7 @@ public class Camera extends JelloComponent {
 	public float nearPlane = 0.01f;
 	public float farPlane = 1000f;
 
-	private Matrix4f projectionMatrix;
+	private transient Matrix4f projectionMatrix;
 
 	public Camera(GameObject owner) {
 		super(owner);

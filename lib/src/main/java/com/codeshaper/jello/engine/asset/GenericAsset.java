@@ -2,7 +2,7 @@ package com.codeshaper.jello.engine.asset;
 
 import java.nio.file.Path;
 
-import com.codeshaper.jello.engine.AssetDatabase;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 
 /**
  * Returned by {@link AssetDatabase#getAsset(Path)} and

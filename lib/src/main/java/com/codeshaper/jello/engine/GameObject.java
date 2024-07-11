@@ -4,8 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JPanel;
-
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -23,7 +21,7 @@ public class GameObject implements IInspectable {
 
 	private boolean isEnabled;
 	private List<JelloComponent> components;
-	private GameObject parent;
+	private transient GameObject parent;
 	private List<GameObject> children;
 	private Vector3f localPosition;
 	private Quaternionf localRotation;
@@ -45,8 +43,8 @@ public class GameObject implements IInspectable {
 	}
 	
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
-		return new GameObjectEditor(this, panel);
+	public Editor<?> getInspectorDrawer() {
+		return new GameObjectEditor(this);
 	}
 
 	public Vector3f getPosition() {

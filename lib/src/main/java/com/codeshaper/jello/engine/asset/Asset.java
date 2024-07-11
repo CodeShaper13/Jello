@@ -2,8 +2,6 @@ package com.codeshaper.jello.engine.asset;
 
 import java.nio.file.Path;
 
-import javax.swing.JPanel;
-
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.IInspectable;
@@ -14,7 +12,7 @@ public abstract class Asset implements IInspectable {
 	 * The file that provides this asset. May be null if the asset was created at
 	 * runtime.
 	 */
-	public final Path file;
+	public transient final Path file;
 	
 	public Asset(Path file) {
 		this.file = file;
@@ -41,7 +39,7 @@ public abstract class Asset implements IInspectable {
 	public void cleanup() { }
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
-		return new AssetEditor(this, panel);
+	public Editor<?> getInspectorDrawer() {
+		return new AssetEditor<Asset>(this);
 	}
 }

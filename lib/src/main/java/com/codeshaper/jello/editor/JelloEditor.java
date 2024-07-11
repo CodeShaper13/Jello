@@ -15,14 +15,17 @@ import javax.swing.SwingUtilities;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
-import com.codeshaper.jello.engine.AssetDatabase;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.ISceneProvider;
 import com.codeshaper.jello.engine.asset.Scene;
+import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.render.Renderer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;
@@ -73,7 +76,7 @@ public class JelloEditor implements ISceneProvider {
 
 	public final Path rootProjectFolder;
 	public final Path assetsFolder;
-	public final AssetDatabase assetDatabase;
+	public final EditorAssetDatabase assetDatabase;
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
@@ -100,8 +103,8 @@ public class JelloEditor implements ISceneProvider {
 		}
 		this.writeEditorVersionFile();
 		
-		this.assetDatabase = new AssetDatabase(this.assetsFolder);
-		this.assetDatabase.cacheAssets();
+		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
+		this.assetDatabase.buildDatabase();
 
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
@@ -159,8 +162,9 @@ public class JelloEditor implements ISceneProvider {
 		return this.loadedScene;
 	}
 
-	public void save() {
-		Debug.logWarning("Saving is not yet implemented."); // TODO implement saving.
+	public void saveScene() {				
+		Scene scene = this.getScene();		
+		this.saveAssetToDisk(scene);
 	}
 
 	public void preformUndo() {
@@ -170,20 +174,44 @@ public class JelloEditor implements ISceneProvider {
 	public void preformRedo() {
 		Debug.logWarning("Redo is not yet implemented."); // TODO implement redo.
 	}
+	
+	public boolean saveAssetToDisk(SerializedJelloObject asset) {
+		File file = asset.file.toFile();		
+		try (FileWriter writer = new FileWriter(file)) {
+			String s = asset.getClass().getName();
+			writer.write(s + "\n");
+			
+			GsonBuilder builder = new GsonBuilder();
+			builder.setPrettyPrinting();
+			builder.serializeNulls();
+		    Gson gson = builder.create();
+		    
+		    gson.toJson(asset, writer);
+		    
+		    return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			
+			return false;
+		}
+	}
+	
 
 	private Scene constructDefaultScene() {
-		Scene scene = new Scene();
+		Scene scene = new Scene(this.assetsFolder.resolve("scene.jelobj"));
 
 		GameObject cameraObj = scene.instantiateGameObject("Main Camera");
 		cameraObj.addComponent(Camera.class);
+		cameraObj.setPosition(0, 5, -10);
+		cameraObj.setEulerAngles(20, 0, 0);
 
-		GameObject meshObj = scene.instantiateGameObject("Mesh");
+		GameObject meshObj = scene.instantiateGameObject("Cube");
 		meshObj.addComponent(MeshRenderer.class);
-		meshObj.setPosition(0, 0, -2);
-		meshObj.setEulerAngles(20, 45, 0);
-		
-		//GameObject testObj = scene.instantiateGameObject("Test");
-		//testObj.addComponent(Test.class);
+
+		GameObject lightObj = scene.instantiateGameObject("Light");
+		//meshObj.addComponent(Light.class);
+		lightObj.setPosition(0, 0, -2);
+		lightObj.setEulerAngles(20, 45, 0);
 
 		return scene;
 	}

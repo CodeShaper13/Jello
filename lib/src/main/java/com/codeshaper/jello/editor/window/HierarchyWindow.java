@@ -83,7 +83,7 @@ public class HierarchyWindow extends EditorWindow {
 		});
 		
 		this.tree.setComponentPopupMenu(this.generalPopup);		
-		this.tree.setRootVisible(true);
+		this.tree.setRootVisible(false);
 				
 		JTextField textField = new JTextField();
 		TreeCellEditor editor = new DefaultCellEditor(textField);
@@ -108,7 +108,6 @@ public class HierarchyWindow extends EditorWindow {
 				
 		Scene scene = JelloEditor.instance.getScene();
 		for (GameObject	rootObject : scene.getRootGameObjects()) {
-			Debug.log(rootObject.name);
 			this.func(this.root, rootObject);
 		}
 		

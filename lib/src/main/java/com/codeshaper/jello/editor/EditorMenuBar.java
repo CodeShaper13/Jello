@@ -42,12 +42,12 @@ public class EditorMenuBar extends JMenuBar {
     private JMenu createFileMenu() {
         JMenu fileMenu = new JMenu("File");
         
-        JMenuItem save = new JMenuItem("Save");
+        JMenuItem save = new JMenuItem("Save Open Scene");
     	save.setAccelerator(KeyStroke.getKeyStroke(
     			KeyEvent.VK_S, ActionEvent.CTRL_MASK));
     	save.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-            	JelloEditor.instance.save();
+            	JelloEditor.instance.saveScene();
             }});
         fileMenu.add(save);
         

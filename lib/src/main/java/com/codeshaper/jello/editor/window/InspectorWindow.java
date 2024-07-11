@@ -29,7 +29,7 @@ public class InspectorWindow extends EditorWindow {
     
     @Override
     public boolean isWrappableInScrollpane() {
-    	return true;
+    	return false;
     }
     
     @Override
@@ -66,8 +66,8 @@ public class InspectorWindow extends EditorWindow {
     	this.target = object;
     	if(this.target != null) {
     		// Create a new editor.
-    		this.editor = this.target.getInspectorDrawer(this.panel);
-    		this.editor.draw();
+    		this.editor = this.target.getInspectorDrawer();
+    		this.editor.draw(this.panel);
     	}
     	
     	this.validate();

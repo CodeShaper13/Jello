@@ -35,8 +35,8 @@ public class TextAsset extends Asset {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
-		return new TextAssetEditor(this, panel);
+	public Editor<?> getInspectorDrawer() {
+		return new TextAssetEditor(this);
 	}
 
 	/**
@@ -67,20 +67,20 @@ public class TextAsset extends Asset {
 		}
 	}
 
-	private class TextAssetEditor extends AssetEditor {
+	private class TextAssetEditor extends AssetEditor<TextAsset> {
 
-		public TextAssetEditor(Asset target, JPanel panel) {
-			super(target, panel);
+		public TextAssetEditor(TextAsset target) {
+			super(target);
 		}
 
 		@Override
-		public void drawAsset(JPanel panel) {
+		public void drawInspector(JPanel panel) {
 			panel.setLayout(new BorderLayout());
 			JTextArea textArea = new JTextArea();
 			String text = "";
-			for (int i = 0; i < getLineCount(); i++) {
-				text += getLine(i);
-				if (i != (getLineCount() - 1)) {
+			for (int i = 0; i < this.target.getLineCount(); i++) {
+				text += this.target.getLine(i);
+				if (i != (this.target.getLineCount() - 1)) {
 					text += "\n";
 				}
 			}

@@ -38,14 +38,17 @@ public class GameObjectEditor extends Editor<GameObject> {
 	private JPanel componentListPanel;
 	private JScrollPane componentScrollPane;
 
-	public GameObjectEditor(GameObject target, JPanel panel) {
-		super(target, panel);
+	public GameObjectEditor(GameObject target) {
+		super(target);
 	}
 
 	@Override
-	public void draw() {
-		super.draw();
+	public void draw(JPanel p) {
+		super.draw(p);
+		
+		p.setLayout(new BorderLayout());
 
+		JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -121,19 +124,14 @@ public class GameObjectEditor extends Editor<GameObject> {
 		p2.add(this.addComponentButton, BorderLayout.EAST);
 		gbc.gridy = 2;
 		panel.add(p2, gbc);
+		
+		p.add(panel, BorderLayout.NORTH);
 
 		// Component List:
 		this.componentListPanel = new JPanel();
 		this.componentListPanel.setLayout(new BoxLayout(this.componentListPanel, BoxLayout.Y_AXIS));
 		this.componentScrollPane = new JScrollPane(this.componentListPanel);
-		gbc.gridy = 3;
-		gbc.weighty = 10;
-		panel.add(this.componentScrollPane, gbc);
-
-		// Filler panel.
-		gbc.weighty = 1;
-		gbc.gridy = 4;
-		panel.add(new JPanel(), gbc);
+		p.add(this.componentScrollPane, BorderLayout.CENTER);
 		
 		this.refresh();
 	}
@@ -149,7 +147,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 			this.componentListPanel.add(cp);
 		}
 
-		this.panel.revalidate();
+		this.propertiesPanel.getParent().revalidate();
 	}
 
 }

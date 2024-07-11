@@ -8,14 +8,12 @@ import javax.swing.JPanel;
 public class Editor<T extends IInspectable> {
 
 	protected final T target;
-	protected final JPanel panel;
 
-	public Editor(T target, JPanel panel) {
+	public Editor(T target) {
 		this.target = target;
-		this.panel = panel;
 	}
 	
-	public void draw() { }
+	public void draw(JPanel panel) { }
 		
 	public void refresh() { }
 

@@ -1,24 +1,37 @@
 package com.codeshaper.jello.engine.asset;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.inspector.Editor;
+import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.component.JelloComponent;
 
-public class Scene extends Asset {
+@CreateAssetEntry(fileName = "scene", location = "Scene")
+public class Scene extends SerializedJelloObject {
 
 	/**
 	 * A list of all of the GameObjects in the scene.
 	 */
 	private List<GameObject> rootGameObjects;
+	public String sceneName;
 	
-	public Scene() {
-		super(null);
+	public Scene(Path assetFile) {
+		super(assetFile);
 		
 		this.rootGameObjects = new ArrayList<GameObject>();
-	}
+	}	
 	
+	@Override
+	public Editor<?> getInspectorDrawer() {
+		return new CustomEditor(this);
+	}
 
 	/**
 	 * 
@@ -42,5 +55,21 @@ public class Scene extends Asset {
 	
 	public Iterable<GameObject> getRootGameObjects() {
 		return this.rootGameObjects;
+	}
+	
+	private class CustomEditor extends SerializedJelloObjectEditor<Scene> {
+
+		public CustomEditor(Scene target) {
+			super(target);
+		}
+
+		@Override
+		public void drawInspector(JPanel panel) {
+            JButton btnOpenScene = new JButton("Open Scene");
+            btnOpenScene.addActionListener(e -> {
+            	JelloEditor.instance.setScene(target);
+            });
+            panel.add(btnOpenScene);			
+		}
 	}
 }

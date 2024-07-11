@@ -6,7 +6,7 @@ import com.codeshaper.jello.engine.GameObject;
 
 public class JelloComponent implements Serializable {
 
-	public GameObject gameObject;
+	public transient GameObject gameObject;
 	public boolean isEnabled;
 
 	public JelloComponent(GameObject owner) {

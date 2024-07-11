@@ -8,6 +8,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
@@ -32,10 +34,14 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.editor.util.FolderFilter;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
+import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 public class FileBrowserWindow extends EditorWindow {
 
@@ -85,11 +91,11 @@ public class FileBrowserWindow extends EditorWindow {
 	/**
 	 * Sets the folder that the right panel will display.
 	 */
-	private void setTargetFolder(AssetFolder folder) {
+	private void setTargetFolder(File folder) {
 		this.fileListModel.removeAllElements();
 
 		if (folder != null) {
-			for (File file : folder.file.listFiles()) {
+			for (File file : folder.listFiles()) {
 				if (file.isFile()) {
 					this.fileListModel.addElement(file);
 				}
@@ -239,108 +245,51 @@ public class FileBrowserWindow extends EditorWindow {
 
 	private class JFolderTree extends JTree {
 
-		private JPopupMenu menu;
-
-		private JMenuItem menuDelete;
-		private JMenuItem menuRename;
+		private FileBrowserMenu menu;
 
 		public JFolderTree(FileTreeModel fileTreeModel) {
 			super(fileTreeModel);
-
+			
 			this.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 				@Override
 				public void valueChanged(TreeSelectionEvent e) {
 					Object selectedNode = fileTree.getLastSelectedPathComponent();
 					if (selectedNode instanceof AssetFolder folder) {
-						setTargetFolder(folder);
+						setTargetFolder(folder.file);
 					}
 				}
 			});
 			this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			this.setEditable(true);
 
-			this.menu = new JPopupMenu();
+			this.menu = new FileBrowserMenu() {
+				@Override
+				public void onRename() {
+					startEditingAtPath(getSelectionPath());
+				}
 
-			JMenu createMenu = new JMenu("Create");
-			// TODO
-			this.menu.add(createMenu);
-
-			JMenuItem newFolder = new JMenuItem("New Folder");
-			newFolder.addActionListener(e -> {
-				AssetFolder selected = getSelectedFolder();
-				if (selected != null) {
-					File newF = new File(selected.file, "New Folder");
-					newF.mkdirs();
+				@Override
+				public void onDelete() {
 					fileTreeModel.reload();
 				}
-			});
-			this.menu.add(newFolder);
-
-			this.menu.addSeparator();
-
-			JMenuItem openLocation = new JMenuItem("Open Location");
-			openLocation.addActionListener(e -> {
-				AssetFolder selected = this.getSelectedFolder();
-				try {
-					if (selected != null) {
-						Desktop.getDesktop().open(selected.file.getParentFile());
-					}
-				} catch (IOException exception) {
-					Debug.logError("Unable to open \"{0}\" in the File Explorer", selected.file);
-				}
-			});
-			this.menu.add(openLocation);
-
-			this.menuDelete = new JMenuItem("Delete");
-			this.menuDelete.addActionListener(e -> {
-				AssetFolder selected = this.getSelectedFolder();
-				if (selected != null) {
-					if (!Desktop.getDesktop().moveToTrash(selected.file)) {
-						Debug.logError("Unable to move \"{0}\" to the Recycle Bin", selected.file);
-					}
-				}
-				fileTreeModel.reload();
-			});
-			this.menu.add(this.menuDelete);
-
-			this.menuRename = new JMenuItem("Rename");
-			this.menuRename.addActionListener(e -> {
-				this.startEditingAtPath(this.getSelectionPath());
-			});
-			this.menu.add(this.menuRename);
-
-			JMenuItem copyPath = new JMenuItem("Copy Path");
-			copyPath.addActionListener(e -> {
-				AssetFolder selected = getSelectedFolder();
-				if (selected != null) {
-					StringSelection selection = new StringSelection(selected.file.getPath());
-					Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
-				}
-			});
-			menu.add(copyPath);
+			};
 		}
 
 		@Override
 		public JPopupMenu getComponentPopupMenu() {
 			AssetFolder folder = (AssetFolder) fileTree.getLastSelectedPathComponent();
 			if (folder != null) {
-				boolean isRoot = folder == rootFolder;
-				this.menuDelete.setEnabled(!isRoot);
-				this.menuRename.setEnabled(!isRoot);
+				this.menu.setTargetFile(folder.file);
 				return this.menu;
 			} else {
 				return super.getComponentPopupMenu();
 			}
 		}
-
-		private AssetFolder getSelectedFolder() {
-			return (AssetFolder) fileTree.getLastSelectedPathComponent();
-		}
 	}
 
 	private class JFileList extends JList<File> {
 
-		private JPopupMenu menu;
+		private FileBrowserMenu menu;
 
 		public JFileList(DefaultListModel<File> model) {
 			super(model);
@@ -355,33 +304,37 @@ public class FileBrowserWindow extends EditorWindow {
 				if (file != null) {
 					// Convert to a relative path.
 					Path pathAbsolute = file.toPath();
-			        Path pathBase = JelloEditor.instance.assetsFolder;
-			        Path pathRelative = pathBase.relativize(pathAbsolute);
-					
+					Path pathBase = JelloEditor.instance.assetsFolder;
+					Path pathRelative = pathBase.relativize(pathAbsolute);
+
 					Asset asset = JelloEditor.instance.assetDatabase.getAsset(pathRelative);
 					inspector.setTarget(asset);
 				}
 			});
 
-			this.menu = new JPopupMenu();
-			JMenuItem delete = new JMenuItem("Delete");
-			delete.addActionListener(e -> {
-				File file = getSelectedValue();
-				if (file != null) {
-					if (!Desktop.getDesktop().moveToTrash(file)) {
-						Debug.logError("Unable to move \"{0}\" to the Recycle Bin", file);
-					} else {
-						model.removeElement(file);
-					}
+			this.menu = new FileBrowserMenu() {
+
+				@Override
+				public void onRename() {
+					// TODO not yet implemented.
 				}
-			});
-			this.menu.add(delete);
+
+				@Override
+				public void onDelete() {
+					model.removeElement(this.file);
+				}
+			};
 		}
 
 		@Override
 		public JPopupMenu getComponentPopupMenu() {
 			File selected = fileList.getSelectedValue();
-			return selected != null ? this.menu : super.getComponentPopupMenu();
+			if (selected != null) {
+				this.menu.setTargetFile(selected);
+				return this.menu;
+			} else {
+				return super.getComponentPopupMenu();
+			}
 		}
 
 		private class ListFileRenderer extends JLabel implements ListCellRenderer<File> {
@@ -399,8 +352,14 @@ public class FileBrowserWindow extends EditorWindow {
 			public Component getListCellRendererComponent(JList<? extends File> list, File file, int index,
 					boolean isSelected, boolean cellHasFocus) {
 
-				this.setText(file.getName());
-
+				// Remove the extension on SerializedJelloObjects.
+				String fileName = file.getName();
+				if(FilenameUtils.getExtension(fileName).equals(SerializedJelloObject.EXTENSION)) {
+					this.setText(FilenameUtils.removeExtension(fileName));
+				} else {
+					this.setText(fileName);
+				}
+				
 				if (isSelected) {
 					this.setBackground(list.getSelectionBackground());
 					this.setForeground(list.getSelectionForeground());
@@ -412,6 +371,137 @@ public class FileBrowserWindow extends EditorWindow {
 				return this;
 			}
 
+		}
+	}
+
+	private abstract class FileBrowserMenu extends JPopupMenu {
+
+		private final JMenuItem create;
+		private final JMenuItem newFolder;
+		private final JMenuItem openLocation;
+		private final JMenuItem delete;
+		private final JMenuItem rename;
+		private final JMenuItem copyPath;
+
+		protected File file;
+
+		public FileBrowserMenu() {
+			this.add(this.create = new JMenu("Create"));
+
+			this.add(this.newFolder = new JMenuItem("New Folder"));
+			this.newFolder.addActionListener(e -> {
+				if (this.file != null) {
+					File newF = new File(this.getDirectory(this.file), "New Folder");
+					newF.mkdirs();
+					fileTreeModel.reload();
+				}
+			});
+
+			this.addSeparator();
+
+			this.add(this.openLocation = new JMenuItem("Open Location"));
+			openLocation.addActionListener(e -> {
+				if (this.file != null) {
+					try {
+						Desktop.getDesktop().open(this.file.getParentFile());
+					} catch (IOException exception) {
+						Debug.logError("Unable to open \"{0}\" in the File Explorer", this.file);
+					}
+				}
+			});
+
+			this.add(this.delete = new JMenuItem("Delete"));
+			this.delete.addActionListener(e -> {
+				if (this.file != null) {
+					boolean wasDeleted = Desktop.getDesktop().moveToTrash(this.file);
+					if (wasDeleted) {
+						JelloEditor.instance.assetDatabase.removeAsset(this.file.toPath());
+					} else {
+						Debug.logError("Unable to move \"{0}\" to the Recycle Bin", this.file);
+					}
+					this.onDelete();
+				}
+			});
+
+			this.add(this.rename = new JMenuItem("Rename"));
+			this.rename.addActionListener(e -> {
+				if (this.file.isDirectory()) {
+					this.onRename();
+				}
+			});
+
+			this.add(this.copyPath = new JMenuItem("Copy Path"));
+			copyPath.addActionListener(e -> {
+				if (this.file != null) {
+					StringSelection selection = new StringSelection(this.file.getPath());
+					Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+				}
+			});
+		}
+
+		public abstract void onDelete();
+
+		public abstract void onRename();
+
+		/**
+		 * Sets the File (or directory) that the menu should operate on. This should be
+		 * called before showing the toolbar.
+		 * 
+		 * @param file
+		 */
+		public void setTargetFile(File file) {
+			this.file = file;
+
+			boolean isRoot = file == rootFolder.file;
+			this.delete.setEnabled(!isRoot);
+			this.rename.setEnabled(!isRoot);
+
+			this.create.removeAll();
+			for (var entry : JelloEditor.instance.assetDatabase.createAssetEntries) {
+				this.create.add(new CreateMenuItem(entry, this.getDirectory(this.file)));
+			}
+		}
+		
+		private File getDirectory(File fileOrDirectory) {
+			if (fileOrDirectory.isDirectory()) {
+				return fileOrDirectory;
+			} else {
+				return fileOrDirectory.getParentFile();
+			}
+		}
+		
+		private class CreateMenuItem extends JMenuItem {
+		
+			public CreateMenuItem(CreateAssetEntry.Data data, File folder) {
+				super(data.getMenuName());
+			
+				this.addActionListener(e -> {
+					Path fullPath = folder.toPath().resolve(data.getNewAssetName());
+					try {
+						Constructor<? extends Asset> ctor = data.clazz.getDeclaredConstructor(Path.class);
+						SerializedJelloObject asset = (SerializedJelloObject) ctor.newInstance(fullPath);
+						JelloEditor.instance.saveAssetToDisk(asset);
+						JelloEditor.instance.assetDatabase.addAsset(fullPath, asset);
+					} catch (SecurityException | IllegalAccessException | IllegalArgumentException exception) {
+						logError(exception.getMessage(), exception);
+					} catch (ExceptionInInitializerError exception) {
+						logError("A static initializer threw an exception.", exception);
+					} catch (InvocationTargetException exception) {
+						logError("The constructor threw an exception", exception);
+					} catch (InstantiationException exception) {
+						logError("Asset is an abstract class", exception);
+					} catch (NoSuchMethodException exception) {
+						logError("Asset does not have a public constructor taking a single argument of type java.nio.file.Path", exception);
+					}
+					// Refresh the file list.
+					setTargetFolder(folder);
+				});
+			}
+			
+			private void logError(String msg, Throwable exception) {
+				Debug.logError("Error creating Asset: " + msg);
+				exception.printStackTrace();
+			}
 		}
 	}
 }
