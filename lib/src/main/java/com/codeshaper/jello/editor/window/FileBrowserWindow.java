@@ -3,6 +3,7 @@ package com.codeshaper.jello.editor.window;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileFilter;
@@ -15,6 +16,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -38,6 +40,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
@@ -78,16 +81,16 @@ public class FileBrowserWindow extends EditorWindow {
 
 			@Override
 			protected void onRename(File file) {
-				if (file.isFile()) {
-					// Not yet implemented.
-				} else {
+				if(file.isDirectory()) {
 					folderTree.startEditingAtPath(folderTree.getSelectionPath());
+				} else {
+					openFileRenameDialog(file, true);
 				}
 			}
 
 			@Override
-			protected void onDelete(File file) {
-				if (file.isDirectory()) {
+			protected void onDelete(File file, boolean isDirectory) {
+				if (isDirectory) {
 					fileTreeModel.reload();
 				} else {
 					fileListModel.removeElement(this.file);
@@ -97,7 +100,8 @@ public class FileBrowserWindow extends EditorWindow {
 
 			@Override
 			protected void onCreate(File directory, SerializedJelloObject asset) {
-				fileList.setTargetDirectory(directory);
+				fileList.refresh();
+				openFileRenameDialog(asset.file.toFile(), false);
 			}
 		};
 
@@ -122,17 +126,6 @@ public class FileBrowserWindow extends EditorWindow {
 			this.setProperty(PROP_SHOW_EXTENSIONS, this.showExtensions.isSelected());
 			this.fileList.updateUI(); // Causes a redraw.
 		});
-		/*
-		File f1 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\New Folderx");
-		File f2 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\New Folder");
-		File f3 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\text.txt");
-		File f4 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\text.txt");
-
-		System.out.println(this.getAvailabeFileName(f1));
-		System.out.println(this.getAvailabeFileName(f2));
-		System.out.println(this.getAvailabeFileName(f3));
-		System.out.println(this.getAvailabeFileName(f4));
-		*/
 	}
 
 	@Override
@@ -157,36 +150,28 @@ public class FileBrowserWindow extends EditorWindow {
 		this.splitPane.setDividerLocation(this.getPropertyInt(PROP_DIVIDER_LOCATION, 100));		
 	}
 
-	private File getAvailabeFileName(File file) {
-		if (!file.exists()) {
-			return file; // Name is available, do nothing.
-		}
-
-		File pathTo = file.getParentFile();
-		String name;
-		String fileExtension = null;
-
-		if (file.isDirectory()) {
-			name = file.getName(); // Directory name.
-		} else {
-			name = FilenameUtils.removeExtension(file.getName());
-			fileExtension = FilenameUtils.getExtension(file.getName());
-		}
-
-		File newName = file;
-		int counter = 1;
-		do {
-			if (file.isDirectory()) {
-				newName = new File(pathTo, name + counter);
+	public boolean openFileRenameDialog(File target, boolean showTextForRename) {
+		String newFileName = (String)JOptionPane.showInputDialog(
+                this,
+                showTextForRename ? "New Name:" : "Name:",
+                showTextForRename ? "Rename File" : "Name File",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                FilenameUtils.removeExtension(target.getName()));
+		if(newFileName != null) {
+			boolean sucess = JelloFileUtils.renameFile(target, newFileName);
+			if(sucess) {
+				fileList.refresh();
+				return true;
 			} else {
-				newName = new File(pathTo, String.format("%s(%s).%s", name, counter, fileExtension));
+				Toolkit.getDefaultToolkit().beep();
+				return false;
 			}
-			counter++;
-		} while (newName.exists());
-
-		return newName;
+		}
+		return false;
 	}
-
+	
 	private class FolderHierarchyModel implements TreeModel {
 
 		private final ArrayList<TreeModelListener> mListeners = new ArrayList<>();
@@ -385,6 +370,8 @@ public class FileBrowserWindow extends EditorWindow {
 
 	private class FileList extends JList<File> {
 
+		private File targetDirectory;
+		
 		public FileList(DefaultListModel<File> model) {
 			super(model);
 
@@ -430,6 +417,8 @@ public class FileBrowserWindow extends EditorWindow {
 		 * @param folder
 		 */
 		public void setTargetDirectory(File directory) {
+			this.targetDirectory = directory;
+			
 			DefaultListModel<File> model = (DefaultListModel<File>) this.getModel();
 			model.removeAllElements();
 
@@ -438,6 +427,10 @@ public class FileBrowserWindow extends EditorWindow {
 					model.addElement(file);
 				}
 			}
+		}
+		
+		public void refresh() {
+			fileList.setTargetDirectory(this.targetDirectory);
 		}
 
 		private class ListFileRenderer extends JLabel implements ListCellRenderer<File> {

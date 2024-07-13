@@ -9,8 +9,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import com.codeshaper.jello.editor.EditorAssetDatabase;
+import org.apache.commons.io.FilenameUtils;
+
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
@@ -32,11 +34,12 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 		this.newFolder.addActionListener(e -> {
 			if (this.file != null) {
 				File newDirectory = new File(this.getDirectory(this.file), "New Folder");
+				newDirectory = JelloFileUtils.getAvailableFileName(newDirectory);
 				try {
 					newDirectory.mkdirs();
 					this.onNewFolder(newDirectory);
 				} catch (SecurityException exception) {
-					Debug.logError("Could not create directory %s", newDirectory);
+					Debug.logError("Could not create directory %s", newDirectory.toString());
 				}
 			}
 		});
@@ -59,9 +62,10 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 			if (this.file != null) {
 				boolean showError = false;
 				try {
+					boolean isDirectory = this.file.isDirectory();
 					boolean wasDeleted = Desktop.getDesktop().moveToTrash(this.file);
 					if (wasDeleted) {
-						this.onDelete(this.file);
+						this.onDelete(this.file, isDirectory);
 					} else {
 						showError = true;
 					}
@@ -78,9 +82,7 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 
 		this.add(this.rename = new JMenuItem("Rename"));
 		this.rename.addActionListener(e -> {
-			if (this.file.isDirectory()) {
-				this.onRename(this.file);
-			}
+			this.onRename(this.file);
 		});
 
 		this.add(this.copyPath = new JMenuItem("Copy Path"));
@@ -103,9 +105,12 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 	/**
 	 * Called when a file is successfully deleted when the Delete button is clicked.
 	 * 
-	 * @param file the file that was deleted.
+	 * @param file        the file that was deleted.
+	 * @param isDirectory was the file a directory or not?
+	 *                    {@link File#isDirectory()} no longer works because the
+	 *                    file is deleted, so use this param instead.
 	 */
-	protected abstract void onDelete(File file);
+	protected abstract void onDelete(File file, boolean isDirectory);
 
 	/**
 	 * Called when the Rename button is clicked.
@@ -140,10 +145,17 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 		for (var entry : JelloEditor.instance.assetDatabase.createAssetEntries) {
 			JMenuItem menuItem = new JMenuItem(entry.getMenuName());
 			menuItem.addActionListener(e -> {
-				EditorAssetDatabase database = JelloEditor.instance.assetDatabase;
 				File directory = this.getDirectory(this.file);
-				SerializedJelloObject asset = database.createAsset(entry.clazz, directory.toPath(), entry.getNewAssetName());
-				if(asset != null) {
+				String assetName = entry.getNewAssetName();
+				
+				// Somehow... this works.
+				File f = new File(directory, assetName + "." + SerializedJelloObject.EXTENSION);
+				f = JelloFileUtils.getAvailableFileName(f);								
+				assetName = FilenameUtils.removeExtension(f.getName());
+				
+				SerializedJelloObject asset = JelloEditor.instance.assetDatabase.createAsset(entry.clazz,
+						directory.toPath(), assetName);
+				if (asset != null) {
 					this.onCreate(this.getDirectory(this.file), asset);
 				}
 			});

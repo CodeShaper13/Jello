@@ -41,7 +41,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 */
 	public boolean removeAsset(Path assetPath) {
 		if (!this.exists(assetPath)) {
-			Debug.logError("[Asset Database]: Could not remove Asset, no Asset exists with the path %.", assetPath);
+			Debug.logError("[Asset Database]: Could not remove Asset, no Asset exists with the path %s.", assetPath);
 			return false;
 		}
 
