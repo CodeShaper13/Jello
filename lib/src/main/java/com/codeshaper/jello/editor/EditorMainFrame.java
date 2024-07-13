@@ -43,7 +43,7 @@ public class EditorMainFrame extends JFrame {
 
 		Docking.initialize(this);
 		AppState.setPersistFile(new File(editor.rootProjectFolder.toFile(), "layout.xml"));
-
+		
 		this.sceneView = new SceneView();
 
 		this.inspector = new InspectorWindow();
@@ -52,7 +52,16 @@ public class EditorMainFrame extends JFrame {
 		this.fileBrowser = new FileBrowserWindow();
 
 		RootDockingPanel root = new RootDockingPanel(this);
-		this.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, root, this.sceneView), BorderLayout.CENTER);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, root, this.sceneView);
+		SwingUtilities.invokeLater(new Runnable() {			
+			@Override
+			public void run() {
+				splitPane.setDividerLocation(0.75);				
+			}
+		});
+		splitPane.setResizeWeight(0.5);
+		//splitPane.setDividerLocation(0.75);
+		this.add(splitPane, BorderLayout.CENTER);
 
 		// Create the default dockable layout.
 		WindowLayout defaultLayout = this.getDefaultLayout();

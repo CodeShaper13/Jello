@@ -2,26 +2,24 @@ package com.codeshaper.jello.editor.window;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.io.FileFilter;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.EventObject;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
@@ -29,49 +27,112 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeCellEditor;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
-import com.codeshaper.jello.editor.util.FolderFilter;
-import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 public class FileBrowserWindow extends EditorWindow {
 
-	private AssetFolder rootFolder;
-	private final FileTreeModel fileTreeModel;
-	private final JTree fileTree;
+	private static final String PROP_SHOW_EXTENSIONS = "showExtensions";
+	private static final String PROP_DIVIDER_LOCATION = "dividerLocation";
+	
+	/**
+	 * The /assets folder.
+	 */
+	private final File rootDirectory;
+	private final FolderHierarchyModel fileTreeModel;
+	private final FolderHierarchy folderTree;
 	private final DefaultListModel<File> fileListModel;
-	private final JList<File> fileList;
+	private final FileList fileList;
+	private final FileBrowserPopupMenu popupMenu;
+	private final JSplitPane splitPane;
+	private JCheckBoxMenuItem showExtensions;
 
 	public FileBrowserWindow() {
 		super("Project", "fileViewer");
-
-		this.rootFolder = new AssetFolder(JelloEditor.instance.rootProjectFolder.resolve("assets").toFile());
+		
+		this.rootDirectory = JelloEditor.instance.assetsFolder.toFile();
 
 		this.fileListModel = new DefaultListModel<File>();
-		this.fileList = new JFileList(this.fileListModel);
+		this.fileList = new FileList(this.fileListModel);
 
-		this.fileTreeModel = new FileTreeModel(rootFolder);
-		this.fileTree = new JFolderTree(this.fileTreeModel);
+		this.fileTreeModel = new FolderHierarchyModel(rootDirectory);
+		this.folderTree = new FolderHierarchy(this.fileTreeModel);
 
-		JScrollPane fileListScrollBar = new JScrollPane(this.fileTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+		this.popupMenu = new FileBrowserPopupMenu() {
+
+			@Override
+			protected void onNewFolder(File newDirectory) {
+				fileTreeModel.reload();
+			}
+
+			@Override
+			protected void onRename(File file) {
+				if (file.isFile()) {
+					// Not yet implemented.
+				} else {
+					folderTree.startEditingAtPath(folderTree.getSelectionPath());
+				}
+			}
+
+			@Override
+			protected void onDelete(File file) {
+				if (file.isDirectory()) {
+					fileTreeModel.reload();
+				} else {
+					fileListModel.removeElement(this.file);
+					JelloEditor.instance.assetDatabase.removeAsset(this.file.toPath());
+				}
+			}
+
+			@Override
+			protected void onCreate(File directory, SerializedJelloObject asset) {
+				fileList.setTargetDirectory(directory);
+			}
+		};
+
+		JScrollPane fileListScrollBar = new JScrollPane(this.folderTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		JScrollPane folderContentsScrollBar = new JScrollPane(this.fileList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		this.setLayout(new BorderLayout());
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileListScrollBar, folderContentsScrollBar);
-		splitPane.setAutoscrolls(false);
-		this.add(splitPane, BorderLayout.CENTER);
+		this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileListScrollBar, folderContentsScrollBar);		
+		this.splitPane.setResizeWeight(0.5);
+		this.splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
+			int location = this.splitPane.getDividerLocation();
+			this.setProperty(PROP_DIVIDER_LOCATION, location);
+		});
+		this.splitPane.setAutoscrolls(false);
+		this.add(this.splitPane, BorderLayout.CENTER);
+
+		this.showExtensions = new JCheckBoxMenuItem("Show Extensions");
+		this.showExtensions.addActionListener(e -> {
+			this.setProperty(PROP_SHOW_EXTENSIONS, this.showExtensions.isSelected());
+			this.fileList.updateUI(); // Causes a redraw.
+		});
+		/*
+		File f1 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\New Folderx");
+		File f2 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\New Folder");
+		File f3 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\text.txt");
+		File f4 = new File("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets\\text.txt");
+
+		System.out.println(this.getAvailabeFileName(f1));
+		System.out.println(this.getAvailabeFileName(f2));
+		System.out.println(this.getAvailabeFileName(f3));
+		System.out.println(this.getAvailabeFileName(f4));
+		*/
 	}
 
 	@Override
@@ -81,61 +142,85 @@ public class FileBrowserWindow extends EditorWindow {
 			this.fileTreeModel.reload();
 		});
 		menu.add(refresh);
+		
+		menu.add(this.showExtensions);
 	}
 
 	@Override
 	public boolean isWrappableInScrollpane() {
 		return false;
 	}
-
-	/**
-	 * Sets the folder that the right panel will display.
-	 */
-	private void setTargetFolder(File folder) {
-		this.fileListModel.removeAllElements();
-
-		if (folder != null) {
-			for (File file : folder.listFiles()) {
-				if (file.isFile()) {
-					this.fileListModel.addElement(file);
-				}
-			}
-		}
+	
+	@Override
+	public void updateProperties() {
+		boolean showExtensions = this.getPropertyBoolean(PROP_SHOW_EXTENSIONS, true);
+		System.out.println(showExtensions);
+		this.showExtensions.setSelected(showExtensions);
+		this.splitPane.setDividerLocation(this.getPropertyInt(PROP_DIVIDER_LOCATION, 100));		
 	}
 
-	private class FileTreeModel implements TreeModel {
+	private File getAvailabeFileName(File file) {
+		if (!file.exists()) {
+			return file; // Name is available, do nothing.
+		}
+
+		File pathTo = file.getParentFile();
+		String name;
+		String fileExtension = null;
+
+		if (file.isDirectory()) {
+			name = file.getName(); // Directory name.
+		} else {
+			name = FilenameUtils.removeExtension(file.getName());
+			fileExtension = FilenameUtils.getExtension(file.getName());
+		}
+
+		File newName = file;
+		int counter = 1;
+		do {
+			if (file.isDirectory()) {
+				newName = new File(pathTo, name + counter);
+			} else {
+				newName = new File(pathTo, String.format("%s(%s).%s", name, counter, fileExtension));
+			}
+			counter++;
+		} while (newName.exists());
+
+		return newName;
+	}
+
+	private class FolderHierarchyModel implements TreeModel {
 
 		private final ArrayList<TreeModelListener> mListeners = new ArrayList<>();
-		private final AssetFolder mFile;
+		private final File rootDirectory;
 
-		public FileTreeModel(AssetFolder pFile) {
-			mFile = pFile;
+		public FolderHierarchyModel(File rootDirectory) {
+			this.rootDirectory = rootDirectory;
 		}
 
 		@Override
 		public Object getRoot() {
-			return mFile;
+			return this.rootDirectory;
 		}
 
 		@Override
 		public Object getChild(Object parent, int index) {
-			return ((AssetFolder) parent).getSubFolders()[index];
+			return this.getSubDirectories((File) parent)[index];
 		}
 
 		@Override
 		public int getChildCount(Object parent) {
-			return ((AssetFolder) parent).getSubFolders().length;
+			return this.getSubDirectories((File) parent).length;
 		}
 
 		@Override
 		public boolean isLeaf(Object node) {
-			return !((AssetFolder) node).isDirectory();
+			return !((File) node).isDirectory();
 		}
 
 		@Override
 		public void valueForPathChanged(TreePath path, Object newValue) {
-			AssetFolder oldTmp = (AssetFolder) path.getLastPathComponent();
-			File oldFile = oldTmp.file;
+			File oldFile = (File) path.getLastPathComponent();
 			String newName = (String) newValue;
 			File newFile = new File(oldFile.getParentFile(), newName);
 			oldFile.renameTo(newFile);
@@ -144,7 +229,7 @@ public class FileBrowserWindow extends EditorWindow {
 
 		@Override
 		public int getIndexOfChild(Object pParent, Object pChild) {
-			AssetFolder[] files = ((AssetFolder) pParent).getSubFolders();
+			File[] files = this.getSubDirectories((File) pParent);
 			for (int i = 0; i < files.length; i++) {
 				if (files[i] == pChild)
 					return i;
@@ -180,7 +265,7 @@ public class FileBrowserWindow extends EditorWindow {
 		 * </p>
 		 */
 		public void reload() {
-			setTargetFolder(null);
+			fileList.setTargetDirectory(null);
 
 			// Need to duplicate the code because the root can formally be
 			// no an instance of the TreeNode.
@@ -213,85 +298,96 @@ public class FileBrowserWindow extends EditorWindow {
 				listener.treeStructureChanged(event);
 			}
 		}
-	}
 
-	private class AssetFolder {
-
-		public final File file;
-
-		public AssetFolder(File file) {
-			this.file = file;
-		}
-
-		public boolean isDirectory() {
-			return this.file.isDirectory();
-		}
-
-		public AssetFolder[] getSubFolders() {
-			File[] directories = this.file.listFiles(new FolderFilter());
-			AssetFolder[] folders = new AssetFolder[directories.length];
-			for (int i = 0; i < directories.length; i++) {
-				File f = directories[i];
-				folders[i] = new AssetFolder(f);
+		/**
+		 * Gets all sub directories of a passed directory.
+		 * 
+		 * @param parent
+		 * @return an array of directories. The array will be empty if there are no sub
+		 *         directories are there was an error.
+		 */
+		private File[] getSubDirectories(File parent) {
+			try {
+				File[] files = parent.listFiles((FileFilter) FileFilterUtils.directoryFileFilter());
+				return files != null ? files : new File[0];
+			} catch (SecurityException e) {
+				return new File[0];
 			}
-			return folders;
-		}
-
-		@Override
-		public String toString() {
-			return this.file.getName();
 		}
 	}
 
-	private class JFolderTree extends JTree {
+	private class FolderHierarchy extends JTree {
 
-		private FileBrowserMenu menu;
-
-		public JFolderTree(FileTreeModel fileTreeModel) {
+		public FolderHierarchy(FolderHierarchyModel fileTreeModel) {
 			super(fileTreeModel);
-			
+
+			this.setCellEditor(new MyTreeCellEditor(folderTree, (DefaultTreeCellRenderer) this.getCellRenderer()));
+			this.setEditable(true);
+			this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "startEditing");
+			this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			this.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
 				@Override
 				public void valueChanged(TreeSelectionEvent e) {
-					Object selectedNode = fileTree.getLastSelectedPathComponent();
-					if (selectedNode instanceof AssetFolder folder) {
-						setTargetFolder(folder.file);
+					File selected = getSelectedDirectory();
+					if (selected != null) {
+						fileList.setTargetDirectory(selected);
 					}
 				}
 			});
-			this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-			this.setEditable(true);
+		}
 
-			this.menu = new FileBrowserMenu() {
-				@Override
-				public void onRename() {
-					startEditingAtPath(getSelectionPath());
-				}
-
-				@Override
-				public void onDelete() {
-					fileTreeModel.reload();
-				}
-			};
+		@Override
+		public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row,
+				boolean hasFocus) {
+			if (value instanceof File file) {
+				return file.getName();
+			}
+			return "";
 		}
 
 		@Override
 		public JPopupMenu getComponentPopupMenu() {
-			AssetFolder folder = (AssetFolder) fileTree.getLastSelectedPathComponent();
-			if (folder != null) {
-				this.menu.setTargetFile(folder.file);
-				return this.menu;
+			File selectedDirectory = folderTree.getSelectedDirectory();
+			if (selectedDirectory != null) {
+				boolean isRoot = selectedDirectory.equals(rootDirectory);
+				popupMenu.setTargetFile(selectedDirectory, !isRoot);
+				return popupMenu;
 			} else {
 				return super.getComponentPopupMenu();
 			}
 		}
+
+		/**
+		 * Gets the currently selected folder in the hierarchy.
+		 * 
+		 * @return the selected folder, or {@code null} if no folder is selected.
+		 */
+		public File getSelectedDirectory() {
+			Object selected = folderTree.getLastSelectedPathComponent();
+			if (selected != null) {
+				return (File) selected;
+			} else {
+				return null;
+			}
+		}
+
+		private class MyTreeCellEditor extends DefaultTreeCellEditor {
+
+			public MyTreeCellEditor(JTree tree, DefaultTreeCellRenderer renderer) {
+				super(tree, renderer);
+			}
+
+			@Override
+			public boolean isCellEditable(EventObject e) {
+				// Prevent the /assets folder from being renamed.
+				return super.isCellEditable(e) && !((File) lastPath.getLastPathComponent()).equals(rootDirectory);
+			}
+		}
 	}
 
-	private class JFileList extends JList<File> {
+	private class FileList extends JList<File> {
 
-		private FileBrowserMenu menu;
-
-		public JFileList(DefaultListModel<File> model) {
+		public FileList(DefaultListModel<File> model) {
 			super(model);
 
 			this.setCellRenderer(new ListFileRenderer());
@@ -311,29 +407,38 @@ public class FileBrowserWindow extends EditorWindow {
 					inspector.setTarget(asset);
 				}
 			});
-
-			this.menu = new FileBrowserMenu() {
-
-				@Override
-				public void onRename() {
-					// TODO not yet implemented.
-				}
-
-				@Override
-				public void onDelete() {
-					model.removeElement(this.file);
-				}
-			};
 		}
 
 		@Override
 		public JPopupMenu getComponentPopupMenu() {
 			File selected = fileList.getSelectedValue();
 			if (selected != null) {
-				this.menu.setTargetFile(selected);
-				return this.menu;
+				popupMenu.setTargetFile(selected, true);
+				return popupMenu;
 			} else {
-				return super.getComponentPopupMenu();
+				File selectedDirecotry = folderTree.getSelectedDirectory();
+				if (selectedDirecotry != null) {
+					popupMenu.setTargetFile(selectedDirecotry, false);
+					return popupMenu;
+				} else {
+					return super.getComponentPopupMenu();
+				}
+			}
+		}
+
+		/**
+		 * Sets the folder that the right panel will display.
+		 * 
+		 * @param folder
+		 */
+		public void setTargetDirectory(File directory) {
+			DefaultListModel<File> model = (DefaultListModel<File>) this.getModel();
+			model.removeAllElements();
+
+			if (directory != null) {
+				for (File file : directory.listFiles((FileFilter) FileFilterUtils.fileFileFilter())) {
+					model.addElement(file);
+				}
 			}
 		}
 
@@ -354,12 +459,12 @@ public class FileBrowserWindow extends EditorWindow {
 
 				// Remove the extension on SerializedJelloObjects.
 				String fileName = file.getName();
-				if(FilenameUtils.getExtension(fileName).equals(SerializedJelloObject.EXTENSION)) {
-					this.setText(FilenameUtils.removeExtension(fileName));
-				} else {
-					this.setText(fileName);
-				}
-				
+				//if (FilenameUtils.getExtension(fileName).equals(SerializedJelloObject.EXTENSION)) {
+					this.setText(showExtensions.isSelected() ? fileName : FilenameUtils.removeExtension(fileName));
+				//} else {
+				//	this.setText(fileName);
+				//}
+
 				if (isSelected) {
 					this.setBackground(list.getSelectionBackground());
 					this.setForeground(list.getSelectionForeground());
@@ -369,138 +474,6 @@ public class FileBrowserWindow extends EditorWindow {
 				}
 
 				return this;
-			}
-
-		}
-	}
-
-	private abstract class FileBrowserMenu extends JPopupMenu {
-
-		private final JMenuItem create;
-		private final JMenuItem newFolder;
-		private final JMenuItem openLocation;
-		private final JMenuItem delete;
-		private final JMenuItem rename;
-		private final JMenuItem copyPath;
-
-		protected File file;
-
-		public FileBrowserMenu() {
-			this.add(this.create = new JMenu("Create"));
-
-			this.add(this.newFolder = new JMenuItem("New Folder"));
-			this.newFolder.addActionListener(e -> {
-				if (this.file != null) {
-					File newF = new File(this.getDirectory(this.file), "New Folder");
-					newF.mkdirs();
-					fileTreeModel.reload();
-				}
-			});
-
-			this.addSeparator();
-
-			this.add(this.openLocation = new JMenuItem("Open Location"));
-			openLocation.addActionListener(e -> {
-				if (this.file != null) {
-					try {
-						Desktop.getDesktop().open(this.file.getParentFile());
-					} catch (IOException exception) {
-						Debug.logError("Unable to open \"{0}\" in the File Explorer", this.file);
-					}
-				}
-			});
-
-			this.add(this.delete = new JMenuItem("Delete"));
-			this.delete.addActionListener(e -> {
-				if (this.file != null) {
-					boolean wasDeleted = Desktop.getDesktop().moveToTrash(this.file);
-					if (wasDeleted) {
-						JelloEditor.instance.assetDatabase.removeAsset(this.file.toPath());
-					} else {
-						Debug.logError("Unable to move \"{0}\" to the Recycle Bin", this.file);
-					}
-					this.onDelete();
-				}
-			});
-
-			this.add(this.rename = new JMenuItem("Rename"));
-			this.rename.addActionListener(e -> {
-				if (this.file.isDirectory()) {
-					this.onRename();
-				}
-			});
-
-			this.add(this.copyPath = new JMenuItem("Copy Path"));
-			copyPath.addActionListener(e -> {
-				if (this.file != null) {
-					StringSelection selection = new StringSelection(this.file.getPath());
-					Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
-				}
-			});
-		}
-
-		public abstract void onDelete();
-
-		public abstract void onRename();
-
-		/**
-		 * Sets the File (or directory) that the menu should operate on. This should be
-		 * called before showing the toolbar.
-		 * 
-		 * @param file
-		 */
-		public void setTargetFile(File file) {
-			this.file = file;
-
-			boolean isRoot = file == rootFolder.file;
-			this.delete.setEnabled(!isRoot);
-			this.rename.setEnabled(!isRoot);
-
-			this.create.removeAll();
-			for (var entry : JelloEditor.instance.assetDatabase.createAssetEntries) {
-				this.create.add(new CreateMenuItem(entry, this.getDirectory(this.file)));
-			}
-		}
-		
-		private File getDirectory(File fileOrDirectory) {
-			if (fileOrDirectory.isDirectory()) {
-				return fileOrDirectory;
-			} else {
-				return fileOrDirectory.getParentFile();
-			}
-		}
-		
-		private class CreateMenuItem extends JMenuItem {
-		
-			public CreateMenuItem(CreateAssetEntry.Data data, File folder) {
-				super(data.getMenuName());
-			
-				this.addActionListener(e -> {
-					Path fullPath = folder.toPath().resolve(data.getNewAssetName());
-					try {
-						Constructor<? extends Asset> ctor = data.clazz.getDeclaredConstructor(Path.class);
-						SerializedJelloObject asset = (SerializedJelloObject) ctor.newInstance(fullPath);
-						JelloEditor.instance.saveAssetToDisk(asset);
-						JelloEditor.instance.assetDatabase.addAsset(fullPath, asset);
-					} catch (SecurityException | IllegalAccessException | IllegalArgumentException exception) {
-						logError(exception.getMessage(), exception);
-					} catch (ExceptionInInitializerError exception) {
-						logError("A static initializer threw an exception.", exception);
-					} catch (InvocationTargetException exception) {
-						logError("The constructor threw an exception", exception);
-					} catch (InstantiationException exception) {
-						logError("Asset is an abstract class", exception);
-					} catch (NoSuchMethodException exception) {
-						logError("Asset does not have a public constructor taking a single argument of type java.nio.file.Path", exception);
-					}
-					// Refresh the file list.
-					setTargetFolder(folder);
-				});
-			}
-			
-			private void logError(String msg, Throwable exception) {
-				Debug.logError("Error creating Asset: " + msg);
-				exception.printStackTrace();
 			}
 		}
 	}

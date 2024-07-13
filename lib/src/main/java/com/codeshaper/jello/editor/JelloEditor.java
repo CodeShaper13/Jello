@@ -21,7 +21,6 @@ import com.codeshaper.jello.engine.ISceneProvider;
 import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
-import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.render.Renderer;
 import com.google.gson.Gson;

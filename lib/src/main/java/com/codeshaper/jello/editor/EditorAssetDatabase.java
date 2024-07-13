@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
+import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
 public class EditorAssetDatabase extends AssetDatabase {
@@ -11,7 +12,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
 	}
-	
+
 	/**
 	 * Adds an Asset from the database.
 	 * 
@@ -26,9 +27,6 @@ public class EditorAssetDatabase extends AssetDatabase {
 			return false;
 		}
 
-		System.out.println("Add " + assetPath);
-		System.out.println(this.toFullPath(assetPath));
-		
 		this.assets.put(this.toFullPath(assetPath), asset);
 
 		return true;
@@ -43,16 +41,36 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 */
 	public boolean removeAsset(Path assetPath) {
 		if (!this.exists(assetPath)) {
-			Debug.logError("Could not remove Asset, no Asset exists with the path %.", assetPath);
+			Debug.logError("[Asset Database]: Could not remove Asset, no Asset exists with the path %.", assetPath);
 			return false;
 		}
-		
-		System.out.println("Remove " + assetPath);
-
 
 		this.assets.remove(this.toFullPath(assetPath));
 		return true;
 	}
 
+	/**
+	 * Creates a new Asset in the project. If an Asset already exists at the passed
+	 * path, null is returned.
+	 * 
+	 * @param assetClass the class to instantiate
+	 * @param path       the relative or full path of the location to create the
+	 *                   asset file.
+	 * @param assetName  the name of the asset
+	 * @return the new Asset, or null on error.
+	 */
+	public SerializedJelloObject createAsset(Class<? extends SerializedJelloObject> assetClass, Path path,
+			String assetName) {
+		Path pathWithNameAndExtension = path.resolve(assetName + "." + SerializedJelloObject.EXTENSION);
+		if (this.exists(path)) {
+			Debug.logError("[Asset Database]: An Asset already exists at %s", path);
+			return null;
+		}
 
+		SerializedJelloObject asset = (SerializedJelloObject) this.invokeConstructor(assetClass, this.toFullPath(pathWithNameAndExtension));
+		JelloEditor.instance.saveAssetToDisk(asset);
+		this.addAsset(pathWithNameAndExtension, asset);
+
+		return asset;
+	}
 }

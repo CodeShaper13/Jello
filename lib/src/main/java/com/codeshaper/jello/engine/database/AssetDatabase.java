@@ -18,15 +18,11 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
-import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.AssetFileExtension.Internal;
 import com.codeshaper.jello.engine.asset.Asset;
-import com.codeshaper.jello.engine.asset.GenericAsset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -232,7 +228,8 @@ public class AssetDatabase {
 	}
 
 	/**
-	 * Takes a relative asset path and converts it to a full asset path.
+	 * Takes a relative asset path and converts it to a full asset path. If the path
+	 * is already a full path, noting happens.
 	 * 
 	 * @param path the relative path to the asset.
 	 * @return a full path.
@@ -245,7 +242,7 @@ public class AssetDatabase {
 		}
 		return path;
 	}
-	
+
 	private Asset getAssetInternal(Path assetPath) {
 		assetPath = toFullPath(assetPath);
 
@@ -288,15 +285,31 @@ public class AssetDatabase {
 		}
 	}
 
-
-	private Asset invokeConstructor(Class<? extends Asset> clazz, Path assetFile) {
+	protected Asset invokeConstructor(Class<? extends Asset> clazz, Path assetFile) {
 		try {
 			Constructor<? extends Asset> ctor = clazz.getDeclaredConstructor(Path.class);
 			return (Asset) ctor.newInstance(assetFile);
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException | ExceptionInInitializerError e) {
-			e.printStackTrace();
-			return null;
+		} catch (SecurityException | IllegalAccessException | IllegalArgumentException exception) {
+			this.logError(exception.getMessage(), exception);
+		} catch (ExceptionInInitializerError exception) {
+			this.logError("A static initializer threw an exception.", exception);
+		} catch (InvocationTargetException exception) {
+			this.logError("The constructor threw an exception", exception);
+		} catch (InstantiationException exception) {
+			this.logError("Asset is an abstract class", exception);
+		} catch (NoSuchMethodException exception) {
+			this.logError(
+					"Asset does not have a public constructor taking a single argument of type java.nio.file.Path",
+					exception);
+		}
+
+		return null;
+	}
+
+	private void logError(String msg, Throwable exception) {
+		Debug.logError("[Asset Database]: Error creating Asset: " + msg);
+		if (exception != null) {
+			exception.printStackTrace();
 		}
 	}
 

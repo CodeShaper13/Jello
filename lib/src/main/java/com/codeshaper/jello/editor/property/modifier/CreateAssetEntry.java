@@ -4,17 +4,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-
-import javax.swing.JMenuItem;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 @Retention(RetentionPolicy.RUNTIME)
@@ -48,6 +40,10 @@ public @interface CreateAssetEntry {
 			}
 		}
 		
+		/**
+		 * Gets the assets default name without it's extension.
+		 * @return
+		 */
 		public String getNewAssetName() {
 			String fileName;
 			if(StringUtils.isBlank(this.fileName)) {
@@ -55,7 +51,6 @@ public @interface CreateAssetEntry {
 			} else {
 				fileName = this.fileName;
 			}
-			fileName += "." + SerializedJelloObject.EXTENSION;
 			return fileName;
 		}
 	}
