@@ -153,9 +153,7 @@ public class FileBrowserWindow extends EditorWindow {
 	
 	@Override
 	public void updateProperties() {
-		boolean showExtensions = this.getPropertyBoolean(PROP_SHOW_EXTENSIONS, true);
-		System.out.println(showExtensions);
-		this.showExtensions.setSelected(showExtensions);
+		this.showExtensions.setSelected(this.getPropertyBoolean(PROP_SHOW_EXTENSIONS, true));
 		this.splitPane.setDividerLocation(this.getPropertyInt(PROP_DIVIDER_LOCATION, 100));		
 	}
 
