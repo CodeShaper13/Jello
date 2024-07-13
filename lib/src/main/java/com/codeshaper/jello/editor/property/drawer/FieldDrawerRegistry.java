@@ -107,8 +107,10 @@ public class FieldDrawerRegistry {
 				
 				btn.addActionListener(e -> {
 					java.awt.Color newColor = JColorChooser.showDialog(panel, "Choose Color", btn.getBackground());
-					btn.setBackground(newColor);
-					field.set(new Color(newColor));
+					if(newColor != null) {
+						btn.setBackground(newColor);
+						field.set(new Color(newColor));
+					}
 				});
 
 				return panel;
