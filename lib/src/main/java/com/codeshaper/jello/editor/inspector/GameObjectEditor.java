@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -103,7 +104,11 @@ public class GameObjectEditor extends Editor<GameObject> {
 		this.addComponentButton = new JButton("Add");
 		this.addComponentButton.addActionListener(e -> {
 			JDialog dialog = new JDialog(JelloEditor.instance.window, "Add Component");
-			JList<Class<JelloComponent>> list = new JList<Class<JelloComponent>>(JelloEditor.instance.getComponents());
+			DefaultListModel<Class<JelloComponent>> model = new  DefaultListModel<Class<JelloComponent>>();
+			for(Class<JelloComponent> clazz : JelloEditor.instance.componentList) {
+				model.addElement(clazz);
+			}			
+			JList<Class<JelloComponent>> list = new JList<Class<JelloComponent>>(model);
 			list.addListSelectionListener(new ListSelectionListener() {
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
