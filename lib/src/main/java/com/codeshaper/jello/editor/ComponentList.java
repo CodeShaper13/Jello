@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.database;
+package com.codeshaper.jello.editor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,9 +16,6 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 	private final List<Class<JelloComponent>> builtinComponents;
 	private final List<Class<JelloComponent>> projectComponents;
 	
-	/**
-	 * 
-	 */
 	public ComponentList() {
 		Reflections scan = new Reflections("com.codeshaper.jello.engine.component");
 
