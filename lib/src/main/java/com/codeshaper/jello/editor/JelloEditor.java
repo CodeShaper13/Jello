@@ -21,6 +21,7 @@ import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.ISceneProvider;
 import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.component.*;
+import com.codeshaper.jello.engine.database.ComponentList;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.render.Renderer;
 
@@ -74,6 +75,7 @@ public class JelloEditor implements ISceneProvider {
 	public final Path rootProjectFolder;
 	public final Path assetsFolder;
 	public final EditorAssetDatabase assetDatabase;
+	public final ComponentList componentList;
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
@@ -102,6 +104,8 @@ public class JelloEditor implements ISceneProvider {
 		
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
 		this.assetDatabase.buildDatabase();
+		
+		this.componentList = new ComponentList();
 
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
@@ -119,12 +123,6 @@ public class JelloEditor implements ISceneProvider {
 		this.loadedScene = new ArrayList<Scene>(1);
 		this.loadedScene.add(null);
 		this.setScene(this.constructDefaultScene());
-	}
-
-	@SuppressWarnings("unchecked")
-	public Class<JelloComponent>[] getComponents() {
-		return new Class[] { AudioListener.class, AudioSource.class, Camera.class, FontRenderer.class, Light.class,
-				LineRenderer.class, MeshRenderer.class, SpriteRenderer.class, TilemapRenderer.class, };
 	}
 
 	/**
