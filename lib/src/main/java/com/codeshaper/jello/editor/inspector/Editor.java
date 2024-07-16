@@ -10,6 +10,9 @@ public class Editor<T extends IInspectable> {
 	protected final T target;
 
 	public Editor(T target) {
+		if(target == null) {
+			throw new IllegalArgumentException("target may not be null.");
+		}
 		this.target = target;
 	}
 	

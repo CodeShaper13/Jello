@@ -70,6 +70,14 @@ public class GuiUtil {
 	public static JSeparator separator() {
 		return new JSeparator();
 	}
+	
+	public static JComponent textbox(String text, int lines) {
+		JTextArea textArea = new JTextArea(lines, 0);
+		textArea.setEnabled(false);
+		textArea.setText(text);
+		JScrollPane scroll = new JScrollPane(textArea);		
+		return scroll;
+	}
 
 	public static JLabel label(String label) {
 		return new JLabel(label);

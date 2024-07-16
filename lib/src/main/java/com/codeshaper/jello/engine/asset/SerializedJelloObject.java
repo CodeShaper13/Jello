@@ -50,7 +50,7 @@ public class SerializedJelloObject extends Asset {
 			
 			JButton saveBtn = new JButton("Save");
 			saveBtn.addActionListener(e -> {
-				JelloEditor.instance.saveAssetToDisk((SerializedJelloObject) target);
+				JelloEditor.instance.assetDatabase.saveAsset((SerializedJelloObject) target);
 			});
 			
 			JCheckBox autoSave = new JCheckBox("Auto-Save");

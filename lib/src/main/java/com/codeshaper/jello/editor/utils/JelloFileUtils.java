@@ -1,6 +1,7 @@
 package com.codeshaper.jello.editor.utils;
 
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -14,25 +15,29 @@ public class JelloFileUtils {
 	 * 
 	 * @param toBeRenamed The file to rename.
 	 * @param newName     The new name for the file, without an extension.
-	 * @return {@code true} if the file was renamed, {@code false} if there was an
-	 *         error.
+	 * @return the newly renamed file, or {@link null} on error.
 	 */
-	public static boolean renameFile(File toBeRenamed, String newName) {
+	public static File renameFile(File toBeRenamed, String newName) {
 		if (!toBeRenamed.isFile()) {
-			return false; // This method isn't meant for directories.
+			return null; // This method isn't meant for directories.
 		}
 
 		String extension = FilenameUtils.getExtension(toBeRenamed.getName());
 
 		File newFile = new File(toBeRenamed.getParent(), newName + "." + extension);
 		if (newFile.exists()) {
-			return false; // Can't rename, file already exists.
+			return null; // Can't rename, file already exists.
 		}
 
 		try {
-			return toBeRenamed.renameTo(newFile);
+			boolean success = toBeRenamed.renameTo(newFile);
+			if(success) {
+				return newFile;
+			} else {
+				return null;
+			}
 		} catch (SecurityException e) {
-			return false;
+			return null;
 		}
 	}
 

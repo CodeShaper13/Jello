@@ -14,17 +14,15 @@ import javax.swing.SwingUtilities;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 
+import com.codeshaper.jello.editor.SceneView.SceneAWTGLCanvas;
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.ISceneProvider;
 import com.codeshaper.jello.engine.asset.Scene;
-import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.render.Renderer;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;
@@ -116,7 +114,7 @@ public class JelloEditor implements ISceneProvider {
 
 		GLFWErrorCallback.createPrint().set();
 
-		this.window.sceneView.makeContextCurrent();
+		this.enableEditorContext();
 
 		this.loadedScene = new ArrayList<Scene>(1);
 		this.loadedScene.add(null);
@@ -163,7 +161,7 @@ public class JelloEditor implements ISceneProvider {
 
 	public void saveScene() {				
 		Scene scene = this.getScene();		
-		this.saveAssetToDisk(scene);
+		this.assetDatabase.saveAsset(scene);
 	}
 
 	public void preformUndo() {
@@ -174,27 +172,15 @@ public class JelloEditor implements ISceneProvider {
 		Debug.logWarning("Redo is not yet implemented."); // TODO implement redo.
 	}
 	
-	public boolean saveAssetToDisk(SerializedJelloObject asset) {
-		File file = asset.file.toFile();		
-		try (FileWriter writer = new FileWriter(file)) {
-			String s = asset.getClass().getName();
-			writer.write(s + "\n");
-			
-			GsonBuilder builder = new GsonBuilder();
-			builder.setPrettyPrinting();
-			builder.serializeNulls();
-		    Gson gson = builder.create();
-		    
-		    gson.toJson(asset, writer);
-		    
-		    return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			
-			return false;
-		}
+	public void enableEditorContext() {
+		SceneAWTGLCanvas canvas = this.window.sceneView.canvas;
+		canvas.makeContextCurrent(canvas.getCanvasContext());
 	}
 	
+	public void disableEditorContext() {
+		SceneAWTGLCanvas canvas = this.window.sceneView.canvas;
+		canvas.makeContextCurrent(0);
+	}
 
 	private Scene constructDefaultScene() {
 		Scene scene = new Scene(this.assetsFolder.resolve("scene.jelobj"));

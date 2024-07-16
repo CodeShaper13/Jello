@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.codeshaper.jello.editor.EditorAssetDatabase;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.IInspectable;
@@ -12,8 +13,12 @@ public abstract class Asset implements IInspectable {
 
 	/**
 	 * The file that provides this asset. Null if the asset was created at runtime.
+	 * This should NEVER be changed, instead use
+	 * {@link EditorAssetDatabase#renameAsset(Path, String)} if you want to move the
+	 * asset. If the Asset is moved at any point, this field will be updated
+	 * accordingly by the AssetDatabase.
 	 */
-	public transient final Path file;
+	public transient Path file;
 
 	public Asset(Path file) {
 		this.file = file;
@@ -31,7 +36,8 @@ public abstract class Asset implements IInspectable {
 
 	/**
 	 * Returns the name of the Asset. If this asset is provided by a file, the
-	 * file's name without an extension is returned. If there is no providing file, null is returned.
+	 * file's name without an extension is returned. If there is no providing file,
+	 * null is returned.
 	 * 
 	 * @return the name of the asset. May be null.
 	 */

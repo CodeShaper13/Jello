@@ -11,10 +11,12 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -64,14 +66,14 @@ public class AssetDatabase {
 	 * 
 	 * The key is a path to the asset, relative to the /assets folder.
 	 */
-	protected final HashMap<Path, Asset> assets;
+	protected final List<CachedAsset> assets;
 	protected final ExtentionMapping extentionMapping;
 
 	public List<CreateAssetEntry.Data> createAssetEntries;
 
 	public AssetDatabase(Path projectFolder) {
 		this.assetsFolder = projectFolder;
-		this.assets = new HashMap<Path, Asset>();
+		this.assets = new ArrayList<CachedAsset>(); // new HashMap<Path, Asset>();
 
 		Reflections scan = new Reflections("com.codeshaper.jello.engine.asset");
 
@@ -123,26 +125,21 @@ public class AssetDatabase {
 	 * Builds the Asset database from scratch.
 	 */
 	public void buildDatabase() {
-		// Perform cleanup on all loaded assets.
-		this.assets.forEach((file, asset) -> {
-			if (asset != null) {
-				asset.cleanup();
-			}
-		});
+		this.unloadAll();
 
 		this.assets.clear();
 
 		// Add the builtin Assets to the list.
-		for (String s : this.builtinAsset) {
-			this.assets.put(Path.of(s), null);
+		for (String stringPath : this.builtinAsset) {
+			Path path = Path.of(stringPath);
+			this.tryAddAsset(path);
 		}
 
-		// Add all Assets in the project folder to the list.
+		// Add all Assets in the /assets directory to the list.
 		Iterator<File> iter = FileUtils.iterateFiles(this.assetsFolder.toFile(), null, true);
-		File file;
 		while (iter.hasNext()) {
-			file = iter.next();
-			this.assets.put(file.toPath(), null);
+			Path path = iter.next().toPath();
+			this.tryAddAsset(this.toRelativePath(path));
 		}
 	}
 
@@ -153,7 +150,8 @@ public class AssetDatabase {
 	 * @return {@link true} if the Asset exists, {@link false} if it does not.
 	 */
 	public boolean exists(Path assetPath) {
-		return this.assets.containsKey(this.toFullPath(assetPath));
+		CachedAsset asset = this.getCachedAsset(assetPath);
+		return asset != null;
 	}
 
 	/**
@@ -165,16 +163,16 @@ public class AssetDatabase {
 	 *         not been.
 	 */
 	public boolean isLoaded(Path assetPath) {
-		if (!this.exists(assetPath)) {
+		CachedAsset asset = this.getCachedAsset(assetPath);
+		if (asset != null) {
+			return asset.isLoaded();
+		} else {
 			return false;
 		}
-
-		return this.assets.get(this.toFullPath(assetPath)) != null;
 	}
 
 	/**
-	 * Attempts to find an Asset at a location. If the Asset doesn't exist, null is
-	 * returned.
+	 * Finds an Asset at a location. If the Asset doesn't exist, null is returned.
 	 * 
 	 * @param assetPath the relative path to the Asset.
 	 * @return
@@ -184,14 +182,38 @@ public class AssetDatabase {
 	}
 
 	/**
-	 * Attempts to find an Asset at a location. If the Asset doesn't exist, null is
-	 * returned.
+	 * Finds an Asset at a location. If the Asset doesn't exist, null is returned.
 	 * 
 	 * @param assetPath the relative path to the Asset.
 	 * @return
 	 */
 	public Asset getAsset(Path assetPath) {
 		return this.getAssetInternal(assetPath);
+	}
+
+	/**
+	 * Returns a list of Paths to all Assets of a specific type.
+	 * 
+	 * @param assetType
+	 * @param includeSubClasses
+	 * @return
+	 */
+	public List<Path> getAllAssetsOfType(Class<? extends Asset> assetType, boolean includeSubClasses) {
+		List<Path> paths = new ArrayList<Path>();
+
+		for (CachedAsset asset : this.assets) {
+			if (includeSubClasses) {
+				if (assetType.equals(asset.getProvidingClass())) {
+					paths.add(asset.getPath());
+				}
+			} else {
+				if (assetType.isAssignableFrom(asset.getProvidingClass())) {
+					paths.add(asset.getPath());
+				}
+			}
+		}
+
+		return paths;
 	}
 
 	/**
@@ -203,14 +225,11 @@ public class AssetDatabase {
 	 * @param assetFile
 	 */
 	public void unload(Path assetFile) {
-		if (!this.isLoaded(assetFile)) {
-			return;
+		CachedAsset asset = this.getCachedAsset(assetFile);
+		if (asset.isLoaded()) {
+			asset.instance.cleanup();
+			asset.instance = null;
 		}
-
-		Asset asset = this.getAsset(assetFile);
-		asset.cleanup();
-
-		this.assets.put(toFullPath(assetFile), null);
 	}
 
 	/**
@@ -218,70 +237,155 @@ public class AssetDatabase {
 	 * every loaded asset.
 	 */
 	public void unloadAll() {
-		for (var entry : this.assets.entrySet()) {
-			if (entry.getValue() == null) {
-				continue; // Asset is not loaded.
+		for (CachedAsset asset : this.assets) {
+			if (asset.isLoaded()) {
+				asset.instance.cleanup();
+				asset.instance = null;
 			}
-
-			this.unload(entry.getKey());
 		}
 	}
 
+	public TableModel getTableModel() {
+		DefaultTableModel model = new DefaultTableModel(this.assets.size(), 3);
+		model.setColumnIdentifiers(new String[] { "Path:", "Class:", "Is Loaded?" });
+		for (int i = 0; i < this.assets.size(); i++) {
+			CachedAsset asset = this.assets.get(i);
+			model.setValueAt(asset.getPath(), i, 0);
+			model.setValueAt(asset.getProvidingClass().getSimpleName(), i, 1);
+			model.setValueAt(asset.isLoaded(), i, 2);
+		}
+
+		return model;
+	}
+
 	/**
-	 * Takes a relative asset path and converts it to a full asset path. If the path
-	 * is already a full path, noting happens.
+	 * Takes a relative path and converts it to a full path. If the path is already
+	 * a full path, or starts with \builtin, noting happens.
+	 * <p>
+	 * water.jelobj -> D:\MyProject\assets\water.jelobj
+	 * materials\water.jelobj -> D:\MyProject\assets\materials\water.jelobj
+	 * builtin\shader.vert -> builtin\shader.vert
+	 * </p>
 	 * 
-	 * @param path the relative path to the asset.
+	 * @param path a relative path.
 	 * @return a full path.
 	 */
 	protected Path toFullPath(Path path) {
 		if (!path.startsWith("builtin")) {
-			// Convert the path to a full path (starts at C:/ or whatever, instead of
-			// /assets).
+			// Convert the path to a full path (starts at C:\ or whatever, instead of
+			// \assets).
 			return this.assetsFolder.resolve(path);
 		}
 		return path;
 	}
 
-	private Asset getAssetInternal(Path assetPath) {
-		assetPath = toFullPath(assetPath);
+	/**
+	 * Takes a full path and converts it to a relative path. If the path is already
+	 * a relative path, nothing happens.
+	 * <p>
+	 * D:\MyProject\assets\water.jelobj -> water.jelobj
+	 * D:\MyProject\assets\materials\water.jelobj -> materials\water.jelobj
+	 * </p>
+	 * 
+	 * @param fullPath a full path.
+	 * @return the path relative to the /assets directory.
+	 */
+	protected Path toRelativePath(Path fullPath) {
+		return this.assetsFolder.relativize(fullPath);
+	}
 
-		if (this.exists(assetPath)) {
-			Asset asset = this.assets.get(assetPath);
-			if (asset == null) {
-				// Asset has not been loaded, instantiate the asset.
-				Class<? extends Asset> assetsProvidingClass = this.extentionMapping
-						.getAssetClass(FilenameUtils.getExtension(assetPath.getFileName().toString()));
-
-				if (assetsProvidingClass == SerializedJelloObject.class) {
-					// Special construction case.
-					try (BufferedReader br = new BufferedReader(new FileReader(assetPath.toFile()))) {
-						String jelloObjectClassName = br.readLine();
-						Class<? extends Asset> c = (Class<? extends Asset>) Class.forName(jelloObjectClassName);
-
-						GsonBuilder builder = new GsonBuilder();
-						builder.registerTypeAdapter(c, new SerializedJelloObjectInstanceCreator(c, assetPath));
-
-						Gson gson = builder.create();
-						asset = (Asset) gson.fromJson(br, c);
-					} catch (IOException | ClassNotFoundException e) {
-						e.printStackTrace();
-					}
-				} else {
-					asset = this.invokeConstructor(assetsProvidingClass, assetPath);
-				}
-
-				if (asset != null) {
-					this.assets.put(assetPath, asset);
-				} else {
-					Debug.logWarning("[AssetDatabase]: Error constructing Asset."); // TODO explain the error.
-				}
-			}
-
-			return asset;
+	private boolean tryAddAsset(Path path) {
+		Class<? extends Asset> clazz = this.getProvidingClass(path);
+		if (clazz == null) {
+			Debug.log("ERROR!"); // TODO
+			return false;
 		} else {
+			CachedAsset cachedAsset = new CachedAsset(path, clazz);
+			this.assets.add(cachedAsset);
+			return true;
+		}
+	}
+
+	/**
+	 * 
+	 * @param assetPath a path relative to the /assets folder.
+	 * @return
+	 */
+	protected CachedAsset getCachedAsset(Path assetPath) {
+		CachedAsset asset;
+		for (int i = 0; i < this.assets.size(); i++) {
+			asset = this.assets.get(i);
+			if (asset.getPath().equals(assetPath)) {
+				return asset;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 * @param path the path to the Asset.
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private Class<? extends Asset> getProvidingClass(Path path) {
+		String extensions = FilenameUtils.getExtension(path.toString());
+		Class<? extends Asset> clazz = this.extentionMapping.getAssetClass(extensions);
+		if (clazz == SerializedJelloObject.class) {
+			try (BufferedReader br = new BufferedReader(new FileReader(this.toFullPath(path).toFile()))) {
+				String jelloObjectClassName = br.readLine();
+				return (Class<? extends Asset>) Class.forName(jelloObjectClassName);
+			} catch (IOException | ExceptionInInitializerError e) {
+				e.printStackTrace();
+				return null;
+			} catch (ClassNotFoundException e) {
+				return null;
+			}
+		} else {
+			return clazz;
+		}
+	}
+
+	private Asset getAssetInternal(Path assetPath) {
+		CachedAsset cachedAsset = this.getCachedAsset(assetPath);
+		if (cachedAsset == null) {
 			Debug.logError("[AssetDatabase]: No asset could be found at %s", assetPath.toString());
 			return null;
+		}
+
+		if (cachedAsset.isLoaded()) {
+			return cachedAsset.instance;
+		} else {
+			// Asset has not been loaded, instantiate the asset.
+			Path fullAssetPath = toFullPath(assetPath);
+			Asset newInstance;
+			Class<? extends Asset> providingClass = cachedAsset.getProvidingClass();
+			if (providingClass == SerializedJelloObject.class) {
+				// Special construction case.
+				try (BufferedReader br = new BufferedReader(new FileReader(fullAssetPath.toFile()))) {
+					br.readLine(); // Skip the first line, it states the providing class and is not valid JSON.
+
+					GsonBuilder builder = new GsonBuilder();
+					builder.registerTypeAdapter(providingClass,
+							new SerializedJelloObjectInstanceCreator(providingClass, fullAssetPath));
+
+					Gson gson = builder.create();
+					newInstance = (Asset) gson.fromJson(br, providingClass);
+				} catch (IOException e) {
+					e.printStackTrace();
+					newInstance = null;
+				}
+			} else {
+				newInstance = this.invokeConstructor(providingClass, fullAssetPath);
+			}
+
+			if (newInstance != null) {
+				cachedAsset.instance = newInstance;
+				return newInstance;
+			} else {
+				Debug.logWarning("[AssetDatabase]: Error constructing Asset."); // TODO explain the error.
+				return null;
+			}
 		}
 	}
 

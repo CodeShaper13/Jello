@@ -7,6 +7,7 @@ import java.io.File;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.apache.commons.io.FilenameUtils;
@@ -60,23 +61,7 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 		this.add(this.delete = new JMenuItem("Delete"));
 		this.delete.addActionListener(e -> {
 			if (this.file != null) {
-				boolean showError = false;
-				try {
-					boolean isDirectory = this.file.isDirectory();
-					boolean wasDeleted = Desktop.getDesktop().moveToTrash(this.file);
-					if (wasDeleted) {
-						this.onDelete(this.file, isDirectory);
-					} else {
-						showError = true;
-					}
-				} catch (Exception exception) {
-					exception.printStackTrace();
-					showError = true;
-				}
-
-				if (showError) {
-					Debug.logError("Unable to move %s to the Recycle Bin", this.file);
-				}
+				this.onDelete(file);
 			}
 		});
 
@@ -103,14 +88,11 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 	protected abstract void onNewFolder(File newDirectory);
 
 	/**
-	 * Called when a file is successfully deleted when the Delete button is clicked.
+	 * Called when the Delete button is clicked.
 	 * 
 	 * @param file        the file that was deleted.
-	 * @param isDirectory was the file a directory or not?
-	 *                    {@link File#isDirectory()} no longer works because the
-	 *                    file is deleted, so use this param instead.
 	 */
-	protected abstract void onDelete(File file, boolean isDirectory);
+	protected abstract void onDelete(File file);
 
 	/**
 	 * Called when the Rename button is clicked.
@@ -123,7 +105,7 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 	 * Called when the Create -> [Asset Name] button is clicked.
 	 * 
 	 * @param directory the directory to create the asset it.
-	 * @param data
+	 * @param asset
 	 */
 	protected abstract void onCreate(File directory, SerializedJelloObject asset);
 
@@ -153,10 +135,19 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 				f = JelloFileUtils.getAvailableFileName(f);								
 				assetName = FilenameUtils.removeExtension(f.getName());
 				
+				String newAssetName = (String)JOptionPane.showInputDialog(
+		                this,
+		                "Name:",
+		                "Name Asset",
+		                JOptionPane.PLAIN_MESSAGE,
+		                null,
+		                null,
+		                assetName);
+				
 				SerializedJelloObject asset = JelloEditor.instance.assetDatabase.createAsset(entry.clazz,
-						directory.toPath(), assetName);
+						directory.toPath(), newAssetName);
 				if (asset != null) {
-					this.onCreate(this.getDirectory(this.file), asset);
+					this.onCreate(directory, asset);
 				}
 			});
 			this.create.add(menuItem);

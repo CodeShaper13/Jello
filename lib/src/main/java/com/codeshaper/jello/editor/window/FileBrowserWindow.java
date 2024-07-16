@@ -2,6 +2,7 @@ package com.codeshaper.jello.editor.window;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -40,7 +41,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.utils.JelloFileUtils;
+import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
@@ -84,24 +85,50 @@ public class FileBrowserWindow extends EditorWindow {
 				if(file.isDirectory()) {
 					folderTree.startEditingAtPath(folderTree.getSelectionPath());
 				} else {
-					openFileRenameDialog(file, true);
+					String newFileName = (String)JOptionPane.showInputDialog(
+			                this,
+			                "New Name:",
+			                "Rename File",
+			                JOptionPane.PLAIN_MESSAGE,
+			                null,
+			                null,
+			                FilenameUtils.removeExtension(file.getName()));
+					if(newFileName != null) {
+						Path relativePath = rootDirectory.toPath().relativize(file.toPath());
+						boolean success = JelloEditor.instance.assetDatabase.renameAsset(relativePath, newFileName);
+						if(success) {
+							fileList.refresh();
+						} else {
+							Toolkit.getDefaultToolkit().beep();
+						}
+					}				
 				}
 			}
 
 			@Override
-			protected void onDelete(File file, boolean isDirectory) {
-				if (isDirectory) {
+			protected void onDelete(File file) {
+				if (file.isDirectory()) {
+					boolean showError;
+					try {
+						showError = !Desktop.getDesktop().moveToTrash(this.file);
+					} catch (Exception exception) {
+						exception.printStackTrace();
+						showError = true;
+					}
+
+					if (showError) {
+						Debug.logError("Unable to move %s to the Recycle Bin", this.file);
+					}
 					fileTreeModel.reload();
 				} else {
+					JelloEditor.instance.assetDatabase.deleteAsset(rootDirectory.toPath().relativize(this.file.toPath()));
 					fileListModel.removeElement(this.file);
-					JelloEditor.instance.assetDatabase.removeAsset(this.file.toPath());
 				}
 			}
 
 			@Override
 			protected void onCreate(File directory, SerializedJelloObject asset) {
 				fileList.refresh();
-				openFileRenameDialog(asset.file.toFile(), false);
 			}
 		};
 
@@ -148,28 +175,6 @@ public class FileBrowserWindow extends EditorWindow {
 	public void updateProperties() {
 		this.showExtensions.setSelected(this.getPropertyBoolean(PROP_SHOW_EXTENSIONS, true));
 		this.splitPane.setDividerLocation(this.getPropertyInt(PROP_DIVIDER_LOCATION, 100));		
-	}
-
-	public boolean openFileRenameDialog(File target, boolean showTextForRename) {
-		String newFileName = (String)JOptionPane.showInputDialog(
-                this,
-                showTextForRename ? "New Name:" : "Name:",
-                showTextForRename ? "Rename File" : "Name File",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                FilenameUtils.removeExtension(target.getName()));
-		if(newFileName != null) {
-			boolean sucess = JelloFileUtils.renameFile(target, newFileName);
-			if(sucess) {
-				fileList.refresh();
-				return true;
-			} else {
-				Toolkit.getDefaultToolkit().beep();
-				return false;
-			}
-		}
-		return false;
 	}
 	
 	private class FolderHierarchyModel implements TreeModel {

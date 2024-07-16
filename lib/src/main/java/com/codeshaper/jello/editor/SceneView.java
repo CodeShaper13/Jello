@@ -35,8 +35,8 @@ public class SceneView extends JPanel {
 
 	private final SceneViewToolbar toolbar;
 	private final CameraController cc;
-	private final SceneAWTGLCanvas canvas;
-
+	
+	public final SceneAWTGLCanvas canvas;
 	/**
 	 * The Camera that draws the scene.
 	 */
@@ -95,10 +95,6 @@ public class SceneView extends JPanel {
 		} catch (Exception e) {
 		} // Never happens.
 		return null;
-	}
-
-	public void makeContextCurrent() {
-		this.canvas.makeContextCurrent();
 	}
 	
 	private class SceneViewToolbar extends JToolBar {
@@ -282,7 +278,7 @@ public class SceneView extends JPanel {
 		}
 	}
 
-	private class SceneAWTGLCanvas extends AWTGLCanvas {
+	public class SceneAWTGLCanvas extends AWTGLCanvas {
 		
 		private static final String NEAR = "near";
 		private static final String FAR = "far";
@@ -332,7 +328,11 @@ public class SceneView extends JPanel {
 			this.swapBuffers();
 		}
 
-		public void makeContextCurrent() {
+		public long getCanvasContext() {
+			return this.context;
+		}
+
+		public void makeContextCurrent(long context) {
 			this.platformCanvas.makeCurrent(this.context);
 		}
 		
