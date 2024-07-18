@@ -29,7 +29,7 @@ public class Shader extends Asset {
 
 		System.out.println("instantiating shader " + file.toString());
 
-		switch (FilenameUtils.getExtension(this.file.toString())) {
+		switch (FilenameUtils.getExtension(this.getFullPath().toString())) {
 		case "frag":
 			this.shaderType = ShaderType.FRAGMENT;
 			break;

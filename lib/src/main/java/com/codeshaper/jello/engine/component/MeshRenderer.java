@@ -13,6 +13,7 @@ import com.codeshaper.jello.engine.asset.Texture;
 public class MeshRenderer extends JelloComponent {
 
 	public Mesh mesh;
+	public Texture texture;
 	public String texturePath = "builtin/textures/placeholderTexture.png"; //"textures/cube.png";
 	
 	public Material[] materials;

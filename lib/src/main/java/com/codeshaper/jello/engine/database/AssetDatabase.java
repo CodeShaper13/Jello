@@ -248,7 +248,7 @@ public class AssetDatabase implements ProjectReloadListener {
 	 * @param path a relative path.
 	 * @return a full path.
 	 */
-	protected Path toFullPath(Path path) {
+	public Path toFullPath(Path path) {
 		if (!path.startsWith("builtin")) {
 			// Convert the path to a full path (starts at C:\ or whatever, instead of
 			// \assets).
@@ -346,7 +346,7 @@ public class AssetDatabase implements ProjectReloadListener {
 					GsonBuilder builder = new GsonBuilder();
 					builder.registerTypeAdapterFactory(this.componentAdapterFactory);
 					builder.registerTypeAdapter(providingClass,
-							new SerializedJelloObjectInstanceCreator(providingClass, fullAssetPath));
+							new SerializedJelloObjectInstanceCreator(providingClass, assetPath));
 					
 					Gson gson = builder.create();
 					newInstance = (Asset) gson.fromJson(br, providingClass);
@@ -423,7 +423,7 @@ public class AssetDatabase implements ProjectReloadListener {
 		public void setPath(Path path) {
 			this.path = path;
 			if (this.isLoaded()) {
-				this.instance.file = path;
+				this.instance.path = path;
 			}
 		}
 

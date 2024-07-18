@@ -23,8 +23,8 @@ public class Scene extends SerializedJelloObject {
 	 */
 	private List<GameObject> rootGameObjects;
 	
-	public Scene(Path assetFile) {
-		super(assetFile);
+	public Scene(Path path) {
+		super(path);
 		
 		this.rootGameObjects = new ArrayList<GameObject>();
 	}	
@@ -51,7 +51,7 @@ public class Scene extends SerializedJelloObject {
 	 * @return The name of the scene.
 	 */
 	public String getSceneName() {
-		return FilenameUtils.removeExtension(this.file.getFileName().toString());
+		return this.getAssetName();
 	}
 	
 	public Iterable<GameObject> getRootGameObjects() {

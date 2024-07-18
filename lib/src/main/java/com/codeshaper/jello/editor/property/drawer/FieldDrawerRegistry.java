@@ -76,7 +76,8 @@ public class FieldDrawerRegistry {
 		this.registerDrawer(Vector4d.class, new VectorDrawer(w, x, y, z));
 		this.registerDrawer(Quaternionf.class, new QuaternionfDrawer());
 		this.registerDrawer(Color.class, new ColorDrawer());
-		this.registerDrawer(Asset.class, new IFieldDrawer() {
+		this.registerDrawer(Asset.class, new AssetDrawer());
+		/*this.registerDrawer(Asset.class, new IFieldDrawer() {
 			@Override
 			public JPanel draw(IExposedField field) throws Exception {
 				Icon icon = null;
@@ -106,6 +107,7 @@ public class FieldDrawerRegistry {
 				return GuiUtil.combine(GuiUtil.label(field), label);
 			}
 		});
+		*/
 
 		areBuiltinDrawersRegistered = true;
 	}

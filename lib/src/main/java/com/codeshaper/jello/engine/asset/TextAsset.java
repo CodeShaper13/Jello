@@ -61,7 +61,8 @@ public class TextAsset extends Asset {
 
 	private void read() {
 		try {
-			this.lines = Files.readAllLines(this.file);
+			Path fullPath = this.getFullPath();
+			this.lines = Files.readAllLines(fullPath);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

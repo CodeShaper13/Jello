@@ -31,7 +31,7 @@ public class Texture extends Asset {
 			IntBuffer h = stack.mallocInt(1);
 			IntBuffer channels = stack.mallocInt(1);
 
-			String texturePath = this.file.toString();						
+			String texturePath = this.getFullPath().toString();						
 			try(InputStream stream = texturePath.startsWith("builtin") ? this.getClass().getResourceAsStream("/" + texturePath) :new FileInputStream(texturePath)) {
 				byte[] byteArray = IOUtils.toByteArray(stream);
 				ByteBuffer bytes = stack.bytes(byteArray);

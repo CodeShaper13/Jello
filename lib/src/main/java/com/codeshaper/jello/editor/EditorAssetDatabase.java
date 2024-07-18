@@ -111,7 +111,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			throw new IllegalArgumentException("asset may not be null");
 		}
 
-		File file = asset.file.toFile();
+		File file = asset.getFullPath().toFile();
 		try (FileWriter writer = new FileWriter(file)) {
 			// Write the class name as the first line.
 			String fullClassName = asset.getClass().getName();
