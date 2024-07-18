@@ -6,14 +6,10 @@ import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -38,7 +34,7 @@ public class FieldDrawerRegistry {
 	public FieldDrawerRegistry() {
 		this.drawers = new HashMap<Class<?>, IFieldDrawer>();
 	}
-	
+
 	/**
 	 * Registers all of the builtin field drawers. If this method has already been
 	 * called, nothing happens.
@@ -47,6 +43,11 @@ public class FieldDrawerRegistry {
 		if (areBuiltinDrawersRegistered) {
 			return;
 		}
+
+		final String w = "w";
+		final String x = "x";
+		final String y = "y";
+		final String z = "z";
 
 		this.registerDrawer(byte.class, new NumberDrawer());
 		this.registerDrawer(Byte.class, new NumberDrawer());
@@ -62,30 +63,8 @@ public class FieldDrawerRegistry {
 		this.registerDrawer(Double.class, new NumberDrawer());
 		this.registerDrawer(boolean.class, new BooleanDrawer());
 		this.registerDrawer(Boolean.class, new BooleanDrawer());
-		this.registerDrawer(String.class, new IFieldDrawer() {
-			@Override
-			public JPanel draw(IExposedField field) throws Exception {
-				return GuiUtil.combine(GuiUtil.label(field), GuiUtil.textField(field));
-			}
-		});
-		this.registerDrawer(Enum.class, new IFieldDrawer() {
-			@Override
-			public JPanel draw(IExposedField field) throws Exception {
-				JComboBox<Object> comboBox = new JComboBox<Object>(field.getType().getEnumConstants());
-				comboBox.setSelectedItem(field.get());
-				comboBox.addActionListener(e -> {
-					field.set(comboBox.getSelectedItem());
-				});
-				
-				return GuiUtil.combine(GuiUtil.label(field), comboBox);
-			}
-		});
-		
-		final String w = "w";
-		final String x = "x";
-		final String y = "y";
-		final String z = "z";
-		
+		this.registerDrawer(String.class, new StringDrawer());
+		this.registerDrawer(Enum.class, new EnumDrawer());
 		this.registerDrawer(Vector2i.class, new VectorDrawer(x, y));
 		this.registerDrawer(Vector2f.class, new VectorDrawer(x, y));
 		this.registerDrawer(Vector2d.class, new VectorDrawer(x, y));
@@ -96,26 +75,7 @@ public class FieldDrawerRegistry {
 		this.registerDrawer(Vector4f.class, new VectorDrawer(w, x, y, z));
 		this.registerDrawer(Vector4d.class, new VectorDrawer(w, x, y, z));
 		this.registerDrawer(Quaternionf.class, new QuaternionfDrawer());
-
-		this.registerDrawer(Color.class, new IFieldDrawer() {
-			@Override
-			public JPanel draw(IExposedField field) throws Exception {
-				JButton btn = new JButton();
-				btn.setBackground(((Color) field.get()).toAwtColor());
-				
-				JPanel panel = GuiUtil.combine(GuiUtil.label(field), btn);
-				
-				btn.addActionListener(e -> {
-					java.awt.Color newColor = JColorChooser.showDialog(panel, "Choose Color", btn.getBackground());
-					if(newColor != null) {
-						btn.setBackground(newColor);
-						field.set(new Color(newColor));
-					}
-				});
-
-				return panel;
-			}
-		});
+		this.registerDrawer(Color.class, new ColorDrawer());
 		this.registerDrawer(Asset.class, new IFieldDrawer() {
 			@Override
 			public JPanel draw(IExposedField field) throws Exception {
