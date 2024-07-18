@@ -13,10 +13,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
+import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
-import com.codeshaper.jello.engine.database.CachedAsset;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 public class EditorAssetDatabase extends AssetDatabase {
 
@@ -25,9 +26,15 @@ public class EditorAssetDatabase extends AssetDatabase {
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
 
+		RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+		// for(Class<JelloComponent> component : this.componentList) {
+		// adapterFactory.registerSubtype(component, component.getName());
+		// }
+
 		GsonBuilder builder = new GsonBuilder();
 		builder.setPrettyPrinting();
 		builder.serializeNulls();
+		builder.registerTypeAdapterFactory(adapterFactory);
 		this.gson = builder.create();
 	}
 
@@ -43,6 +50,10 @@ public class EditorAssetDatabase extends AssetDatabase {
 		if (asset == null) {
 			Debug.logError("[Asset Database]: Could not delete Asset, no Asset exists with the path %s.", assetPath);
 			return false;
+		}
+
+		if (asset.isLoaded()) {
+			asset.instance.cleanup();
 		}
 
 		boolean error;
@@ -66,8 +77,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * path, an error is logged and null is returned.
 	 * 
 	 * @param assetClass the class to instantiate
-	 * @param path       the relative or full path of the directory to create the
-	 *                   Asset file in.
+	 * @param path       a path to the Asset relative to the \assets directory.
 	 * @param assetName  the name of the asset
 	 * @return the new Asset, or null on error.
 	 */
@@ -108,7 +118,18 @@ public class EditorAssetDatabase extends AssetDatabase {
 			writer.write(fullClassName + "\n");
 
 			// Serialize the class and write it to JSON.
-			this.gson.toJson(asset, writer);
+			RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+			for(Class<JelloComponent> component : JelloEditor.instance.componentList) {
+				adapterFactory.registerSubtype(component, component.getName());
+			}
+
+			GsonBuilder builder = new GsonBuilder();
+			builder.setPrettyPrinting();
+			builder.serializeNulls();
+			builder.registerTypeAdapterFactory(adapterFactory);
+			Gson gson = builder.create();
+			
+			gson.toJson(asset, writer);
 
 			return true;
 		} catch (IOException e) {

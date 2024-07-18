@@ -18,7 +18,7 @@ import com.codeshaper.jello.engine.asset.GenericAsset;
  * Provides a mapping between file extensions and the {@link Assets} that
  * provide them.
  */
-public class ExtentionMapping {
+class ExtentionMapping {
 
 	// Separate lists, only the later has to rebuilt while the application is
 	// running.

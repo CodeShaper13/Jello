@@ -27,14 +27,14 @@ public class SceneManager implements ISceneProvider {
 	}
 	
 	public boolean isSceneLoaded(Scene scene) {
-		String sceneName = scene.GetSceneName();
+		String sceneName = scene.getSceneName();
 		
 		for(Scene s : this.loadedScenes) {
 			if(s == null) {
 				continue; // Should never happen.
 			}
 			
-			if(s.GetSceneName() == sceneName) {
+			if(s.getSceneName() == sceneName) {
 				return true;
 			}
 		}

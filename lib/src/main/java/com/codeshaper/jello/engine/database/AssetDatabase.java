@@ -6,14 +6,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -22,15 +20,17 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.reflections.Reflections;
 
-import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
+import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
+import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
+import com.codeshaper.jello.engine.component.JelloComponent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
-
-import static org.reflections.scanners.Scanners.*;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 /**
  * An AssetDatabase is responsible for providing a way to access all assets. If
@@ -46,7 +46,7 @@ import static org.reflections.scanners.Scanners.*;
  * <p>
  * {@code assetDatabase.getAsset("builtin/textures/placeholderTexture.png"); }
  */
-public class AssetDatabase {
+public class AssetDatabase implements ProjectReloadListener {
 
 	private final String[] builtinAsset = new String[] {
 			// Meshes:
@@ -60,66 +60,35 @@ public class AssetDatabase {
 	 * The /assets folder located in the root of the project folder.
 	 */
 	protected final Path assetsFolder;
-	/**
-	 * A collection of all assets in the project folder. If the asset hasn't been
-	 * loaded yet, the {@linkplain value} is null.
-	 * 
-	 * The key is a path to the asset, relative to the /assets folder.
-	 */
 	protected final List<CachedAsset> assets;
 	protected final ExtentionMapping extentionMapping;
-
-	public List<CreateAssetEntry.Data> createAssetEntries;
+	protected RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory;
 
 	public AssetDatabase(Path projectFolder) {
 		this.assetsFolder = projectFolder;
-		this.assets = new ArrayList<CachedAsset>(); // new HashMap<Path, Asset>();
+		this.assets = new ArrayList<CachedAsset>();
 
 		Reflections scan = new Reflections("com.codeshaper.jello.engine.asset");
 
 		this.extentionMapping = new ExtentionMapping();
 		this.extentionMapping.compileBuiltinMappings(scan);
+		this.extentionMapping.compileThirdPartyMappings();
 
-		this.createAssetEntries = new ArrayList<>();
-		Set<Class<?>> createAssetEntries = scan.get(TypesAnnotated.of(CreateAssetEntry.class).asClass());
-		for (Class<?> clazz : createAssetEntries) {
-			CreateAssetEntry a = clazz.getAnnotation(CreateAssetEntry.class);
-			int modifiers = clazz.getModifiers();
-			if (Modifier.isAbstract(modifiers)) {
-				Debug.logError("CreateAssetEntry annotations are not allowed on abstract classes.");
-				break;
-			}
-			if (Modifier.isInterface(modifiers)) {
-				Debug.logError("CreateAssetEntry annotations are not allowed on interfaces");
-				break;
-			}
-			if (!SerializedJelloObject.class.isAssignableFrom(clazz)) {
-				Debug.logError("CreateAssetEntry annotations are only allowed on subclasses of SerializedJelloObject");
-				break;
-			}
-
-			CreateAssetEntry.Data data = new CreateAssetEntry.Data(a.fileName(), a.location(),
-					(Class<? extends SerializedJelloObject>) clazz);
-			this.createAssetEntries.add(data);
-		}
+		JelloEditor.instance.addProjectReloadListener(this);
 	}
 
-	/*
-	 * private List<Path> getBuiltinAssetPaths() { Reflections reflections = new
-	 * Reflections( new
-	 * ConfigurationBuilder().forPackage("com.codeshaper.jello").setScanners(
-	 * Resources)); Set<String> stringPaths =
-	 * reflections.get(Resources.with(".*").filter(s -> s.startsWith("builtin")));
-	 * 
-	 * List<Path> array = new ArrayList<Path>(); for (String s : stringPaths) {
-	 * //array.add(Paths.get(s)); URL url = getClass().getResource("/" + s); try {
-	 * array.add(Paths.get(url.toURI())); } catch (URISyntaxException e) {
-	 * e.printStackTrace(); }
-	 * 
-	 * }
-	 * 
-	 * return array; }
-	 */
+	@Override
+	public void onProjectReload(Phase phase) {
+		if (phase == Phase.REBUILD) {
+			this.refreshDatabase();
+			this.extentionMapping.compileThirdPartyMappings();
+		} else if (phase == Phase.POST_REBUILD) {
+			this.componentAdapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+			for (Class<JelloComponent> component : JelloEditor.instance.componentList) {
+				this.componentAdapterFactory.registerSubtype(component, component.getName());
+			}
+		}
+	}
 
 	/**
 	 * Builds the Asset database from scratch.
@@ -141,6 +110,15 @@ public class AssetDatabase {
 			Path path = iter.next().toPath();
 			this.tryAddAsset(this.toRelativePath(path));
 		}
+	}
+
+	/**
+	 * Refreshes the Asset Database. Any Assets that no longer exist in the project
+	 * will be removed, and new ones will be added.
+	 */
+	public void refreshDatabase() {
+		// TODO less destructive rebuild.
+		this.buildDatabase();
 	}
 
 	/**
@@ -262,9 +240,9 @@ public class AssetDatabase {
 	 * Takes a relative path and converts it to a full path. If the path is already
 	 * a full path, or starts with \builtin, noting happens.
 	 * <p>
-	 * water.jelobj -> D:\MyProject\assets\water.jelobj
-	 * materials\water.jelobj -> D:\MyProject\assets\materials\water.jelobj
-	 * builtin\shader.vert -> builtin\shader.vert
+	 * water.jelobj -> D:\MyProject\assets\water.jelobj materials\water.jelobj ->
+	 * D:\MyProject\assets\materials\water.jelobj builtin\shader.vert ->
+	 * builtin\shader.vert
 	 * </p>
 	 * 
 	 * @param path a relative path.
@@ -360,15 +338,16 @@ public class AssetDatabase {
 			Path fullAssetPath = toFullPath(assetPath);
 			Asset newInstance;
 			Class<? extends Asset> providingClass = cachedAsset.getProvidingClass();
-			if (providingClass == SerializedJelloObject.class) {
+			if (SerializedJelloObject.class.isAssignableFrom(providingClass)) {
 				// Special construction case.
 				try (BufferedReader br = new BufferedReader(new FileReader(fullAssetPath.toFile()))) {
 					br.readLine(); // Skip the first line, it states the providing class and is not valid JSON.
 
 					GsonBuilder builder = new GsonBuilder();
+					builder.registerTypeAdapterFactory(this.componentAdapterFactory);
 					builder.registerTypeAdapter(providingClass,
 							new SerializedJelloObjectInstanceCreator(providingClass, fullAssetPath));
-
+					
 					Gson gson = builder.create();
 					newInstance = (Asset) gson.fromJson(br, providingClass);
 				} catch (IOException e) {
@@ -417,6 +396,58 @@ public class AssetDatabase {
 		}
 	}
 
+	protected class CachedAsset {
+
+		private Path path;
+		private Class<? extends Asset> providingClass;
+		/**
+		 * The instance of the Asset. If the Asset is not loaded, this is null.
+		 */
+		public Asset instance;
+
+		public CachedAsset(Path path, Class<? extends Asset> providingClass) {
+			this.path = path;
+			this.providingClass = providingClass;
+		}
+
+		/**
+		 * Gets relative path to the file providing the Asset, starting at the /assets
+		 * folder, or /builtin if it's a builtin Asset.
+		 * 
+		 * @return a relative path to the Asset.
+		 */
+		public Path getPath() {
+			return this.path;
+		}
+
+		public void setPath(Path path) {
+			this.path = path;
+			if (this.isLoaded()) {
+				this.instance.file = path;
+			}
+		}
+
+		/**
+		 * Gets the class that provides the implementation of the Asset in code. For
+		 * Assets that extends @link {@link SerializedJelloObject} (e.g. Material), the
+		 * exact class is returned (e.g. {@link Material}.
+		 * 
+		 * @return
+		 */
+		public Class<? extends Asset> getProvidingClass() {
+			return this.providingClass;
+		}
+
+		/**
+		 * Checks if the Asset has been loaded.
+		 * 
+		 * @return
+		 */
+		public boolean isLoaded() {
+			return this.instance != null;
+		}
+	}
+
 	private class SerializedJelloObjectInstanceCreator implements InstanceCreator<Asset> {
 
 		private final Class<? extends Asset> clazz;
@@ -432,4 +463,5 @@ public class AssetDatabase {
 			return invokeConstructor(this.clazz, this.assetPath);
 		}
 	}
+
 }

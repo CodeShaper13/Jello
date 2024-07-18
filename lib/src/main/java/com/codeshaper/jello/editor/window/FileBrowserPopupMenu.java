@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
+import java.nio.file.Path;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -12,14 +13,18 @@ import javax.swing.JPopupMenu;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.codeshaper.jello.editor.CreateAssetEntries;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.CreateAssetEntries.MenuEntry;
+import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 public abstract class FileBrowserPopupMenu extends JPopupMenu {
 
-	private final JMenu create;
+	private final Path assetsDirectory;
+	private final CreateAssetEntries createEntries;
 	private final JMenuItem newFolder;
 	private final JMenuItem openLocation;
 	private final JMenuItem delete;
@@ -28,8 +33,11 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 
 	protected File file;
 
-	public FileBrowserPopupMenu() {
-		this.add(this.create = new JMenu("Create"));
+	public FileBrowserPopupMenu(Path assetsDirectory) {
+		this.assetsDirectory = assetsDirectory;
+		this.createEntries = new CreateAssetEntries();
+		
+		this.add(new CreateAssetMenu(createEntries));
 
 		this.add(this.newFolder = new JMenuItem("New Folder"));
 		this.newFolder.addActionListener(e -> {
@@ -121,37 +129,6 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 
 		this.delete.setEnabled(allowDeletingAndRenaming);
 		this.rename.setEnabled(allowDeletingAndRenaming);
-
-		this.create.removeAll();
-
-		for (var entry : JelloEditor.instance.assetDatabase.createAssetEntries) {
-			JMenuItem menuItem = new JMenuItem(entry.getMenuName());
-			menuItem.addActionListener(e -> {
-				File directory = this.getDirectory(this.file);
-				String assetName = entry.getNewAssetName();
-				
-				// Somehow... this works.
-				File f = new File(directory, assetName + "." + SerializedJelloObject.EXTENSION);
-				f = JelloFileUtils.getAvailableFileName(f);								
-				assetName = FilenameUtils.removeExtension(f.getName());
-				
-				String newAssetName = (String)JOptionPane.showInputDialog(
-		                this,
-		                "Name:",
-		                "Name Asset",
-		                JOptionPane.PLAIN_MESSAGE,
-		                null,
-		                null,
-		                assetName);
-				
-				SerializedJelloObject asset = JelloEditor.instance.assetDatabase.createAsset(entry.clazz,
-						directory.toPath(), newAssetName);
-				if (asset != null) {
-					this.onCreate(directory, asset);
-				}
-			});
-			this.create.add(menuItem);
-		}
 	}
 
 	private File getDirectory(File fileOrDirectory) {
@@ -159,6 +136,61 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 			return fileOrDirectory;
 		} else {
 			return fileOrDirectory.getParentFile();
+		}
+	}
+	
+	public class CreateAssetMenu extends JMenu implements ProjectReloadListener {
+
+		private final CreateAssetEntries createEntries;
+		
+		public CreateAssetMenu(CreateAssetEntries createEntries) {
+			super("Create");
+			
+			this.createEntries = createEntries;
+			
+			JelloEditor.instance.addProjectReloadListener(this);
+		}		
+		
+		@Override
+		public void onProjectReload(Phase phase) {
+			if(phase == Phase.POST_REBUILD) {
+				this.rebuild();
+			}
+		}
+		
+		private void rebuild() {
+			this.removeAll();
+			
+			for (MenuEntry entry : this.createEntries) {
+				JMenuItem menuItem = new JMenuItem(entry.getMenuName());
+				menuItem.addActionListener(e -> {
+					JelloEditor.getWindow(FileBrowserWindow.class);
+					
+					File directory = getDirectory(file);
+					String assetName = entry.getNewAssetName();
+					
+					// Somehow... this works.
+					File f = new File(directory, assetName + "." + SerializedJelloObject.EXTENSION);
+					f = JelloFileUtils.getAvailableFileName(f);								
+					assetName = FilenameUtils.removeExtension(f.getName());
+					
+					String newAssetName = (String)JOptionPane.showInputDialog(
+			                this,
+			                "Name:",
+			                "Name Asset",
+			                JOptionPane.PLAIN_MESSAGE,
+			                null,
+			                null,
+			                assetName);
+					
+					SerializedJelloObject asset = JelloEditor.instance.assetDatabase.createAsset(entry.clazz,
+							assetsDirectory.relativize(directory.toPath()), newAssetName);
+					if (asset != null) {
+						onCreate(directory, asset);
+					}
+				});
+				this.add(menuItem);
+			}
 		}
 	}
 }

@@ -7,6 +7,7 @@ import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.engine.Color;
@@ -65,5 +66,10 @@ public class Camera extends JelloComponent {
 
 	public Matrix4f getProjectionMatrix() {
 		return this.projectionMatrix;
+	}
+	
+	@Button
+	private void func() {
+		System.out.println("Cam GO: " + this.gameObject);
 	}
 }

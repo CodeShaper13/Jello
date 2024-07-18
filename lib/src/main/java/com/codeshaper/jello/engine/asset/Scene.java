@@ -7,6 +7,8 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
@@ -20,7 +22,6 @@ public class Scene extends SerializedJelloObject {
 	 * A list of all of the GameObjects in the scene.
 	 */
 	private List<GameObject> rootGameObjects;
-	public String sceneName;
 	
 	public Scene(Path assetFile) {
 		super(assetFile);
@@ -49,8 +50,8 @@ public class Scene extends SerializedJelloObject {
 	/**
 	 * @return The name of the scene.
 	 */
-	public String GetSceneName() {
-		return "";
+	public String getSceneName() {
+		return FilenameUtils.removeExtension(this.file.getFileName().toString());
 	}
 	
 	public Iterable<GameObject> getRootGameObjects() {

@@ -70,7 +70,7 @@ public class EditorMainFrame extends JFrame {
 		DockingState.restoreWindowLayout(this, defaultLayout);
 		DockingLayouts.addLayout("Default", new ApplicationLayout(defaultLayout));
 		
-		this.setJMenuBar(new EditorMenuBar(JelloEditor.REPORT_ISSUE_URL, JelloEditor.DOCUMENTAION_URL));
+		this.setJMenuBar(new EditorMenuBar(this, JelloEditor.REPORT_ISSUE_URL, JelloEditor.DOCUMENTAION_URL));
 		this.pack();
 		this.setVisible(true);
 		this.transferFocus();

@@ -19,39 +19,4 @@ public @interface CreateAssetEntry {
 	public String fileName() default DEFAULT_ASSET_NAME;
 
 	public String location() default DEFAULT_MENU_LOCATION;
-
-	public class Data {
-
-		private final String fileName;
-		private final String menuName;
-		public final Class<? extends SerializedJelloObject> clazz;
-
-		public Data(String fileName, String location, Class<? extends SerializedJelloObject> clazz) {
-			this.fileName = fileName;
-			this.menuName = location;
-			this.clazz = clazz;
-		}
-		
-		public String getMenuName() {
-			if(StringUtils.isBlank(this.menuName)) {
-				return this.clazz.getName();
-			} else {
-				return this.menuName;
-			}
-		}
-		
-		/**
-		 * Gets the assets default name without it's extension.
-		 * @return
-		 */
-		public String getNewAssetName() {
-			String fileName;
-			if(StringUtils.isBlank(this.fileName)) {
-				fileName = this.clazz.getName().toLowerCase();
-			} else {
-				fileName = this.fileName;
-			}
-			return fileName;
-		}
-	}
 }

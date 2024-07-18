@@ -73,7 +73,7 @@ public class FileBrowserWindow extends EditorWindow {
 		this.fileTreeModel = new FolderHierarchyModel(rootDirectory);
 		this.folderTree = new FolderHierarchy(this.fileTreeModel);
 
-		this.popupMenu = new FileBrowserPopupMenu() {
+		this.popupMenu = new FileBrowserPopupMenu(this.rootDirectory.toPath()) {
 
 			@Override
 			protected void onNewFolder(File newDirectory) {
