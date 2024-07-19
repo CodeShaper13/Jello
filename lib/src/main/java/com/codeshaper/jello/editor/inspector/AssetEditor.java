@@ -27,16 +27,15 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 		this.drawHeader(headerPanel);
 		panel.add(headerPanel, BorderLayout.NORTH);		
 		
-		// Asset fields.
-		JPanel contents = new JPanel();
-		contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
-		this.drawInspector(contents);
-		JScrollPane scrollPane = new JScrollPane(contents);
+		GuiDrawer drawer = new GuiDrawer();
+		this.drawAsset(drawer);
+		
+		JScrollPane scrollPane = new JScrollPane(drawer.getPanel());
 		panel.add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	protected void drawInspector(JPanel panel) {
-		
+	protected void drawAsset(GuiDrawer drawer) {
+		drawer.drawObject(this.target);
 	}
 	
 	protected void drawHeader(JPanel headerPanel) {
