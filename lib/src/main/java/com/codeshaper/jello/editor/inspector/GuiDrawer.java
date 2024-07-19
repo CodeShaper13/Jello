@@ -145,11 +145,6 @@ public class GuiDrawer {
 	
 	public void drawField(ExposedField exposedField) {
 		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
-
-		int modifiers = exposedField.backingField.getModifiers();
-		if(Modifier.isStatic(modifiers)) {
-			return;
-		}
 		
 		HideIf hideIf = exposedField.getAnnotation(HideIf.class);
 		if(hideIf != null) {
@@ -193,15 +188,17 @@ public class GuiDrawer {
 
 			panel.add(GuiUtil.combine(GuiUtil.label(exposedField), GuiUtil.combine(GuiUtil.label("Length"), numField)));
 
-			IFieldDrawer drawer = drawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
-			if (drawer != null) {
-				for (int i = 0; i < arrayLength; i++) {
-					JPanel fieldPanel;
-					try {
-						fieldPanel = drawer.draw(new ExposedArrayField(exposedField.backingField, arrayInstance, i));
-						arrayPanel.add(fieldPanel);
-					} catch (Exception e1) {
-						e1.printStackTrace();
+			if(arrayInstance != null) {
+				IFieldDrawer drawer = drawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
+				if (drawer != null) {
+					for (int i = 0; i < arrayLength; i++) {
+						JPanel fieldPanel;
+						try {
+							fieldPanel = drawer.draw(new ExposedArrayField(exposedField.backingField, arrayInstance, i));
+							arrayPanel.add(fieldPanel);
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
 					}
 				}
 			}
@@ -232,16 +229,13 @@ public class GuiDrawer {
 	 */
 	public void drawObject(Object object) {
 		for (Field field : object.getClass().getFields()) {
-			// Skip over the fields defined in this class, specifically the isEnabled field.
-			if (field.getDeclaringClass() == JelloComponent.class) {
+			// Only show public, non static fields.
+			int modifiers = field.getModifiers();			
+			if(Modifier.isStatic(modifiers) || !Modifier.isPublic(modifiers)) {
 				continue;
 			}
 
-			try {
-				this.drawField(new ExposedField(object, field));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			this.drawField(new ExposedField(object, field));
 		}
 	}
 

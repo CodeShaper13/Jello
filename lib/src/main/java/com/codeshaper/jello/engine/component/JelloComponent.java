@@ -8,7 +8,8 @@ import com.codeshaper.jello.engine.GameObject;
 public class JelloComponent implements Serializable {
 
 	public transient GameObject gameObject;
-	public boolean isEnabled;
+
+	private boolean isEnabled;
 
 	public JelloComponent(GameObject owner) {
 		this.gameObject = owner;

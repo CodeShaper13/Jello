@@ -119,7 +119,7 @@ public class Application {
 
 			if (this.appSettings.targetFps <= 0 || deltaFps >= 1) {
 				for (Camera camera : Camera.getAllCameras()) {
-					if (camera.isEnabled) {
+					if (camera.isEnabled()) {
 						this.renderer.render(this.sceneManager, camera, new Matrix4f(), this.window.getWidth(),
 								this.window.getHeight());
 					}

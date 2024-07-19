@@ -119,7 +119,7 @@ public class ComponentDrawer<T extends JelloComponent> {
 			this.setLayout(new GridBagLayout());
 
 			JCheckBox toggle = new JCheckBox();
-			toggle.setSelected(component.isEnabled);
+			toggle.setSelected(component.isEnabled());
 			toggle.addActionListener(e -> {
 				component.setEnabled(toggle.isSelected());
 			});
