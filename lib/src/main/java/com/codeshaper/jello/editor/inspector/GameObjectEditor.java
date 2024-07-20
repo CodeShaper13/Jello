@@ -59,7 +59,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 		// Header:
 		JPanel headerPanel = new JPanel(new BorderLayout());
 		this.enabledToggle = new JCheckBox();
-		this.enabledToggle.setEnabled(this.target.isEnabled());
+		this.enabledToggle.setSelected(this.target.isEnabled());
 		this.enabledToggle.addActionListener(e -> {
 			this.target.setEnabled(this.enabledToggle.isSelected());
 		});

@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -14,11 +15,7 @@ import com.codeshaper.jello.engine.component.JelloComponent;
 
 public class GameObject implements IInspectable {
 
-	/**
-	 * The name of the GameObject.
-	 */
-	public String name;
-
+	private String name;
 	private boolean isEnabled;
 	private List<JelloComponent> components;
 	private transient GameObject parent;
@@ -40,6 +37,23 @@ public class GameObject implements IInspectable {
 
 	public GameObject() {
 		this("GameObject");
+	}
+
+	/**
+	 * Gets the GameObject's name. It will never be null.
+	 * 
+	 * @return
+	 */
+	public String getName() {
+		return this.name != null ? this.name : StringUtils.EMPTY;
+	}
+
+	/**
+	 * Sets the GameObject's name. Passing {@link null} will set the name to a blank
+	 * String.
+	 */
+	public void setName(String name) {
+		this.name = name != null ? name : StringUtils.EMPTY;
 	}
 
 	@Override
@@ -314,7 +328,7 @@ public class GameObject implements IInspectable {
 	public int getComponentCount() {
 		return this.components.size();
 	}
-	
+
 	public JelloComponent getComponentAtIndex(int index) {
 		return this.components.get(index);
 	}
