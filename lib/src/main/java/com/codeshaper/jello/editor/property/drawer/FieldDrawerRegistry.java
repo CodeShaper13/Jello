@@ -13,7 +13,7 @@ import org.joml.Vector4d;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
 
-import com.codeshaper.jello.editor.GuiUtil;
+import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.asset.Asset;
 

@@ -6,10 +6,10 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
-import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.Utils;
@@ -122,18 +122,18 @@ public class Shader extends Asset {
 		}
 
 		@Override
-		protected void drawAsset(GuiDrawer drawer) {
-			drawer.drawLabel("Shader Id: " + this.target.shaderId);
-			drawer.drawLabel("Shader Type: " + this.target.shaderType);
-			drawer.drawSpace(8);
-			drawer.drawLabel("Compile Status:");
+		protected void drawAsset(GuiLayoutBuilder drawer) {
+			drawer.label("Shader Id: " + this.target.shaderId);
+			drawer.label("Shader Type: " + this.target.shaderType);
+			drawer.space(8);
+			drawer.label("Compile Status:");
 			String text;
 			if (this.target.hasCompileError) {
 				text = this.target.getCompileError();
 			} else {
 				text = "Success";
 			}
-			drawer.drawTextbox(text, 10);
+			drawer.textbox(text, 10);
 		}
 	}
 }

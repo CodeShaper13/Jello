@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.codeshaper.jello.editor.GuiUtil;
+import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 
 public class VectorDrawer implements IFieldDrawer {
@@ -17,14 +17,14 @@ public class VectorDrawer implements IFieldDrawer {
 	}
 
 	@Override
-	public JPanel draw(IExposedField field) throws Exception {
-		JPanel horizontalArea = GuiUtil.horizontalArea();
+	public JPanel draw(IExposedField field) {
+		JPanel horizontalArea = GuiBuilder.horizontalArea();
 		
 		for(String s : this.fieldNames) {
 			horizontalArea.add(new JLabel(StringUtils.capitalize(s)));
-			horizontalArea.add(GuiUtil.numberField(field.getSubProperty(s)));
+			horizontalArea.add(GuiBuilder.numberField(field.getSubProperty(s)));
 		}
 
-		return GuiUtil.combine(GuiUtil.label(field), horizontalArea);
+		return GuiBuilder.combine(GuiBuilder.label(field), horizontalArea);
 	}
 }

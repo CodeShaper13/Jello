@@ -7,10 +7,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
-import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.engine.AssetFileExtension;
 
 @AssetFileExtension(SerializedJelloObject.EXTENSION)
@@ -34,8 +34,8 @@ public class SerializedJelloObject extends Asset {
 		}
 
 		@Override
-		public void drawAsset(GuiDrawer drawer) {
-			drawer.drawLabel("SerializedData default inspector.");	
+		public void drawAsset(GuiLayoutBuilder drawer) {
+			drawer.label("SerializedData default inspector.");	
 			
 			super.drawAsset(drawer);
 		}

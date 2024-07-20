@@ -9,7 +9,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiUtil;
+import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.engine.asset.Asset;
@@ -19,7 +19,7 @@ public class AssetDrawer implements IFieldDrawer {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public JPanel draw(IExposedField field) throws Exception {
+	public JPanel draw(IExposedField field) {
 		AssetDatabase database = JelloEditor.instance.assetDatabase;
 
 		Class<? extends Asset> clazz = (Class<? extends Asset>) field.getType();
@@ -55,7 +55,7 @@ public class AssetDrawer implements IFieldDrawer {
 			}
 		});
 
-		return GuiUtil.combine(GuiUtil.label(field), comboBox);
+		return GuiBuilder.combine(GuiBuilder.label(field), comboBox);
 	}
 
 	private class ComboBoxRenderer extends DefaultListCellRenderer {

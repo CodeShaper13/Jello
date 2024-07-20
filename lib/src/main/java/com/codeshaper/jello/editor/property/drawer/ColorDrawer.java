@@ -4,18 +4,18 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiUtil;
+import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.engine.Color;
 
 public class ColorDrawer implements IFieldDrawer {
 
 	@Override
-	public JPanel draw(IExposedField field) throws Exception {
+	public JPanel draw(IExposedField field) {
 		JButton btn = new JButton();
 		btn.setBackground(((Color) field.get()).toAwtColor());
-		
-		JPanel panel = GuiUtil.combine(GuiUtil.label(field), btn);
+				
+		JPanel panel = GuiBuilder.combine(GuiBuilder.label(field), btn);
 		
 		btn.addActionListener(e -> {
 			java.awt.Color newColor = JColorChooser.showDialog(panel, "Choose Color", btn.getBackground());

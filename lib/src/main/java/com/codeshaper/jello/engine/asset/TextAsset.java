@@ -10,9 +10,9 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
-import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.engine.AssetFileExtension;
 
 @AssetFileExtension(".txt")
@@ -76,7 +76,7 @@ public class TextAsset extends Asset {
 		}
 
 		@Override
-		public void drawAsset(GuiDrawer drawer) {
+		public void drawAsset(GuiLayoutBuilder drawer) {
 			//panel.setLayout(new BorderLayout());
 			//JTextArea textArea = new JTextArea();
 			String text = "";
@@ -89,7 +89,7 @@ public class TextAsset extends Asset {
 			//textArea.setText(text);
 			//textArea.setEnabled(false);
 			
-			drawer.drawTextbox(text, 10);
+			drawer.textbox(text, 10);
 
 
 			//panel.add(textArea, BorderLayout.CENTER);

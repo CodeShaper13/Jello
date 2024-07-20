@@ -5,9 +5,13 @@ import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -20,6 +24,7 @@ import javax.swing.JTextField;
 import org.apache.commons.lang3.StringUtils;
 
 import com.codeshaper.jello.editor.property.IExposedField;
+import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
 import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
@@ -27,10 +32,22 @@ import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.TextBox;
 import com.codeshaper.jello.editor.swing.JNumberField;
 import com.codeshaper.jello.editor.swing.JNumberField.EnumNumberType;
+import com.codeshaper.jello.engine.Debug;
 
-@Deprecated
-public class GuiUtil {
+/**
+ * Provides a collection of static methods that create components for UIs.
+ * <p>
+ * This is a lower level alternative to using {@link GuiLayoutBuilder}.
+ */
+public class GuiBuilder {
 
+	/**
+	 * Combines 2 or more components into the same horizontal space. All components
+	 * receive equal space.
+	 * 
+	 * @param components
+	 * @return a {@link JPanel} holding the components.
+	 */
 	public static JPanel combine(JComponent... components) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(1, components.length));
@@ -60,28 +77,32 @@ public class GuiUtil {
 		return panel;
 	}
 
-	public static Component verticalSpace(int space) {
-		return Box.createVerticalStrut(space);
+	public static Component verticalSpace(int size) {
+		return Box.createVerticalStrut(size);
 	}
 
-	public static Component horizontalSpace(int space) {
-		return Box.createHorizontalStrut(space);
+	public static Component horizontalSpace(int size) {
+		return Box.createHorizontalStrut(size);
 	}
 
 	public static JSeparator separator() {
 		return new JSeparator();
 	}
-	
+
 	public static JComponent textbox(String text, int lines) {
 		JTextArea textArea = new JTextArea(lines, 0);
 		textArea.setEnabled(false);
 		textArea.setText(text);
-		JScrollPane scroll = new JScrollPane(textArea);		
+		JScrollPane scroll = new JScrollPane(textArea);
 		return scroll;
 	}
 
 	public static JLabel label(String label) {
 		return new JLabel(label);
+	}
+
+	public static JLabel label(String label, Icon icon, int alignment) {
+		return new JLabel(label, icon, alignment);
 	}
 
 	public static JLabel label(IExposedField field) {
@@ -120,7 +141,49 @@ public class GuiUtil {
 		}
 	}
 
-	public static JComponent checkBox(IExposedField field) {
+	public static JButton button(String label, Icon icon) {
+		return new JButton(label, icon);
+	}
+
+	public static JButton button(Method method, Object instance) {
+		String label = "";
+
+		Button buttonAnnotation = method.getAnnotation(Button.class);
+		if (buttonAnnotation != null) {
+			label = buttonAnnotation.value();
+		}
+
+		JButton button = new JButton(StringUtils.isWhitespace(label) ? method.getName() : label);
+		button.addActionListener((e) -> {
+			try {
+				method.setAccessible(true);
+				// if (method.trySetAccessible()) {
+				method.invoke(instance);
+				// } else {
+				Debug.log("Unable to invoke Button's method.");
+				// }
+			} catch (SecurityException | IllegalAccessException exception) {
+				Debug.log("Button's method can not be accessed.  Try making it public.");
+				exception.printStackTrace();
+			} catch (IllegalArgumentException exception) {
+				Debug.logError("Button's method must have no parameters.");
+				exception.printStackTrace();
+			} catch (InvocationTargetException exception) {
+				Debug.logError("Button's method threw %s exception", exception.getCause().toString());
+				exception.printStackTrace();
+			}
+		});
+
+		return button;
+	}
+
+	public static JCheckBox checkBox(boolean isOn) {
+		JCheckBox checkBox = new JCheckBox();
+		checkBox.setSelected(isOn);
+		return checkBox;
+	}
+
+	public static JCheckBox checkBox(IExposedField field) {
 		JCheckBox checkbox = new JCheckBox();
 		checkbox.setEnabled(!field.isReadOnly());
 		checkbox.setSelected((boolean) field.get());
@@ -130,19 +193,25 @@ public class GuiUtil {
 		return checkbox;
 	}
 
-	public static JNumberField numberField(int value) {
+	public static JNumberField intField(int value) {
 		JNumberField numberField = new JNumberField(EnumNumberType.func(int.class));
 		numberField.setValue(value);
 		return numberField;
 	}
 
-	public static JNumberField numberField(float value) {
+	public static JNumberField longField(long value) {
+		JNumberField numberField = new JNumberField(EnumNumberType.func(long.class));
+		numberField.setValue(value);
+		return numberField;
+	}
+
+	public static JNumberField floatField(float value) {
 		JNumberField numberField = new JNumberField(EnumNumberType.func(float.class));
 		numberField.setValue(value);
 		return numberField;
 	}
 
-	public static JNumberField numberField(double value) {
+	public static JNumberField doubleField(double value) {
 		JNumberField numberField = new JNumberField(EnumNumberType.func(double.class));
 		numberField.setValue(value);
 		return numberField;
@@ -156,15 +225,15 @@ public class GuiUtil {
 			// TODO
 		}
 
-		JNumberField numberField = new JNumberField(EnumNumberType.func(field.getType()));		
+		JNumberField numberField = new JNumberField(EnumNumberType.func(field.getType()));
 		MinValue min = field.getAnnotation(MinValue.class);
-		if(min != null) {
+		if (min != null) {
 			numberField.setMin(min.value());
 		}
 		MaxValue max = field.getAnnotation(MaxValue.class);
-		if(max != null) {
+		if (max != null) {
 			numberField.setMax(max.value());
-		}		
+		}
 		numberField.setEnabled(!field.isReadOnly());
 		numberField.setValue(field.get());
 		numberField.addActionListener(e -> {

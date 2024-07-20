@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import com.codeshaper.jello.editor.GuiUtil;
+import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.swing.JNumberField;
 import com.codeshaper.jello.engine.MathHelper;
@@ -16,14 +16,14 @@ import com.codeshaper.jello.engine.MathHelper;
 public class QuaternionfDrawer implements IFieldDrawer {
 
 	@Override
-	public JPanel draw(IExposedField field) throws Exception {
-		JPanel horizontalArea = GuiUtil.horizontalArea();
+	public JPanel draw(IExposedField field) {
+		JPanel horizontalArea = GuiBuilder.horizontalArea();
 		
 		Vector3f eu = MathHelper.quaternionToEulerAnglesDegrees((Quaternionf)field.get());
 		
-		JNumberField xField = GuiUtil.numberField(eu.x);
-		JNumberField yField = GuiUtil.numberField(eu.y);
-		JNumberField zField = GuiUtil.numberField(eu.z);
+		JNumberField xField = GuiBuilder.floatField(eu.x);
+		JNumberField yField = GuiBuilder.floatField(eu.y);
+		JNumberField zField = GuiBuilder.floatField(eu.z);
 		
 		ActionListener listener = new ActionListener() {
 			
@@ -38,13 +38,13 @@ public class QuaternionfDrawer implements IFieldDrawer {
 		yField.addActionListener(listener);		
 		zField.addActionListener(listener);
 		
-		horizontalArea.add(GuiUtil.label("X"));
+		horizontalArea.add(GuiBuilder.label("X"));
 		horizontalArea.add(xField);
-		horizontalArea.add(GuiUtil.label("Y"));
+		horizontalArea.add(GuiBuilder.label("Y"));
 		horizontalArea.add(yField);
-		horizontalArea.add(GuiUtil.label("Z"));
+		horizontalArea.add(GuiBuilder.label("Z"));
 		horizontalArea.add(zField);
 
-		return GuiUtil.combine(GuiUtil.label(field), horizontalArea);
+		return GuiBuilder.combine(GuiBuilder.label(field), horizontalArea);
 	}
 }

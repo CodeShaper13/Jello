@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
-import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.component.JelloComponent;
@@ -63,8 +63,8 @@ public class Scene extends SerializedJelloObject {
 		}
 
 		@Override
-		public void drawAsset(GuiDrawer drawer) {
-			drawer.drawButton("Open Scene", null, () -> {
+		public void drawAsset(GuiLayoutBuilder drawer) {
+			drawer.button("Open Scene", null, () -> {
             	JelloEditor.instance.setScene(target);
             });
 		}

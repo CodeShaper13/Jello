@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.asset.Asset;
 
 public class AssetEditor<T extends Asset> extends Editor<T> {
@@ -27,15 +28,15 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 		this.drawHeader(headerPanel);
 		panel.add(headerPanel, BorderLayout.NORTH);		
 		
-		GuiDrawer drawer = new GuiDrawer();
+		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawAsset(drawer);
 		
 		JScrollPane scrollPane = new JScrollPane(drawer.getPanel());
 		panel.add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	protected void drawAsset(GuiDrawer drawer) {
-		drawer.drawObject(this.target);
+	protected void drawAsset(GuiLayoutBuilder drawer) {
+		drawer.addAll(this.target);
 	}
 	
 	protected void drawHeader(JPanel headerPanel) {

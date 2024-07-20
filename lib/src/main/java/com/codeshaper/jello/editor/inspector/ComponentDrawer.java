@@ -4,8 +4,6 @@ import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 
 import javax.swing.Box;
@@ -20,10 +18,9 @@ import javax.swing.SwingConstants;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.window.InspectorWindow;
-import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.component.JelloComponent;
 
 public class ComponentDrawer<T extends JelloComponent> {
@@ -36,19 +33,15 @@ public class ComponentDrawer<T extends JelloComponent> {
 
 	public void makeGui(JPanel panel) {
 		panel.add(this.getHeader());
-
 		panel.add(new JSeparator());
 
-		GuiDrawer drawer = new GuiDrawer();
+		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawComponent(drawer);
-
-		this.drawButtons(drawer);
-		
 		panel.add(drawer.getPanel());
 	}
 
 	/**
-	 * Gets the header for the component.
+	 * Gets the header for the component. Override to provide a custom header.
 	 * 
 	 * @return
 	 */
@@ -57,43 +50,14 @@ public class ComponentDrawer<T extends JelloComponent> {
 	}
 
 	/**
-	 * Draws the component. By default, {@link GuiDrawer#drawObject(Object)} is
-	 * called to draw all exposed fields.
+	 * Draws the component. By default, {@link GuiLayoutBuilder#addAll(Object)} is
+	 * called to draw all exposed fields. Override to customize how the component is
+	 * drawn.
 	 * 
 	 * @param builder
 	 */
-	protected void drawComponent(GuiDrawer drawer) {
-		drawer.drawObject(this.component);
-	}
-
-	protected void drawButtons(GuiDrawer drawer) {
-		// Draw buttons.
-		for (Method method : this.component.getClass().getDeclaredMethods()) {
-			Button buttonAnnotation = method.getAnnotation(Button.class);
-			if (buttonAnnotation != null) {
-				if (method.getParameterCount() != 0) {
-					Debug.logError("Methods with the Button annotation must have 0 parameters.");
-					continue;
-				}
-
-				String buttonText = buttonAnnotation.value();
-				drawer.drawButton(
-						buttonText.isBlank() ? method.getName() : buttonText,
-						null,
-						() -> {
-							try {
-								if (method.trySetAccessible()) {
-									method.invoke(this.component);
-								} else {
-									// TODO should a message be logged here?
-								}
-							} catch (SecurityException | IllegalAccessException | IllegalArgumentException
-									| InvocationTargetException e1) {
-								e1.printStackTrace();
-							}
-						});
-			}
-		}
+	protected void drawComponent(GuiLayoutBuilder drawer) {
+		drawer.addAll(this.component);
 	}
 
 	/**
