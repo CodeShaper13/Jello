@@ -1,14 +1,10 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.awt.BorderLayout;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
@@ -77,8 +73,6 @@ public class TextAsset extends Asset {
 
 		@Override
 		public void drawAsset(GuiLayoutBuilder drawer) {
-			//panel.setLayout(new BorderLayout());
-			//JTextArea textArea = new JTextArea();
 			String text = "";
 			for (int i = 0; i < this.target.getLineCount(); i++) {
 				text += this.target.getLine(i);
@@ -86,13 +80,8 @@ public class TextAsset extends Asset {
 					text += "\n";
 				}
 			}
-			//textArea.setText(text);
-			//textArea.setEnabled(false);
 			
 			drawer.textbox(text, 10);
-
-
-			//panel.add(textArea, BorderLayout.CENTER);
 		}
 	}
 }
