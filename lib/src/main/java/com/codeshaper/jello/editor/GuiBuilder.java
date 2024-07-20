@@ -157,11 +157,7 @@ public class GuiBuilder {
 		button.addActionListener((e) -> {
 			try {
 				method.setAccessible(true);
-				// if (method.trySetAccessible()) {
 				method.invoke(instance);
-				// } else {
-				Debug.log("Unable to invoke Button's method.");
-				// }
 			} catch (SecurityException | IllegalAccessException exception) {
 				Debug.log("Button's method can not be accessed.  Try making it public.");
 				exception.printStackTrace();

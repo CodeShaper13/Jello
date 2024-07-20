@@ -6,8 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Creates a button in the inspector that when clicked will run the function.
- * The functions must have no parameters, or an error will be logged.
+ * Creates a button in the inspector that when clicked will invoke the decorated
+ * field. The method can have any access modifier. The method must be
+ * non-static, and have no parameters, or an error will be logged.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

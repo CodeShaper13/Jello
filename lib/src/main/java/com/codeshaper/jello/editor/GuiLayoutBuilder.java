@@ -22,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.codeshaper.jello.editor.property.ExposedArrayField;
 import com.codeshaper.jello.editor.property.ExposedField;
@@ -321,10 +322,8 @@ public class GuiLayoutBuilder {
 			}
 		}
 
-		for (Method method : clazz.getDeclaredMethods()) {
-			if (method.getAnnotation(Button.class) != null) {
-				this.panel.add(GuiBuilder.button(method, object));
-			}
+		for (Method method : MethodUtils.getMethodsWithAnnotation(clazz, Button.class, true, true)) {
+			this.panel.add(GuiBuilder.button(method, object));
 		}
 	}
 

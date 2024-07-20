@@ -3,6 +3,7 @@ package com.codeshaper.jello.engine.component;
 import java.io.Serializable;
 
 import com.codeshaper.jello.editor.inspector.ComponentDrawer;
+import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.engine.GameObject;
 
 public class JelloComponent implements Serializable {
@@ -58,6 +59,11 @@ public class JelloComponent implements Serializable {
 	 */
 	public void onEnable() {
 
+	}
+	
+	@Button
+	private void button123() {
+		System.out.println("123");
 	}
 
 	/**
