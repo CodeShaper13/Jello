@@ -49,11 +49,17 @@ import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 public class AssetDatabase implements ProjectReloadListener {
 
 	private final String[] builtinAsset = new String[] {
-			// Meshes:
-
-			// Shaders:
-			"builtin/shaders/scene.vert", "builtin/shaders/scene.frag",
-			// Textures:
+			// Meshes
+			"builtin/meshes/cone.blend",
+			"builtin/meshes/cube.blend",
+			"builtin/meshes/cylinder.blend",
+			"builtin/meshes/quad.blend",			
+			"builtin/meshes/sphere.blend",
+			"builtin/meshes/torus.blend",
+			// Shaders
+			"builtin/shaders/scene.vert",
+			"builtin/shaders/scene.frag",
+			// Textures
 			"builtin/textures/placeholderTexture.png", };
 
 	/**

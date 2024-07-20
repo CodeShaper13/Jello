@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.system.MemoryStack;
 
+import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.Debug;
 
@@ -25,6 +26,8 @@ public class Texture extends Asset {
 
 	public Texture(Path file) {
 		super(file);
+		
+		JelloEditor.instance.enableEditorContext();
 		
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			IntBuffer w = stack.mallocInt(1);
@@ -51,12 +54,6 @@ public class Texture extends Asset {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	public Texture(int width, int height, ByteBuffer buf) {
-		super(null);
-
-		generateTexture(width, height, buf);
 	}
 
 	public void bind() {
