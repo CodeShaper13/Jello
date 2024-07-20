@@ -21,12 +21,16 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+
 import com.codeshaper.jello.editor.property.ExposedArrayField;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.editor.property.drawer.IFieldDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
+import com.codeshaper.jello.editor.property.modifier.DontExposeField;
+import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.HideIf;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.ShowIf;
@@ -298,14 +302,23 @@ public class GuiLayoutBuilder {
 	public void addAll(Object object) {
 		Class<?> clazz = object.getClass();
 
-		for (Field field : clazz.getFields()) {
+		for (Field field : FieldUtils.getAllFields(clazz)) {
 			// Only show public, non static fields.
 			int modifiers = field.getModifiers();
-			if (Modifier.isStatic(modifiers) || !Modifier.isPublic(modifiers)) {
+			if (Modifier.isStatic(modifiers)) {
 				continue;
 			}
-
-			this.field(new ExposedField(object, field));
+			
+			boolean hasDontExpose = field.getAnnotation(DontExposeField.class) != null;
+			boolean hasExpose = field.getAnnotation(ExposeField.class) != null;
+			
+			if(hasDontExpose) {
+				continue;
+			}
+			
+			if(Modifier.isPublic(modifiers) || hasExpose) {
+				this.field(new ExposedField(object, field));
+			}
 		}
 
 		for (Method method : clazz.getDeclaredMethods()) {

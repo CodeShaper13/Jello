@@ -12,14 +12,14 @@ public class ExposedField implements IExposedField {
 
 	public final Object instance;
 	public final Field backingField;
-
+	
 	public ExposedField(Object instance, String fieldName) {
 		this.instance = instance;
 
 		Field field = null;
 		try {
 			field = instance.getClass().getDeclaredField(fieldName);
-			field.setAccessible(true);
+			field.trySetAccessible();
 		} catch (NoSuchFieldException | SecurityException e) {
 			e.printStackTrace();
 		}
@@ -29,6 +29,8 @@ public class ExposedField implements IExposedField {
 
 	public ExposedField(Object instance, Field field) {
 		this.instance = instance;
+		
+		field.trySetAccessible();
 		this.backingField = field;
 	}
 
@@ -45,7 +47,11 @@ public class ExposedField implements IExposedField {
 	@Override
 	public Object get() {
 		try {
-			return this.backingField.get(this.instance);
+			if(this.backingField.canAccess(this.instance)) {
+				return this.backingField.get(this.instance);
+			} else {
+				System.out.println("Can't get field value, it is inaccessible.");
+			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
@@ -56,8 +62,13 @@ public class ExposedField implements IExposedField {
 	@Override
 	public boolean set(Object value) {
 		try {
-			this.backingField.set(this.instance, value);
-			return true;
+			if(this.backingField.canAccess(this.instance)) {
+				this.backingField.set(this.instance, value);
+				return true;
+			} else {
+				System.out.println("Can't set field value, it is inaccessible.");
+				return false;
+			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			e.printStackTrace();
 		}

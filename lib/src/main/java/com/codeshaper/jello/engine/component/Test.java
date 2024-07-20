@@ -7,6 +7,8 @@ import org.joml.Vector3d;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
+import com.codeshaper.jello.editor.property.modifier.DontExposeField;
+import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.HideIf;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.ReadOnly;
@@ -16,7 +18,7 @@ import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.asset.Mesh;
 
 public class Test extends JelloComponent {
-	
+		
 	public int[] intArray = new int[] { 1, 2, 3 };
 	public String text = "Hello World";
 	public byte byte1 = 3;
@@ -39,6 +41,10 @@ public class Test extends JelloComponent {
 	public Vector3d vector = new Vector3d(1.05, 2.1, 3.2);
 	@Separator
 	public Mesh mesh = null;
+	@ExposeField
+	private int exposed;
+	@DontExposeField
+	public int hidden;
 
 	public Test(GameObject owner) {
 		super(owner);
