@@ -4,13 +4,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 import org.apache.commons.io.FilenameUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
+import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.component.JelloComponent;
@@ -65,12 +63,10 @@ public class Scene extends SerializedJelloObject {
 		}
 
 		@Override
-		public void drawInspector(JPanel panel) {
-            JButton btnOpenScene = new JButton("Open Scene");
-            btnOpenScene.addActionListener(e -> {
+		public void drawAsset(GuiDrawer drawer) {
+			drawer.drawButton("Open Scene", null, () -> {
             	JelloEditor.instance.setScene(target);
             });
-            panel.add(btnOpenScene);			
 		}
 	}
 }

@@ -13,6 +13,7 @@ import com.codeshaper.jello.editor.window.ConsoleWindow;
 import com.codeshaper.jello.editor.window.FileBrowserWindow;
 import com.codeshaper.jello.editor.window.HierarchyWindow;
 import com.codeshaper.jello.editor.window.InspectorWindow;
+import com.formdev.flatlaf.FlatDarkLaf;
 
 import ModernDocking.DockingRegion;
 import ModernDocking.app.AppState;
@@ -38,13 +39,15 @@ public class EditorMainFrame extends JFrame {
 	public EditorMainFrame(JelloEditor editor) {
 		super("Jello");
 
+		FlatDarkLaf.setup();
+
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new BorderLayout());
 		this.setPreferredSize(new Dimension(1000, 800));
 
 		Docking.initialize(this);
 		AppState.setPersistFile(new File(editor.rootProjectFolder.toFile(), "layout.xml"));
-		
+
 		this.sceneView = new SceneView();
 
 		this.inspector = new InspectorWindow();
@@ -55,21 +58,21 @@ public class EditorMainFrame extends JFrame {
 
 		RootDockingPanel root = new RootDockingPanel(this);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, root, this.sceneView);
-		SwingUtilities.invokeLater(new Runnable() {			
+		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				splitPane.setDividerLocation(0.75);				
+				splitPane.setDividerLocation(0.75);
 			}
 		});
 		splitPane.setResizeWeight(0.5);
-		//splitPane.setDividerLocation(0.75);
+		// splitPane.setDividerLocation(0.75);
 		this.add(splitPane, BorderLayout.CENTER);
 
 		// Create the default dockable layout.
 		WindowLayout defaultLayout = this.getDefaultLayout();
 		DockingState.restoreWindowLayout(this, defaultLayout);
 		DockingLayouts.addLayout("Default", new ApplicationLayout(defaultLayout));
-		
+
 		this.setJMenuBar(new EditorMenuBar(this, JelloEditor.REPORT_ISSUE_URL, JelloEditor.DOCUMENTAION_URL));
 		this.pack();
 		this.setVisible(true);

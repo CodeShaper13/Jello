@@ -41,7 +41,7 @@ public class GameObject implements IInspectable {
 	public GameObject() {
 		this("GameObject");
 	}
-	
+
 	@Override
 	public Editor<?> getInspectorDrawer() {
 		return new GameObjectEditor(this);
@@ -50,11 +50,11 @@ public class GameObject implements IInspectable {
 	public Vector3f getPosition() {
 		return this.localPosition;
 	}
-	
+
 	public void setPosition(float x, float y, float z) {
 		this.localPosition.set(x, y, z);
 	}
-	
+
 	public void setPosition(Vector3f position) {
 		this.localPosition.set(position);
 	}
@@ -62,7 +62,7 @@ public class GameObject implements IInspectable {
 	public Quaternionf getRotation() {
 		return this.localRotation;
 	}
-	
+
 	public void setRotation(Quaternionf rotation) {
 		this.localRotation.set(rotation);
 	}
@@ -70,11 +70,11 @@ public class GameObject implements IInspectable {
 	public Vector3f getEulerAngles() {
 		return MathHelper.quaternionToEulerAnglesDegrees(this.localRotation);
 	}
-	
+
 	public void setEulerAngles(float x, float y, float z) {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(new Vector3f(x, y, z)));
 	}
-	
+
 	public void setEulerAngles(Vector3f eulerAnglesDegrees) {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(eulerAnglesDegrees));
 	}
@@ -82,11 +82,11 @@ public class GameObject implements IInspectable {
 	public Vector3f getScale() {
 		return this.localScale;
 	}
-	
+
 	public void setScale(float x, float y, float z) {
 		this.localScale.set(x, y, z);
 	}
-	
+
 	public void setScale(Vector3f scale) {
 		this.localScale.set(scale);
 	}
@@ -100,21 +100,22 @@ public class GameObject implements IInspectable {
 	}
 
 	public void rotate(float xRotation, float yRotation, float zRotation) {
-		this.localRotation.rotateXYZ((float)Math.toDegrees(xRotation), (float)Math.toDegrees(yRotation), (float)Math.toDegrees(zRotation));
+		this.localRotation.rotateXYZ((float) Math.toDegrees(xRotation), (float) Math.toDegrees(yRotation),
+				(float) Math.toDegrees(zRotation));
 	}
 
 	public void rotate(float angle, Vector3f axis) {
 		this.localRotation.rotateAxis(angle, axis);
 	}
-	
+
 	public void scale(float scale) {
 		this.localScale.mul(scale);
 	}
-	
+
 	public void scale(float x, float y, float z) {
 		this.localScale.mul(x, y, z);
 	}
-	
+
 	public void scale(Vector3f scale) {
 		this.localScale.mul(scale);
 	}
@@ -171,7 +172,7 @@ public class GameObject implements IInspectable {
 	 * @param other
 	 * @return true if the o
 	 */
-	public boolean isAncestorOf(GameObject other) {		
+	public boolean isAncestorOf(GameObject other) {
 		return false;
 	}
 
@@ -305,7 +306,21 @@ public class GameObject implements IInspectable {
 		return false;
 	}
 
-	public Iterable<JelloComponent> getAllComponents() {
+	/**
+	 * Gets the number of components attached to the GameObject.
+	 * 
+	 * @return the number of attached components.
+	 */
+	public int getComponentCount() {
+		return this.components.size();
+	}
+	
+	public JelloComponent getComponentAtIndex(int index) {
+		return this.components.get(index);
+	}
+
+	// TODO protect
+	public List<JelloComponent> getAllComponents() {
 		return this.components;
 	}
 

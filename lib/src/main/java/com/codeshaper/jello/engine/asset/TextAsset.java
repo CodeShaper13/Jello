@@ -12,6 +12,7 @@ import javax.swing.JTextArea;
 
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
+import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.engine.AssetFileExtension;
 
 @AssetFileExtension(".txt")
@@ -75,9 +76,9 @@ public class TextAsset extends Asset {
 		}
 
 		@Override
-		public void drawInspector(JPanel panel) {
-			panel.setLayout(new BorderLayout());
-			JTextArea textArea = new JTextArea();
+		public void drawAsset(GuiDrawer drawer) {
+			//panel.setLayout(new BorderLayout());
+			//JTextArea textArea = new JTextArea();
 			String text = "";
 			for (int i = 0; i < this.target.getLineCount(); i++) {
 				text += this.target.getLine(i);
@@ -85,10 +86,13 @@ public class TextAsset extends Asset {
 					text += "\n";
 				}
 			}
-			textArea.setText(text);
-			textArea.setEnabled(false);
+			//textArea.setText(text);
+			//textArea.setEnabled(false);
+			
+			drawer.drawTextbox(text, 10);
 
-			panel.add(textArea, BorderLayout.CENTER);
+
+			//panel.add(textArea, BorderLayout.CENTER);
 		}
 	}
 }

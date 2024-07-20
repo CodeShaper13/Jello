@@ -1,17 +1,16 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.awt.BorderLayout;
 import java.nio.file.Path;
 
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
+import com.codeshaper.jello.editor.inspector.GuiDrawer;
 import com.codeshaper.jello.engine.AssetFileExtension;
 
 @AssetFileExtension(SerializedJelloObject.EXTENSION)
@@ -35,11 +34,10 @@ public class SerializedJelloObject extends Asset {
 		}
 
 		@Override
-		public void drawInspector(JPanel panel) {
-			panel.setLayout(new BorderLayout());
-			JLabel label = new JLabel("SerializedData default inspector.");			
-
-			panel.add(label, BorderLayout.CENTER);
+		public void drawAsset(GuiDrawer drawer) {
+			drawer.drawLabel("SerializedData default inspector.");	
+			
+			super.drawAsset(drawer);
 		}
 		
 		@Override

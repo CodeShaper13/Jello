@@ -28,6 +28,7 @@ import com.codeshaper.jello.editor.property.modifier.TextBox;
 import com.codeshaper.jello.editor.swing.JNumberField;
 import com.codeshaper.jello.editor.swing.JNumberField.EnumNumberType;
 
+@Deprecated
 public class GuiUtil {
 
 	public static JPanel combine(JComponent... components) {

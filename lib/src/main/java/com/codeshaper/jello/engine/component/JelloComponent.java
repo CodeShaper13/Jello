@@ -2,12 +2,14 @@ package com.codeshaper.jello.engine.component;
 
 import java.io.Serializable;
 
+import com.codeshaper.jello.editor.inspector.ComponentDrawer;
 import com.codeshaper.jello.engine.GameObject;
 
 public class JelloComponent implements Serializable {
 
 	public transient GameObject gameObject;
-	public boolean isEnabled;
+
+	private boolean isEnabled;
 
 	public JelloComponent(GameObject owner) {
 		this.gameObject = owner;
@@ -75,5 +77,9 @@ public class JelloComponent implements Serializable {
 	 */
 	public void onDestroy() {
 
+	}
+	
+	public ComponentDrawer<?> getComponentDrawer() {
+		return new ComponentDrawer<JelloComponent>(this);
 	}
 }

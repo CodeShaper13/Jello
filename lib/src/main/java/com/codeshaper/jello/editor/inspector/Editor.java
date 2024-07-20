@@ -7,6 +7,9 @@ import javax.swing.JPanel;
  */
 public class Editor<T extends IInspectable> {
 
+	/**
+	 * The object this Editor is drawing.
+	 */
 	protected final T target;
 
 	public Editor(T target) {
