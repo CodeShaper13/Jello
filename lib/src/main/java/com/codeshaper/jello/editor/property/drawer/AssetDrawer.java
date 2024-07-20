@@ -17,6 +17,7 @@ import com.codeshaper.jello.engine.database.AssetDatabase;
 
 public class AssetDrawer implements IFieldDrawer {
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public JPanel draw(IExposedField field) throws Exception {
 		AssetDatabase database = JelloEditor.instance.assetDatabase;
@@ -25,16 +26,14 @@ public class AssetDrawer implements IFieldDrawer {
 		List<Path> paths = database.getAllAssetsOfType(clazz, true);
 
 		JComboBox<Path> comboBox = new JComboBox<Path>();
-		comboBox.setRenderer(new ComboBoxRenderer());
+		comboBox.setRenderer(new ComboBoxRenderer(field));
 
 		comboBox.addItem(Path.of("None"));
 		for (Path path : paths) {
-			System.out.println("Path: " + path);
 			comboBox.addItem(path);
 		}
 
 		Object value = field.get();
-		System.out.println(field.getFieldName() + " value =  " + value);
 		if (value == null) {
 			comboBox.setSelectedIndex(0); // Have None selected.
 		} else {
@@ -42,7 +41,6 @@ public class AssetDrawer implements IFieldDrawer {
 			if (paths.contains(path)) {
 				comboBox.setSelectedItem(((Asset) value).path);
 			} else {
-				// The selected Asset was made at runtime.
 				comboBox.setSelectedIndex(-1);
 			}
 		}
@@ -53,23 +51,34 @@ public class AssetDrawer implements IFieldDrawer {
 			} else {
 				Path path = (Path) comboBox.getSelectedItem();
 				Asset asset = database.getAsset(path);
-				System.out.println("Setting: " + asset);
 				field.set(asset);
 			}
 		});
 
 		return GuiUtil.combine(GuiUtil.label(field), comboBox);
 	}
-	
+
 	private class ComboBoxRenderer extends DefaultListCellRenderer {
 
-	    public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus){
-	        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		private final IExposedField field;
+		
+		public ComboBoxRenderer(IExposedField field) {
+			this.field = field;
+		}
 
-	        if (value == null && index < 0){
-	            setText("(Runtime Instance)");
-	        }
-	        return this;
-	    }
-	  }
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+			if(value == null && index == -1) {
+				Asset asset = (Asset)field.get();
+				if(asset.path == null) {
+					this.setText("(Runtime Instance)");
+				} else {
+					this.setText("(Missing)");
+				}
+			}
+			
+			return this;
+		}
+	}
 }
