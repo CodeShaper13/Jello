@@ -87,7 +87,7 @@ public class HierarchyWindow extends EditorWindow {
 			public void editingStopped(ChangeEvent e) {
 				Object selectedNode = tree.getLastSelectedPathComponent();
 				if (selectedNode instanceof GameObjectTreeNode node) {
-					node.gameObject.name = editor.getCellEditorValue().toString();
+					node.gameObject.setName(editor.getCellEditorValue().toString());
 				}
 			}
 
@@ -173,7 +173,7 @@ public class HierarchyWindow extends EditorWindow {
 
 		@Override
 		public String toString() {
-			return this.gameObject.name;
+			return this.gameObject.getName();
 		}
 	}
 

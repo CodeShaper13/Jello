@@ -65,9 +65,9 @@ public class GameObjectEditor extends Editor<GameObject> {
 		});
 		headerPanel.add(this.enabledToggle, BorderLayout.WEST);
 		this.objectName = new JTextField();
-		this.objectName.setText(this.target.name);
+		this.objectName.setText(this.target.getName());
 		this.objectName.addActionListener(e -> {
-			this.target.name = this.objectName.getText();
+			this.target.setName(this.objectName.getText());
 		});
 		headerPanel.add(this.objectName, BorderLayout.CENTER);
 		headerPanel.add(Box.createGlue(), BorderLayout.EAST);
