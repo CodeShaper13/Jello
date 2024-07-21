@@ -87,6 +87,7 @@ public class JelloEditor implements ISceneProvider {
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
 	public final Renderer renderer;
+	public final EditorProperties properties;
 
 	/**
 	 * This list always has a length of 1, the current scene. A list so it can be
@@ -113,7 +114,9 @@ public class JelloEditor implements ISceneProvider {
 			}
 		}
 		this.writeEditorVersionFile();
-
+		
+		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
+		
 		this.listenerList = new EventListenerList();
 
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
@@ -186,6 +189,8 @@ public class JelloEditor implements ISceneProvider {
 		for (ProjectSaveListener listener : this.listenerList.getListeners(ProjectSaveListener.class)) {
 			listener.onSave();
 		}
+		
+		this.properties.save();
 	}
 
 	public void preformUndo() {

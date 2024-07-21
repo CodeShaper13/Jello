@@ -141,16 +141,18 @@ public class FileBrowserWindow extends EditorWindow {
 		this.setLayout(new BorderLayout());
 		this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileListScrollBar, folderContentsScrollBar);		
 		this.splitPane.setResizeWeight(0.5);
+		this.splitPane.setDividerLocation(JelloEditor.instance.properties.getInt(PROP_DIVIDER_LOCATION, 100));		
 		this.splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
 			int location = this.splitPane.getDividerLocation();
-			this.setProperty(PROP_DIVIDER_LOCATION, location);
+			JelloEditor.instance.properties.setInt(PROP_DIVIDER_LOCATION, location);
 		});
 		this.splitPane.setAutoscrolls(false);
 		this.add(this.splitPane, BorderLayout.CENTER);
 
 		this.showExtensions = new JCheckBoxMenuItem("Show Extensions");
+		this.showExtensions.setSelected(JelloEditor.instance.properties.getBoolean(PROP_SHOW_EXTENSIONS, true));
 		this.showExtensions.addActionListener(e -> {
-			this.setProperty(PROP_SHOW_EXTENSIONS, this.showExtensions.isSelected());
+			JelloEditor.instance.properties.setBoolean(PROP_SHOW_EXTENSIONS, this.showExtensions.isSelected());
 			this.fileList.updateUI(); // Causes a redraw.
 		});
 	}
@@ -169,12 +171,6 @@ public class FileBrowserWindow extends EditorWindow {
 	@Override
 	public boolean isWrappableInScrollpane() {
 		return false;
-	}
-	
-	@Override
-	public void updateProperties() {
-		this.showExtensions.setSelected(this.getPropertyBoolean(PROP_SHOW_EXTENSIONS, true));
-		this.splitPane.setDividerLocation(this.getPropertyInt(PROP_DIVIDER_LOCATION, 100));		
 	}
 	
 	private class FolderHierarchyModel implements TreeModel {
