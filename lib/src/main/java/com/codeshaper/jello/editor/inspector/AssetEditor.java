@@ -1,7 +1,10 @@
 package com.codeshaper.jello.editor.inspector;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -17,21 +20,37 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 	}
 	
 	@Override
-	public void draw(JPanel panel) {
-		super.draw(panel);
+	public void drawInInsepctor(JPanel panel) {
+		super.drawInInsepctor(panel);
 		
-        panel.setLayout(new BorderLayout());
+		panel.setLayout(new BorderLayout());
 		
 		// Header.
 		JPanel headerPanel = new JPanel();
 		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
+		headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 		this.drawHeader(headerPanel);
 		panel.add(headerPanel, BorderLayout.NORTH);		
 		
 		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawAsset(drawer);
 		
-		JScrollPane scrollPane = new JScrollPane(drawer.getPanel());
+		JPanel gridBagPanel = new JPanel(new GridBagLayout());
+		GridBagConstraints constraint = new GridBagConstraints();
+		constraint.anchor = GridBagConstraints.FIRST_LINE_START;
+		constraint.fill = GridBagConstraints.HORIZONTAL;
+		constraint.weightx = 1.0f;
+		constraint.weighty = 1.0f;
+		gridBagPanel.add(drawer.getPanel(), constraint);		
+		
+		JScrollPane scrollPane = new JScrollPane(
+				gridBagPanel,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createTitledBorder(""), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+		
 		panel.add(scrollPane, BorderLayout.CENTER);
 	}
 	

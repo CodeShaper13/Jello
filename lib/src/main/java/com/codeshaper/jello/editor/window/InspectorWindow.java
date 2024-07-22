@@ -67,7 +67,7 @@ public class InspectorWindow extends EditorWindow {
     	if(this.target != null) {
     		// Create a new editor.
     		this.editor = this.target.getInspectorDrawer();
-    		this.editor.draw(this.panel);
+    		this.editor.drawInInsepctor(this.panel);
     	}
     	
     	this.validate();

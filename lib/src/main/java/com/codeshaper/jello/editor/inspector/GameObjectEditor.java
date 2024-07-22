@@ -34,7 +34,6 @@ public class GameObjectEditor extends Editor<GameObject> {
 
 	private JCheckBox enabledToggle;
 	private JTextField objectName;
-	private JPanel propertiesPanel;
 	private JButton addComponentButton;
 	private JPanel componentListPanel;
 	private JScrollPane componentScrollPane;
@@ -44,58 +43,25 @@ public class GameObjectEditor extends Editor<GameObject> {
 	}
 
 	@Override
-	public void draw(JPanel p) {
-		super.draw(p);
+	public void drawInInsepctor(JPanel panel) {
+		super.drawInInsepctor(panel);
 
-		p.setLayout(new BorderLayout());
+		panel.setLayout(new BorderLayout());
 
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
+		JPanel upperPanel = new JPanel();
+		upperPanel.setLayout(new GridBagLayout());
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1;
 
 		// Header:
-		JPanel headerPanel = new JPanel(new BorderLayout());
-		this.enabledToggle = new JCheckBox();
-		this.enabledToggle.setSelected(this.target.isEnabled());
-		this.enabledToggle.addActionListener(e -> {
-			this.target.setEnabled(this.enabledToggle.isSelected());
-		});
-		headerPanel.add(this.enabledToggle, BorderLayout.WEST);
-		this.objectName = new JTextField();
-		this.objectName.setText(this.target.getName());
-		this.objectName.addActionListener(e -> {
-			this.target.setName(this.objectName.getText());
-		});
-		headerPanel.add(this.objectName, BorderLayout.CENTER);
-		headerPanel.add(Box.createGlue(), BorderLayout.EAST);
 		gbc.gridy = 0;
-		panel.add(headerPanel, gbc);
+		upperPanel.add(this.createHeaderPanel(), gbc);
 
-		// GameObject properties
-		this.propertiesPanel = new JPanel(new GridLayout(3, 1));
-		this.propertiesPanel.setBorder(BorderFactory.createTitledBorder("Transform"));
-
-		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
-		try {
-			IFieldDrawer vecDrawer = drawerRegistry.getDrawer(Vector3d.class);
-			IFieldDrawer quatDrawer = drawerRegistry.getDrawer(Quaternionf.class);
-
-			ExposedField posField = new ExposedField(this.target, "localPosition");
-			ExposedField rotationField = new ExposedField(this.target, "localRotation");
-			ExposedField scaleField = new ExposedField(this.target, "localScale");
-
-			this.propertiesPanel.add(vecDrawer.draw(posField));
-			this.propertiesPanel.add(quatDrawer.draw(rotationField));
-			this.propertiesPanel.add(vecDrawer.draw(scaleField));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		// Transform Panel.
 		gbc.gridy = 1;
-		panel.add(this.propertiesPanel, gbc);
+		upperPanel.add(this.createTransformPanel(), gbc);
 
 		this.addComponentButton = new JButton("Add Component");
 		this.addComponentButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -124,20 +90,18 @@ public class GameObjectEditor extends Editor<GameObject> {
 
 		});
 
-		p.add(panel, BorderLayout.NORTH);
-
 		// Component List:
 		this.componentListPanel = new JPanel();
 		this.componentListPanel.setLayout(new GridBagLayout());
-		// this.componentListPanel.setLayout(new BoxLayout(this.componentListPanel,
-		// BoxLayout.Y_AXIS));
+
 		this.componentScrollPane = new JScrollPane(this.componentListPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		this.componentScrollPane.setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createTitledBorder("Components"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-		p.add(this.componentScrollPane, BorderLayout.CENTER);
 
-		p.add(this.addComponentButton, BorderLayout.SOUTH);
+		panel.add(upperPanel, BorderLayout.NORTH);
+		panel.add(this.componentScrollPane, BorderLayout.CENTER);
+		panel.add(this.addComponentButton, BorderLayout.SOUTH);
 
 		this.refresh();
 	}
@@ -176,6 +140,48 @@ public class GameObjectEditor extends Editor<GameObject> {
 			}
 		}
 
-		this.propertiesPanel.getParent().revalidate();
+		this.addComponentButton.getParent().revalidate();
+	}
+	
+	private JPanel createHeaderPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+		this.enabledToggle = new JCheckBox();
+		this.enabledToggle.setSelected(this.target.isEnabled());
+		this.enabledToggle.addActionListener(e -> {
+			this.target.setEnabled(this.enabledToggle.isSelected());
+		});
+		panel.add(this.enabledToggle, BorderLayout.WEST);
+		this.objectName = new JTextField();
+		this.objectName.setText(this.target.getName());
+		this.objectName.addActionListener(e -> {
+			this.target.setName(this.objectName.getText());
+		});
+		panel.add(this.objectName, BorderLayout.CENTER);
+		panel.add(Box.createGlue(), BorderLayout.EAST);
+		
+		return panel;
+	}
+		
+	private JPanel createTransformPanel() {
+		JPanel panel = new JPanel(new GridLayout(3, 1));
+		panel.setBorder(BorderFactory.createTitledBorder("Transform"));
+
+		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
+		try {
+			IFieldDrawer vecDrawer = drawerRegistry.getDrawer(Vector3d.class);
+			IFieldDrawer quatDrawer = drawerRegistry.getDrawer(Quaternionf.class);
+
+			ExposedField posField = new ExposedField(this.target, "localPosition");
+			ExposedField rotationField = new ExposedField(this.target, "localRotation");
+			ExposedField scaleField = new ExposedField(this.target, "localScale");
+
+			panel.add(vecDrawer.draw(posField));
+			panel.add(quatDrawer.draw(rotationField));
+			panel.add(vecDrawer.draw(scaleField));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return panel;
 	}
 }

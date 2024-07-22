@@ -19,7 +19,7 @@ public class Editor<T extends IInspectable> {
 		this.target = target;
 	}
 	
-	public void draw(JPanel panel) { }
+	public void drawInInsepctor(JPanel panel) { }
 		
 	public void refresh() { }
 
