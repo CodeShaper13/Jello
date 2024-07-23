@@ -3,7 +3,10 @@ package com.codeshaper.jello.engine.asset;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
+import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.MeshBuilder;
+import com.codeshaper.jello.engine.ModelLoader;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -16,18 +19,27 @@ import static org.lwjgl.opengl.GL30.*;
 @AssetFileExtension(".obj")
 @AssetFileExtension(".blend")
 public class Mesh extends Asset {
-
+	
 	private int numVertices;
 	private int vaoId;
-	private List<Integer> vboIdList;
+	private List<Integer> vboIdList;	
 
 	public Mesh(Path file) {
 		super(file);
+		
+		MeshBuilder data = ModelLoader.loadModel(this.getFullPath());
+		this.constructMesh(data.verts, data.textCoords, data.indices);
 	}
 
 	public Mesh(float[] positions, float[] textCoords, int[] indices) {
 		super(null);
-
+		
+		this.constructMesh(positions, textCoords, indices);
+	}
+	
+	private void constructMesh(float[] positions, float[] textCoords, int[] indices) {
+		JelloEditor.instance.enableEditorContext();
+		
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			this.numVertices = indices.length;
 			vboIdList = new ArrayList<>();
@@ -45,27 +57,15 @@ public class Mesh extends Asset {
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
-			/*
-			// Color VBO
+			// Texture coordinates VBO
 			vboId = glGenBuffers();
 			vboIdList.add(vboId);
-			FloatBuffer colorsBuffer = stack.callocFloat(colors.length);
-			colorsBuffer.put(0, colors);
+			FloatBuffer textCoordsBuffer = stack.callocFloat(textCoords.length);
+			textCoordsBuffer.put(0, textCoords);
 			glBindBuffer(GL_ARRAY_BUFFER, vboId);
-			glBufferData(GL_ARRAY_BUFFER, colorsBuffer, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
 			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
-			*/
-			
-            // Texture coordinates VBO
-            vboId = glGenBuffers();
-            vboIdList.add(vboId);
-            FloatBuffer textCoordsBuffer = stack.callocFloat(textCoords.length);
-            textCoordsBuffer.put(0, textCoords);
-            glBindBuffer(GL_ARRAY_BUFFER, vboId);
-            glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+			glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
 			// Index VBO
 			vboId = glGenBuffers();
@@ -82,15 +82,32 @@ public class Mesh extends Asset {
 
 	@Override
 	public void cleanup() {
-		vboIdList.forEach(GL30::glDeleteBuffers);
-		glDeleteVertexArrays(vaoId);
+		this.vboIdList.forEach(GL30::glDeleteBuffers);
+		glDeleteVertexArrays(this.vaoId);
 	}
 
-	public int getNumVertices() {
-		return numVertices;
+	/**
+	 * Gets the number of vertices in the mesh.
+	 * 
+	 * @return
+	 */
+	public int getVerticeCount() {
+		return this.numVertices;
 	}
 
+	/**
+	 * Gets the Mesh's Vertex Attribute Object id.
+	 * 
+	 * @return
+	 */
 	public final int getVaoId() {
-		return vaoId;
+		return this.vaoId;
+	}
+	
+	/**
+	 * Uploads the changes to the Mesh to the GPU.
+	 */
+	public void apply() {
+		
 	}
 }

@@ -34,9 +34,7 @@ public class SerializedJelloObject extends Asset {
 		}
 
 		@Override
-		public void drawAsset(GuiLayoutBuilder drawer) {
-			drawer.label("SerializedData default inspector.");	
-			
+		public void drawAsset(GuiLayoutBuilder drawer) {			
 			super.drawAsset(drawer);
 		}
 		
