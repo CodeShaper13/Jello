@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL;
 
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
-import com.codeshaper.jello.engine.ISceneProvider;
+import com.codeshaper.jello.engine.SceneManager;
 import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
@@ -44,7 +44,7 @@ public class Renderer {
 		this.shaderProgram.cleanup();
 	}
 
-	public void render(ISceneProvider sceneProvider, Camera camera, Matrix4f viewMatrix, int w, int h) {
+	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int w, int h) {
 		camera.refreshProjectionMatrix(w, h);
 		
         Color clearColor = camera.backgroundColor;
@@ -60,7 +60,7 @@ public class Renderer {
         
          Matrix4f matrix = new Matrix4f();
         
-        for(Scene scene : sceneProvider.getScenes()) {
+        for(Scene scene : sceneManager.getScenes()) {
     		for(GameObject obj : scene.getRootGameObjects()) {
     			matrix.translationRotateScale(obj.getPosition(), obj.getRotation(), obj.getScale());
                 uniformsMap.setUniform(GAME_OBJECT_MATRIX, matrix);

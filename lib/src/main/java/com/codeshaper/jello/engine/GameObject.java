@@ -38,6 +38,11 @@ public class GameObject implements IInspectable {
 	public GameObject() {
 		this("GameObject");
 	}
+	
+	@Override
+	public String toString() {
+		return this.getName();
+	}
 
 	/**
 	 * Gets the GameObject's name. It will never be null.

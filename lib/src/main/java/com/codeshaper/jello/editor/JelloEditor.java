@@ -7,12 +7,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EventListener;
+import java.util.function.Consumer;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import com.codeshaper.jello.editor.SceneView.SceneAWTGLCanvas;
@@ -26,8 +27,8 @@ import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
-import com.codeshaper.jello.engine.ISceneProvider;
 import com.codeshaper.jello.engine.asset.Scene;
+import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.render.Renderer;
@@ -35,7 +36,7 @@ import com.codeshaper.jello.engine.render.Renderer;
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;
 
-public class JelloEditor implements ISceneProvider {
+public class JelloEditor {
 
 	public static final String EDITOR_VERSION = "0.0";
 	public static final String REPORT_ISSUE_URL = "http://github.com/CodeShaper13/Jello/issues";
@@ -88,12 +89,8 @@ public class JelloEditor implements ISceneProvider {
 	public final ILogHandler logHandler;
 	public final Renderer renderer;
 	public final EditorProperties properties;
+	public final EditorSceneManager sceneManager;
 
-	/**
-	 * This list always has a length of 1, the current scene. A list so it can be
-	 * used by {@link ISceneProvider}.
-	 */
-	private final List<Scene> loadedScene;
 	private final EventListenerList listenerList;
 	/**
 	 * The running instance of the application. Null if no instance is running.
@@ -101,12 +98,16 @@ public class JelloEditor implements ISceneProvider {
 	private Application application;
 
 	private JelloEditor(Path projectFolder) {
-		instance = this;
+		JelloEditor.instance = this;
+
+		boolean isInitialLoad = false;
+		
+		this.rootProjectFolder = projectFolder;
 
 		// Create the /assets folder if it doesn't exist.
-		this.rootProjectFolder = projectFolder;
 		this.assetsFolder = this.rootProjectFolder.resolve("assets");
 		if (!Files.exists(this.assetsFolder)) {
+			isInitialLoad = true;
 			try {
 				Files.createDirectories(this.assetsFolder);
 			} catch (IOException e) {
@@ -114,18 +115,16 @@ public class JelloEditor implements ISceneProvider {
 			}
 		}
 		this.writeEditorVersionFile();
-		
-		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
-		
-		this.listenerList = new EventListenerList();
 
+		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
+		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
 		this.assetDatabase.buildDatabase();
-
 		this.componentList = new ComponentList();
-
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
+
+		this.sceneManager = new EditorSceneManager(this);
 
 		this.window = new EditorMainFrame(this);
 
@@ -136,60 +135,32 @@ public class JelloEditor implements ISceneProvider {
 		GLFWErrorCallback.createPrint().set();
 
 		this.enableEditorContext();
-
-		this.loadedScene = new ArrayList<Scene>(1);
-		this.loadedScene.add(null);
-		this.setScene(this.constructDefaultScene());
-
-		this.reloadProject();
-	}
-
-	/**
-	 * Gets the currently loaded Scene in the Editor. There is always a scene
-	 * loaded, so null will never be returned.
-	 * 
-	 * @return the loaded scene.
-	 */
-	public Scene getScene() {
-		return this.loadedScene.get(0);
-	}
-
-	/**
-	 * Loads a new scene and does the necessary cleanup on the previously loaded
-	 * scene. Passing the scene that is currently loaded will perform a "reload"
-	 * (scene is unloaded, then loaded again).
-	 * 
-	 * @param scene The scene to load. May not be null.
-	 */
-	public void setScene(Scene scene) {
-		if (scene == null) {
-			Debug.logError("Can not set Scene to null");
-			return;
-		}
-		Scene oldScene = scene;
-
-		this.loadedScene.set(0, scene);
-
-		// Fire SceneChangeEvent.
-		for (SceneChangeListener listener : this.listenerList.getListeners(SceneChangeListener.class)) {
-			listener.onSceneChange(oldScene, scene);
-		}
-	}
-
-	@Override
-	public Iterable<Scene> getScenes() {
-		return this.loadedScene;
-	}
-
-	public void saveScene() {
-		Scene scene = this.getScene();
-		this.assetDatabase.saveAsset(scene);
-
-		// Raise event.
-		for (ProjectSaveListener listener : this.listenerList.getListeners(ProjectSaveListener.class)) {
-			listener.onSave();
-		}
 		
+		this.reloadProject();
+		
+		if(isInitialLoad) {
+			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
+			if(!this.assetDatabase.exists(path)) {
+				Scene scene = this.constructDefaultScene(path);
+				this.sceneManager.loadScene(scene);
+			}
+		} else {
+			this.sceneManager.readOpenScenesFromPreferences();
+		}
+	}
+
+	/**
+	 * Saves the project. This saves all open Scenes and and Editor preferences, and
+	 * raise the {@link ProjectSaveListener} event.
+	 */
+	public void saveProject() {
+		this.sceneManager.saveAllScenes();
+		this.sceneManager.writeOpenScenesToPreferences();
+
+		this.raiseEvent(ProjectSaveListener.class, (listener) -> {
+			listener.onSave();
+		});
+
 		this.properties.save();
 	}
 
@@ -215,9 +186,9 @@ public class JelloEditor implements ISceneProvider {
 		Debug.log("[Editor]: Reloading project.");
 
 		for (Phase p : Phase.values()) {
-			for (ProjectReloadListener listener : this.listenerList.getListeners(ProjectReloadListener.class)) {
+			this.raiseEvent(ProjectReloadListener.class, (listener) -> {
 				listener.onProjectReload(p);
-			}
+			});
 		}
 	}
 
@@ -235,12 +206,16 @@ public class JelloEditor implements ISceneProvider {
 		this.application = new Application();
 		this.application.onClose = () -> {
 			this.application = null;
-			this.firePlayModeEvent(State.STOPPED);
+
+			this.raiseEvent(PlayModeListener.class, (listener) -> {
+				listener.onPlaymodeChange(State.STOPPED);
+			});
 		};
 		this.application.start(); // TODO start in the correct scene.
 
-		this.firePlayModeEvent(State.STARTED);
-
+		this.raiseEvent(PlayModeListener.class, (listener) -> {
+			listener.onPlaymodeChange(State.STARTED);
+		});
 		return true;
 	}
 
@@ -256,7 +231,9 @@ public class JelloEditor implements ISceneProvider {
 		this.application.stop();
 		this.application = null;
 
-		this.firePlayModeEvent(State.STOPPED);
+		this.raiseEvent(PlayModeListener.class, (listener) -> {
+			listener.onPlaymodeChange(State.STOPPED);
+		});
 	}
 
 	/**
@@ -267,6 +244,12 @@ public class JelloEditor implements ISceneProvider {
 	 */
 	public boolean isInPlaying() {
 		return this.application != null;
+	}
+
+	public <T extends EventListener> void raiseEvent(Class<T> clazz, Consumer<T> c) {
+		for (T listener : this.listenerList.getListeners(clazz)) {
+			c.accept(listener);
+		}
 	}
 
 	////////////////////////////////////////
@@ -307,8 +290,15 @@ public class JelloEditor implements ISceneProvider {
 
 	////////////////////////////////////////
 
-	private Scene constructDefaultScene() {
-		Scene scene = new Scene(this.assetsFolder.resolve("scene.jelobj"));
+	/**
+	 * 
+	 * @return {@code true}
+	 */
+	private Scene constructDefaultScene(Path path) {
+		String assetName = FilenameUtils.removeExtension(path.getFileName().toString());
+		System.out.println(path.getParent());
+		Scene scene = (Scene) this.assetDatabase.createAsset(Scene.class, path.getParent(),
+				assetName);
 
 		GameObject cameraObj = scene.instantiateGameObject("Main Camera");
 		cameraObj.addComponent(Camera.class);
@@ -319,10 +309,12 @@ public class JelloEditor implements ISceneProvider {
 		meshObj.addComponent(MeshRenderer.class);
 
 		GameObject lightObj = scene.instantiateGameObject("Light");
-		// meshObj.addComponent(Light.class);
+		lightObj.addComponent(Light.class);
 		lightObj.setPosition(0, 0, -2);
 		lightObj.setEulerAngles(20, 45, 0);
-
+		
+		this.assetDatabase.saveAsset(scene);
+		
 		return scene;
 	}
 
@@ -335,12 +327,6 @@ public class JelloEditor implements ISceneProvider {
 			writer.write(EDITOR_VERSION);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	private void firePlayModeEvent(State state) {
-		for (PlayModeListener listener : this.listenerList.getListeners(PlayModeListener.class)) {
-			listener.onPlaymodeChange(state);
 		}
 	}
 }

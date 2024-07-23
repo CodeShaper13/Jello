@@ -74,7 +74,8 @@ public class EditorAssetDatabase extends AssetDatabase {
 
 	/**
 	 * Creates a new Asset in the project. If an Asset already exists at the passed
-	 * path, an error is logged and null is returned.
+	 * path, an error is logged and null is returned. The Asset will not be saved,
+	 * {@link EditorAssetDatabase#saveAsset(SerializedJelloObject)} must be used.
 	 * 
 	 * @param assetClass the class to instantiate
 	 * @param path       a path to the Asset relative to the \assets directory.
@@ -118,8 +119,9 @@ public class EditorAssetDatabase extends AssetDatabase {
 			writer.write(fullClassName + "\n");
 
 			// Serialize the class and write it to JSON.
-			RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
-			for(Class<JelloComponent> component : JelloEditor.instance.componentList) {
+			RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory
+					.of(JelloComponent.class);
+			for (Class<JelloComponent> component : JelloEditor.instance.componentList) {
 				adapterFactory.registerSubtype(component, component.getName());
 			}
 
@@ -128,7 +130,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			builder.serializeNulls();
 			builder.registerTypeAdapterFactory(adapterFactory);
 			Gson gson = builder.create();
-			
+
 			gson.toJson(asset, writer);
 
 			return true;

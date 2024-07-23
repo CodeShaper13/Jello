@@ -316,7 +316,7 @@ public class SceneView extends JPanel {
 			sceneCamera.perspective = toolbar.getPerspective();
 
 			Matrix4f viewMatrix = cc.getViewMatrix();
-			JelloEditor.instance.renderer.render(JelloEditor.instance, sceneCamera, viewMatrix, this.getWidth(), this.getHeight());
+			JelloEditor.instance.renderer.render(JelloEditor.instance.sceneManager, sceneCamera, viewMatrix, this.getWidth(), this.getHeight());
 
 			if(toolbar.isGridEnabled()) {
 				if(isWireframeEnabled) {

@@ -4,8 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FilenameUtils;
-
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
@@ -52,6 +50,14 @@ public class Scene extends SerializedJelloObject {
 		return this.getAssetName();
 	}
 	
+	public int getRootGameObjectCount() {
+		return this.rootGameObjects.size();
+	}
+	
+	public GameObject getRootGameObject(int index) {
+		return this.rootGameObjects.get(index);
+	}
+	
 	public Iterable<GameObject> getRootGameObjects() {
 		return this.rootGameObjects;
 	}
@@ -65,7 +71,7 @@ public class Scene extends SerializedJelloObject {
 		@Override
 		public void drawAsset(GuiLayoutBuilder drawer) {
 			drawer.button("Open Scene", null, () -> {
-            	JelloEditor.instance.setScene(target);
+            	JelloEditor.instance.sceneManager.loadScene(target);
             });
 		}
 	}

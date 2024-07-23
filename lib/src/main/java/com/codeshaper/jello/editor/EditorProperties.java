@@ -190,8 +190,18 @@ public class EditorProperties {
 	 * 
 	 * @param key the key of the property to remove.
 	 */
-	public void removeProperty(String key) {
+	public void remove(String key) {
 		this.props.remove(key);
+	}
+
+	/**
+	 * Checks if a property exists with a specific key.
+	 * 
+	 * @param key the key of the property.
+	 * @return {@code true} if the property exists.
+	 */
+	public boolean exists(String key) {
+		return this.props.containsKey(key);
 	}
 
 	/**

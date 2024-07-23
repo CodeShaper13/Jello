@@ -10,9 +10,13 @@ import com.codeshaper.jello.engine.asset.Scene;
 public interface SceneChangeListener extends EventListener {
 
 	/**
-	 * 
-	 * @param oldScene the previously loaded scene. May be null.
-	 * @param newScene the scene that was just loaded. May be null.
+	 * @param scene  the Scene that is changing.
+	 * @param action what happened to the Scene.
 	 */
-	void onSceneChange(Scene oldScene, Scene newScene);
+	void onSceneChange(Scene scene, Action action);
+
+	public enum Action {
+		LOAD,
+		UNLOAD,
+	}
 }
