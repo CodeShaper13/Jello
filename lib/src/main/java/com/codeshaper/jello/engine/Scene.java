@@ -9,6 +9,7 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
+import com.codeshaper.jello.engine.component.JelloComponent;
 
 @CreateAssetEntry(fileName = "scene", location = "Scene")
 public class Scene extends SerializedJelloObject {
@@ -26,7 +27,7 @@ public class Scene extends SerializedJelloObject {
 		super.onDeserialize();
 		
 		for(GameObject obj : this.rootGameObjects) {
-			this.recursivelySetScene(obj);
+			this.recursivelySetupObject(obj);
 		}
 	}
 
@@ -89,10 +90,14 @@ public class Scene extends SerializedJelloObject {
 		this.rootGameObjects.remove(gameObject);
 	}
 	
-	private void recursivelySetScene(GameObject gameObject) {
+	private void recursivelySetupObject(GameObject gameObject) {
 		gameObject.scene = this;
+		for(JelloComponent component : gameObject.getAllComponents()) {
+			component.gameObject = gameObject;
+		}
+		
 		for(GameObject child : gameObject.getChildren()) {
-			this.recursivelySetScene(child);
+			this.recursivelySetupObject(child);
 		}
 	}
 
