@@ -27,8 +27,8 @@ import javax.swing.tree.TreeSelectionModel;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.ComponentDrawer;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
-import com.codeshaper.jello.engine.asset.Scene;
 
 public class HierarchyWindow extends EditorWindow {
 
@@ -198,7 +198,11 @@ public class HierarchyWindow extends EditorWindow {
 		}
 
 		public void reloadSelected() {
-			this.raiseEvent(new TreeModelEvent(this, tree.getSelectionPath()));
+			this.reload(tree.getSelectionPath());
+		}
+		
+		public void reload(TreePath path) {
+			this.raiseEvent(new TreeModelEvent(this, path));
 		}
 
 		/**
@@ -248,7 +252,7 @@ public class HierarchyWindow extends EditorWindow {
 			TreeModelEvent event = new TreeModelEvent(source, path, childIndices, children);
 			this.raiseEvent(event);
 		}
-		
+
 		private void raiseEvent(TreeModelEvent event) {
 			for (TreeModelListener listener : this.listeners) {
 				listener.treeStructureChanged(event);
@@ -282,7 +286,7 @@ public class HierarchyWindow extends EditorWindow {
 
 			if (value instanceof Scene) {
 				this.setIcon(SCENE_ICON);
-				this.setText(((Scene) value).getSceneName());
+				this.setText(((Scene) value).getAssetName());
 			} else if (value instanceof GameObject) {
 				this.setIcon(GAME_OBJECT_ICON);
 				this.setText(((GameObject) value).getName());
@@ -310,20 +314,21 @@ public class HierarchyWindow extends EditorWindow {
 
 			JMenuItem add = new JMenuItem("New GameObject");
 			add.addActionListener(e -> {
-				scene.instantiateGameObject("New GameObject");
+				new GameObject("New GameObject", scene);
 				model.reloadSelected();
 			});
 			this.add(add);
 		}
 	}
-	
 
 	private class GameObjectMenu extends JPopupMenu {
 
 		public GameObjectMenu(GameObject gameObject) {
 			JMenuItem newChild = new JMenuItem("New Child");
 			newChild.addActionListener(e -> {
-				// TODO
+				new GameObject("New GameObject", gameObject);
+				model.reloadSelected();
+		        // TODO tree.expandPath(new TreePath(defaultMutableTreeNode.getPath()));
 			});
 			this.add(newChild);
 
@@ -335,7 +340,8 @@ public class HierarchyWindow extends EditorWindow {
 
 			JMenuItem delete = new JMenuItem("Delete");
 			delete.addActionListener(e -> {
-				// TODO
+				gameObject.destroy();
+				model.reload(tree.getSelectionPath().getParentPath());
 			});
 			this.add(delete);
 		}

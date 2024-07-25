@@ -130,6 +130,8 @@ public class EditorAssetDatabase extends AssetDatabase {
 			builder.serializeNulls();
 			builder.registerTypeAdapterFactory(adapterFactory);
 			Gson gson = builder.create();
+			
+			asset.onSerialize();
 
 			gson.toJson(asset, writer);
 

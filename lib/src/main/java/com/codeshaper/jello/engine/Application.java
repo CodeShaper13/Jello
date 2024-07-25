@@ -3,7 +3,6 @@ package com.codeshaper.jello.engine;
 import org.joml.Math;
 import org.joml.Matrix4f;
 
-import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.component.MeshRenderer;
@@ -51,7 +50,7 @@ public class Application {
 
 		// Jello
 		Scene scene = new Scene(null); // TODO
-		GameObject obj = scene.instantiateGameObject("GameObj1");
+		GameObject obj = new GameObject("GameObj1", scene);
 		Camera camera = obj.addComponent(Camera.class);
 		camera.onStart();
 		obj.addComponent(MeshRenderer.class);

@@ -2,8 +2,6 @@ package com.codeshaper.jello.engine;
 
 import java.util.ArrayList;
 
-import com.codeshaper.jello.engine.asset.Scene;
-
 public class SceneManager {
 
 	protected ArrayList<Scene> loadedScenes;

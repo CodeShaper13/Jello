@@ -27,7 +27,7 @@ import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
-import com.codeshaper.jello.engine.asset.Scene;
+import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
 import com.codeshaper.jello.engine.logging.ILogHandler;
@@ -300,15 +300,15 @@ public class JelloEditor {
 		Scene scene = (Scene) this.assetDatabase.createAsset(Scene.class, path.getParent(),
 				assetName);
 
-		GameObject cameraObj = scene.instantiateGameObject("Main Camera");
+		GameObject cameraObj = new GameObject("Main Camera", scene);
 		cameraObj.addComponent(Camera.class);
 		cameraObj.setPosition(0, 5, -10);
 		cameraObj.setEulerAngles(20, 0, 0);
 
-		GameObject meshObj = scene.instantiateGameObject("Cube");
+		GameObject meshObj = new GameObject("Cube", scene);
 		meshObj.addComponent(MeshRenderer.class);
 
-		GameObject lightObj = scene.instantiateGameObject("Light");
+		GameObject lightObj = new GameObject("Light", scene);
 		lightObj.addComponent(Light.class);
 		lightObj.setPosition(0, 0, -2);
 		lightObj.setEulerAngles(20, 45, 0);

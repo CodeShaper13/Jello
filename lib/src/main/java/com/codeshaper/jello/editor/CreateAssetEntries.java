@@ -27,7 +27,7 @@ public class CreateAssetEntries implements Iterable<CreateAssetEntries.MenuEntry
 	public CreateAssetEntries() {
 		this.builtinEntries = new ArrayList<MenuEntry>();
 
-		Reflections scan = new Reflections("com.codeshaper.jello.engine.asset");
+		Reflections scan = new Reflections("com.codeshaper.jello.engine");
 		Set<Class<?>> createAssetEntries = scan.get(Scanners.TypesAnnotated.of(CreateAssetEntry.class).asClass());
 		for (Class<?> clazz : createAssetEntries) {
 			CreateAssetEntry annotation = clazz.getAnnotation(CreateAssetEntry.class);

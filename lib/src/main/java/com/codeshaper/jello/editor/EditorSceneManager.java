@@ -4,9 +4,10 @@ import java.nio.file.Path;
 
 import com.codeshaper.jello.editor.event.SceneChangeListener;
 import com.codeshaper.jello.editor.event.SceneChangeListener.Action;
+import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
 import com.codeshaper.jello.engine.asset.Asset;
-import com.codeshaper.jello.engine.asset.Scene;
 
 public class EditorSceneManager extends SceneManager {
 
@@ -62,9 +63,13 @@ public class EditorSceneManager extends SceneManager {
 			String stringPath = this.editor.properties.getString("loadedScene" + i, null);
 			if (stringPath != null) {
 				Path path = Path.of(stringPath);
-				Asset asset = this.editor.assetDatabase.getAsset(path);
-				if (asset != null && asset instanceof Scene) {
-					this.loadScene((Scene) asset);
+				if(this.editor.assetDatabase.exists(path)) {
+					Asset asset = this.editor.assetDatabase.getAsset(path);
+					if (asset != null && asset instanceof Scene) {
+						this.loadScene((Scene) asset);
+					}	
+				} else {
+					Debug.logWarning("Unable to open Scene at \"%s\"", path.toString());
 				}
 			}
 		}

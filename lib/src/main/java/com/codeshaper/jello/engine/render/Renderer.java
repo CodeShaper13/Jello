@@ -5,8 +5,8 @@ import org.lwjgl.opengl.GL;
 
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
-import com.codeshaper.jello.engine.asset.Scene;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 

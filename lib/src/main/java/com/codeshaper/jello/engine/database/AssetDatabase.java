@@ -74,7 +74,7 @@ public class AssetDatabase implements ProjectReloadListener {
 		this.assetsFolder = projectFolder;
 		this.assets = new ArrayList<CachedAsset>();
 
-		Reflections scan = new Reflections("com.codeshaper.jello.engine.asset");
+		Reflections scan = new Reflections("com.codeshaper.jello.engine");
 
 		this.extentionMapping = new ExtentionMapping();
 		this.extentionMapping.compileBuiltinMappings(scan);
@@ -323,6 +323,7 @@ public class AssetDatabase implements ProjectReloadListener {
 				e.printStackTrace();
 				return null;
 			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 				return null;
 			}
 		} else {
@@ -356,6 +357,7 @@ public class AssetDatabase implements ProjectReloadListener {
 					
 					Gson gson = builder.create();
 					newInstance = (Asset) gson.fromJson(br, providingClass);
+					((SerializedJelloObject)newInstance).onDeserialize();
 				} catch (IOException e) {
 					e.printStackTrace();
 					newInstance = null;
@@ -453,7 +455,7 @@ public class AssetDatabase implements ProjectReloadListener {
 			return this.instance != null;
 		}
 	}
-
+	
 	private class SerializedJelloObjectInstanceCreator implements InstanceCreator<Asset> {
 
 		private final Class<? extends Asset> clazz;

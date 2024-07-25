@@ -2,7 +2,7 @@ package com.codeshaper.jello.editor.event;
 
 import java.util.EventListener;
 
-import com.codeshaper.jello.engine.asset.Scene;
+import com.codeshaper.jello.engine.Scene;
 
 /**
  * The listener interface for when the Application is started within the Editor.

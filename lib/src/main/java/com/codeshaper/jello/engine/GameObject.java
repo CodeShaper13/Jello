@@ -18,14 +18,52 @@ public class GameObject implements IInspectable {
 	private String name;
 	private boolean isEnabled;
 	private List<JelloComponent> components;
-	private transient GameObject parent;
 	private List<GameObject> children;
 	private Vector3f localPosition;
 	private Quaternionf localRotation;
 	private Vector3f localScale;
+	transient Scene scene;
+	private transient GameObject parent;
 
-	public GameObject(String name) {
-		this.name = name;
+	/**
+	 * Creates a new GameObject and adds it to a {@link Scene}.
+	 * 
+	 * @param name  the name of the GameObject.
+	 * @param scene the {@link Scene} to add the GameObjet to.
+	 * @throws IllegalArgumentException if {@code scene} is null.
+	 */
+	public GameObject(String name, Scene scene) {
+		this(name);
+
+		if (scene == null) {
+			throw new IllegalArgumentException("scene may not be null.");
+		}
+
+		scene.moveGameObjectTo(this);
+	}
+
+	/**
+	 * Creates a new GameObject and makes it a child of {@code parent}.
+	 * 
+	 * @param name   the name of the GameObject.
+	 * @param parent the GameObject to make the parent.
+	 * @throws IllegalArgumentException if {@code parent} is null.
+	 */
+	public GameObject(String name, GameObject parent) {
+		this(name);
+
+		if (parent == null) {
+			throw new IllegalArgumentException("parent may not be null.");
+		}
+
+		Scene parentScene = parent.getScene();
+		this.scene = parentScene;
+		parentScene.moveGameObjectTo(this);
+		this.setParent(parent);
+	}
+
+	private GameObject(String name) {
+		this.setName(name);
 		this.isEnabled = true;
 		this.children = new ArrayList<GameObject>();
 		this.components = new ArrayList<JelloComponent>();
@@ -35,10 +73,6 @@ public class GameObject implements IInspectable {
 		this.localScale = new Vector3f(1f, 1f, 1f);
 	}
 
-	public GameObject() {
-		this("GameObject");
-	}
-	
 	@Override
 	public String toString() {
 		return this.getName();
@@ -54,7 +88,7 @@ public class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Sets the GameObject's name. Passing {@link null} will set the name to a blank
+	 * Sets the GameObject's name. Passing {@code null} will set the name to a blank
 	 * String.
 	 */
 	public void setName(String name) {
@@ -64,6 +98,15 @@ public class GameObject implements IInspectable {
 	@Override
 	public Editor<?> getInspectorDrawer() {
 		return new GameObjectEditor(this);
+	}
+
+	/**
+	 * Gets the Scene that this GameObject resides in.
+	 * 
+	 * @return the {@link Scene} this GameObject is in.
+	 */
+	public Scene getScene() {
+		return this.scene;
 	}
 
 	public Vector3f getPosition() {
@@ -140,8 +183,21 @@ public class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Gets the parent of this GameObject. If it has no parent, {@code null} is
-	 * returned.
+	 * Destroys the GameObject and all of it's children.
+	 */
+	public void destroy() {
+		if (this.isRoot()) {
+			this.scene.remove(this);
+		} else {
+			int index = this.getIndexOf();
+			this.parent.children.remove(index);
+		}
+
+		// TODO invoke destroy callbacks
+	}
+
+	/**
+	 * Gets the GameObject's parent. If it has no parent, {@code null} is returned.
 	 * 
 	 * @return this GameObject's parent.
 	 */
@@ -149,59 +205,93 @@ public class GameObject implements IInspectable {
 		return this.parent;
 	}
 
+	/**
+	 * Sets the GameObject's parent. A GameObject can only be parented to another
+	 * GameObject in the same Scene. Pass {@code null} to make the GameObject a root
+	 * GameObject.
+	 * 
+	 * @param newParent the GameObject's parent, or null.
+	 * 
+	 * @see GameObject#scene
+	 * @see Scene#moveGameObjectTo(GameObject)
+	 */
 	public void setParent(GameObject parent) {
-		if (this.parent == null) {
-			// TODO no parent
+		if (parent != null && this.scene != parent.scene) {
+			return; // this and newParent belong to different scenes.
+		}
+		
+		if(parent != null && parent.isDescendantOf(this)) {
+			return;
 		}
 
-		// TODO
+		if (this.parent != null) {
+			// Remove the GameObject from it's previous parent.
+			int index = this.getIndexOf();
+			this.parent.children.remove(index);
+		}
+
+		if (parent == null) {
+			this.parent = null;
+			this.scene.moveGameObjectTo(this);
+		} else {
+			this.parent = parent;
+			this.parent.children.add(this);
+		}
 	}
 
 	/**
-	 * Checks if this GameObject is a descendant of another GameObject.
+	 * Checks if this GameObject is a descendant of another GameObject (it is this
+	 * GameObject, one of this GameObject's children, or a descendant of one of this
+	 * GameObject's children). If <code>other</code> is null, this method returns
+	 * false.
+	 * <p>
+	 * Note: a GameObject is considerer an descendant of itself.
 	 * 
 	 * @param parent
-	 * @return true if this is a child of {@code parent}
+	 * @return true if this is a child of, or a child of a child, ect., of
+	 *         {@code parent}
 	 */
-	public boolean isDescendantOf(GameObject parent) {
-		if (parent == null) {
-			return false; // Passing false is not allowed.
+	public boolean isDescendantOf(GameObject other) {
+		if (other == null) {
+			return false;
 		}
 
-		if (parent == this) {
-			return false; // You can not check is a GameObject is a child of itself.
-		}
-
-		if (this.parent == null) {
-			return false; // This object has no parent, it is guaranteed to not be a child of the passed
-							// GameObject.
-		}
-
-		if (this.parent == parent) {
-			return true;
-		} else {
-			this.parent.isDescendantOf(parent);
-		}
-
-		return false;
+		return other.isAncestorOf(this);
 	}
 
 	/**
+	 * Checks if a GameObject is an ancestor of this GameObject (it is this
+	 * GameObject, this GameObject's parent, or an ancestor of this GameObject's
+	 * parent). If <code>other</code> is null, this method returns false.
+	 * <p>
+	 * Note: a GameObject is considerer an ancestor of itself.
 	 * 
-	 * @param other
-	 * @return true if the o
+	 * @param other GameObject to check if it's an ancestor of this.
+	 * @return {@code true} if other is an ancestor of this GameObject.
 	 */
 	public boolean isAncestorOf(GameObject other) {
+		if (other == null) {
+			return false;
+		}
+
+		GameObject ancestor = this;
+
+		do {
+			if (ancestor == other) {
+				return true;
+			}
+		} while ((ancestor = ancestor.getParent()) != null);
+
 		return false;
 	}
 
 	/**
-	 * Checks if a GameObject is siblings with this GameObject. Siblings are
+	 * Checks if a GameObject is siblings with {@code other}. Siblings are
 	 * GameObjects that share the same immediate parent. GameObjects are also
 	 * siblings if both of them are root GameObjects, meaning they have no parent.
 	 * 
 	 * @param other
-	 * @return true if {@code other} and this GameObject are siblings.
+	 * @return {@code true} if {@code other} and this GameObject are siblings.
 	 */
 	public boolean isSiblingOf(GameObject other) {
 		if (other == null) {
@@ -222,7 +312,9 @@ public class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Returns the number of children this GameObject has.
+	 * Gets the number of children this GameObject has.
+	 * 
+	 * @return the number of children.
 	 */
 	public int getChildCount() {
 		return this.children.size();
@@ -244,29 +336,61 @@ public class GameObject implements IInspectable {
 		return this.children.get(index);
 	}
 
+	/**
+	 * Gets the order in the hierarchy of this GameObject in it's parent. If this is
+	 * a root GameObject, -1 is returned.
+	 * 
+	 * @return this GameObject's order in the hierarchy.
+	 */
+	public int getIndexOf() {
+		GameObject parent = this.getParent();
+		if (parent == this) {
+			return -1; // This is a root GameObject.
+		}
+
+		int childCount = parent.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			if (parent.children.get(i) == this) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	/**
+	 * Adds a new {@link JelloComponent} to this GameObject and returns the new
+	 * component.
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @return the new component.
+	 */
 	public <T extends JelloComponent> T addComponent(Class<T> type) {
 		// TODO handle errors.
 		try {
 			T component = type.getDeclaredConstructor(GameObject.class).newInstance(this);
 			this.components.add(component);
 			return component;
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
+		} catch (ExceptionInInitializerError e) {
 			e.printStackTrace();
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
+		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException | NoSuchMethodException
+				| SecurityException e) { // These should never happen.
 			e.printStackTrace();
 		}
 
 		return null;
 	}
 
+	/**
+	 * Gets a {@link JelloComponent} of a specific type.
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @return
+	 */
 	public <T extends JelloComponent> T getComponent(Class<T> type) {
 		if (type == null) {
 			return null;
@@ -280,12 +404,20 @@ public class GameObject implements IInspectable {
 		return null;
 	}
 
+	/**
+	 * Gets a {@link List} of {@link JelloComponent}s of a matching type on this
+	 * GameObject.
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @return a {@link List} of components.
+	 */
 	public <T extends JelloComponent> List<T> getComponents(Class<T> type) {
-		if (type == null) {
-			return null;
-		}
-
 		ArrayList<T> components = new ArrayList<T>();
+
+		if (type == null) {
+			return components;
+		}
 
 		for (JelloComponent component : this.components) {
 			if (type.isInstance(component)) {
@@ -296,6 +428,13 @@ public class GameObject implements IInspectable {
 		return components;
 	}
 
+	/**
+	 * Checks if the GameObject has a {@link JelloComponent} of a specific type.
+	 * 
+	 * @param <T>
+	 * @param type
+	 * @return {@code true} if this GameObject has a component.
+	 */
 	public <T extends JelloComponent> boolean hasComponent(Class<T> type) {
 		for (JelloComponent component : this.components) {
 			if (type.isInstance(component)) {
@@ -310,7 +449,7 @@ public class GameObject implements IInspectable {
 	 * 
 	 * @param <T>
 	 * @param type
-	 * @return true if a component was removed, false if one was not.
+	 * @return {@code true} if the component was removed.
 	 */
 	public <T extends JelloComponent> boolean removeComponent(Class<T> type) {
 		for (int i = 0; i < this.components.size(); i++) {
@@ -326,28 +465,11 @@ public class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Gets the number of components attached to the GameObject.
+	 * Removes a {@link JelloComponent} from the GameObject. If the
+	 * {@link JelloComponent} is not on this GameObject, nothing happens.
 	 * 
-	 * @return the number of attached components.
-	 */
-	public int getComponentCount() {
-		return this.components.size();
-	}
-
-	public JelloComponent getComponentAtIndex(int index) {
-		return this.components.get(index);
-	}
-
-	// TODO protect
-	public List<JelloComponent> getAllComponents() {
-		return this.components;
-	}
-
-	/**
-	 * 
-	 * @param component
-	 * @return true if the component was removed, false if it was not on this
-	 *         GameObject.
+	 * @param component the {@link JelloComponent} to remove.
+	 * @return {@code true} if the component was removed.
 	 */
 	public boolean removeComponent(JelloComponent component) {
 		int index = this.components.indexOf(component);
@@ -362,9 +484,42 @@ public class GameObject implements IInspectable {
 	}
 
 	/**
+	 * Gets the number of {@link JelloComponent} attached to this GameObject.
+	 * 
+	 * @return the number of attached components.
+	 */
+	public int getComponentCount() {
+		return this.components.size();
+	}
+
+	/**
+	 * Gets the {@link JelloComponent} at a index.
+	 * 
+	 * @param index
+	 * @return
+	 * @see GameObject#getComponentCount()
+	 */
+	public JelloComponent getComponentAtIndex(int index) {
+		return this.components.get(index);
+	}
+
+	public Iterable<JelloComponent> getAllComponents() {
+		return this.components;
+	}
+
+	/**
+	 * Checks if the GameObject is enabled.
+	 * 
+	 * @return {@code true} if the GameObject is enabled.
+	 */
+	public boolean isEnabled() {
+		return this.isEnabled;
+	}
+
+	/**
 	 * Enables or disables the GameObject.
 	 * 
-	 * @param enabled Is the GameObject enabled
+	 * @param enabled should the GameObject enabled
 	 */
 	public void setEnabled(boolean enabled) {
 		if (this.isEnabled == enabled) {
@@ -381,9 +536,5 @@ public class GameObject implements IInspectable {
 				component.onDisable();
 			}
 		}
-	}
-
-	public boolean isEnabled() {
-		return this.isEnabled;
 	}
 }
