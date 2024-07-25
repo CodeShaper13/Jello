@@ -176,8 +176,20 @@ public class SceneView extends JPanel {
 		private Point pointLastPos;
 
 		public CameraController() {
-			this.position = new Vector3f();
+			EditorProperties props = JelloEditor.instance.properties;
+
+			this.position = new Vector3f(
+					props.getFloat("camera.position.x", 0),
+					props.getFloat("camera.position.y", 0),
+					props.getFloat("camera.position.z", 0));
+			this.xRot = props.getFloat("camera.rotation.x", 0);
+			this.yRot = props.getFloat("camera.rotation.y", 0);
+			
 			this.viewMatrix = new Matrix4f();
+			
+			this.recalculate();
+			
+			JelloEditor.instance.addProjectSaveListener(() -> this.saveToProperties());
 		}
 
 		/**
@@ -275,6 +287,15 @@ public class SceneView extends JPanel {
 		private void recalculate() {
 			this.viewMatrix.identity().rotateX(this.xRot).rotateY(this.yRot);
 			this.viewMatrix.translate(-this.position.x, -this.position.y, -this.position.z);
+		}
+		
+		private void saveToProperties() {
+			EditorProperties props = JelloEditor.instance.properties;
+			props.setFloat("camera.position.x", this.position.x);
+			props.setFloat("camera.position.y", this.position.y);
+			props.setFloat("camera.position.z", this.position.z);
+			props.setFloat("camera.rotation.x", this.xRot);
+			props.setFloat("camera.rotation.y", this.yRot);
 		}
 	}
 
