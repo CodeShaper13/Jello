@@ -73,8 +73,9 @@ public class EditorAssetDatabase extends AssetDatabase {
 	}
 
 	/**
-	 * Creates a new Asset in the project. If an Asset already exists at the passed
-	 * path, an error is logged and null is returned. The Asset will not be saved,
+	 * Creates a new Asset in the project. If an Asset already exists at
+	 * {@link path} an error is logged and null is returned. If {@code path} is
+	 * null, the /assets folder will be used. Asset will not be saved,
 	 * {@link EditorAssetDatabase#saveAsset(SerializedJelloObject)} must be used.
 	 * 
 	 * @param assetClass the class to instantiate
@@ -84,7 +85,8 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 */
 	public SerializedJelloObject createAsset(Class<? extends SerializedJelloObject> assetClass, Path path,
 			String assetName) {
-		Path pathWithNameAndExtension = path.resolve(assetName + "." + SerializedJelloObject.EXTENSION);
+		String fileName = assetName + "." + SerializedJelloObject.EXTENSION;
+		Path pathWithNameAndExtension = path == null ? Path.of(fileName) : path.resolve(fileName);
 		if (this.exists(path)) {
 			Debug.logError("[Asset Database]: Could not create Asset, an Asset already exists at %s", path);
 			return null;
@@ -130,7 +132,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			builder.serializeNulls();
 			builder.registerTypeAdapterFactory(adapterFactory);
 			Gson gson = builder.create();
-			
+
 			asset.onSerialize();
 
 			gson.toJson(asset, writer);
