@@ -62,11 +62,17 @@ public class Renderer {
         
         for(Scene scene : sceneManager.getScenes()) {
     		for(GameObject obj : scene.getRootGameObjects()) {
+    			if(!obj.isEnabled()) {
+    				continue;
+    			}
+    			
     			matrix.translationRotateScale(obj.getPosition(), obj.getRotation(), obj.getScale());
                 uniformsMap.setUniform(GAME_OBJECT_MATRIX, matrix);
 
         		for(JelloComponent component : obj.getAllComponents()) {
-        			component.onRender();
+        			if(component.isEnabled()) {
+        				component.onRender();
+        			}
         		}
         	}        
     	}
