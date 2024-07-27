@@ -2,6 +2,7 @@ package com.codeshaper.jello.engine.component;
 
 import static org.lwjgl.opengl.GL30.*;
 
+import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.Mesh;
@@ -9,6 +10,7 @@ import com.codeshaper.jello.engine.asset.Mesh;
 /**
  * MeshRenderer components render meshes to the display.
  */
+@ComponentIcon("/editor/componentIcons/meshRenderer.png")
 public class MeshRenderer extends Renderer {
 
 	public Mesh mesh;

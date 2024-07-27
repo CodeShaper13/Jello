@@ -11,6 +11,7 @@ import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.engine.Color;
+import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Perspective;
 
@@ -19,6 +20,7 @@ import com.codeshaper.jello.engine.Perspective;
  * There can be an unlimited number of Camera's at any time. The order in which
  * camera are rendered is controlled by the {@link Camera#depth} field.
  */
+@ComponentIcon("/editor/componentIcons/camera.png")
 public class Camera extends JelloComponent {
 
 	private static List<Camera> cameras = new ArrayList<Camera>();

@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.net.URI;
+import java.net.URL;
 
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -21,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.window.InspectorWindow;
+import com.codeshaper.jello.engine.ComponentIcon;
+import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.component.JelloComponent;
 
 public class ComponentDrawer<T extends JelloComponent> {
@@ -78,6 +81,8 @@ public class ComponentDrawer<T extends JelloComponent> {
 				ComponentDrawer.class.getResource("/editor/icons/component_edit.png"));
 		public static ImageIcon removeIcon = new ImageIcon(
 				ComponentDrawer.class.getResource("/editor/icons/component_remove.png"));
+		public static ImageIcon defaultComponentIcon = new ImageIcon(
+				ComponentDrawer.class.getResource(ComponentIcon.DEFAULT_ICON_PATH));
 
 		public ComponentHeader(T component) {
 			this.setLayout(new GridBagLayout());
@@ -88,7 +93,9 @@ public class ComponentDrawer<T extends JelloComponent> {
 				component.setEnabled(toggle.isSelected());
 			});
 
-			JLabel componentName = new JLabel(component.getClass().getSimpleName(), SwingConstants.LEFT);
+			String label = component.getClass().getSimpleName();
+			Icon icon = this.getComponentIcon(component);			
+			JLabel componentName = new JLabel(label, icon, SwingConstants.RIGHT);
 
 			GridBagConstraints labelConstraint = new GridBagConstraints();
 			labelConstraint.weightx = 1;
@@ -126,7 +133,7 @@ public class ComponentDrawer<T extends JelloComponent> {
 		 * @param l       the event callback for when the button is clicked.
 		 * @return
 		 */
-		public JButton addButton(Icon icon, String tooltip, ActionListener l) {
+		protected JButton addButton(Icon icon, String tooltip, ActionListener l) {
 			JButton btn = new JButton(icon);
 			btn.addActionListener(l);
 			btn.setToolTipText(tooltip);
@@ -135,6 +142,22 @@ public class ComponentDrawer<T extends JelloComponent> {
 			this.add(Box.createHorizontalStrut(5));
 
 			return btn;
+		}
+		
+		private Icon getComponentIcon(JelloComponent component) {
+			ComponentIcon annotation = component.getClass().getAnnotation(ComponentIcon.class);
+			if(annotation != null) {
+				String path = annotation.value();
+				URL url = ComponentDrawer.class.getResource(path);
+				if(url != null) {
+					return new ImageIcon(url);
+				} else {
+					Debug.logError("Couldn't load component icon at ", path);
+					return defaultComponentIcon;
+				}
+			} else {
+				return defaultComponentIcon;
+			}
 		}
 	}
 }
