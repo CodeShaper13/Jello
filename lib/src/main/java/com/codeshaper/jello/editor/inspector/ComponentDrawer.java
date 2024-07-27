@@ -73,11 +73,11 @@ public class ComponentDrawer<T extends JelloComponent> {
 	public class ComponentHeader extends JPanel {
 
 		public static ImageIcon helpIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editorIcons/component_help.png"));
+				ComponentDrawer.class.getResource("/editor/icons/component_help.png"));
 		public static ImageIcon editIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editorIcons/component_edit.png"));
+				ComponentDrawer.class.getResource("/editor/icons/component_edit.png"));
 		public static ImageIcon removeIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editorIcons/component_remove.png"));
+				ComponentDrawer.class.getResource("/editor/icons/component_remove.png"));
 
 		public ComponentHeader(T component) {
 			this.setLayout(new GridBagLayout());

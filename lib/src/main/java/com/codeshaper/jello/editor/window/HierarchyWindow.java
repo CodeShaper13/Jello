@@ -33,9 +33,9 @@ import com.codeshaper.jello.engine.SceneManager;
 public class HierarchyWindow extends EditorWindow {
 
 	private static final ImageIcon SCENE_ICON = new ImageIcon(
-			ComponentDrawer.class.getResource("/editor/icons/hierarchyScene.png"));
+			ComponentDrawer.class.getResource("/editor/icons/hierarchy_scene.png"));
 	private static final ImageIcon GAME_OBJECT_ICON = new ImageIcon(
-			ComponentDrawer.class.getResource("/editor/icons/hierarchyGameObject.png"));
+			ComponentDrawer.class.getResource("/editor/icons/hierarchy_gameObject.png"));
 
 	private HierarchyTreeModel model;
 	private HierarchyTree tree;
