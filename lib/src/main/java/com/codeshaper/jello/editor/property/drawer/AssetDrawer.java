@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.property.IExposedField;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
@@ -37,9 +38,9 @@ public class AssetDrawer implements IFieldDrawer {
 		if (value == null) {
 			comboBox.setSelectedIndex(0); // Have None selected.
 		} else {
-			Path path = ((Asset) value).path;
-			if (paths.contains(path)) {
-				comboBox.setSelectedItem(((Asset) value).path);
+			AssetLocation location = ((Asset)value).location;
+			if (location != null && paths.contains(location.getPath())) {
+				comboBox.setSelectedItem(location.getPath());
 			} else {
 				comboBox.setSelectedIndex(-1);
 			}
@@ -71,7 +72,7 @@ public class AssetDrawer implements IFieldDrawer {
 
 			if(value == null && index == -1) {
 				Asset asset = (Asset)field.get();
-				if(asset.path == null) {
+				if(asset.isRuntimeAsset()) {
 					this.setText("(Runtime Instance)");
 				} else {
 					this.setText("(Missing)");

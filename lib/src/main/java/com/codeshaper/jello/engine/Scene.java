@@ -1,6 +1,5 @@
 package com.codeshaper.jello.engine;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +15,8 @@ public class Scene extends SerializedJelloObject {
 
 	private List<GameObject> rootGameObjects;
 
-	public Scene(Path path) {
-		super(path);
+	public Scene(AssetLocation location) {
+		super(location);
 
 		this.rootGameObjects = new ArrayList<GameObject>();
 	}

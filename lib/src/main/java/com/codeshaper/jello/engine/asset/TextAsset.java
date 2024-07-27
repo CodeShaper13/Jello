@@ -10,14 +10,15 @@ import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.AssetLocation;
 
 @AssetFileExtension(".txt")
 public class TextAsset extends Asset {
 
 	private List<String> lines;
 
-	public TextAsset(Path file) {
-		super(file);
+	public TextAsset(AssetLocation location) {
+		super(location);
 
 		this.lines = new ArrayList<String>();
 
@@ -58,7 +59,7 @@ public class TextAsset extends Asset {
 
 	private void read() {
 		try {
-			Path fullPath = this.getFullPath();
+			Path fullPath = this.location.getFullPath();
 			this.lines = Files.readAllLines(fullPath);
 		} catch (IOException e) {
 			e.printStackTrace();

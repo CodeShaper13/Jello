@@ -5,12 +5,12 @@ import org.lwjgl.system.MemoryStack;
 
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.MeshBuilder;
 import com.codeshaper.jello.engine.ModelLoader;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -24,10 +24,10 @@ public class Mesh extends Asset {
 	private int vaoId;
 	private List<Integer> vboIdList;	
 
-	public Mesh(Path file) {
-		super(file);
+	public Mesh(AssetLocation location) {
+		super(location);
 		
-		MeshBuilder data = ModelLoader.loadModel(this.getFullPath());
+		MeshBuilder data = ModelLoader.loadModel(location);
 		this.constructMesh(data.verts, data.textCoords, data.indices);
 	}
 

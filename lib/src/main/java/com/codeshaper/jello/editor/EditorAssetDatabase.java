@@ -11,6 +11,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.JelloComponent;
@@ -21,21 +22,8 @@ import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 public class EditorAssetDatabase extends AssetDatabase {
 
-	private final Gson gson;
-
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
-
-		RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
-		// for(Class<JelloComponent> component : this.componentList) {
-		// adapterFactory.registerSubtype(component, component.getName());
-		// }
-
-		GsonBuilder builder = new GsonBuilder();
-		builder.setPrettyPrinting();
-		builder.serializeNulls();
-		builder.registerTypeAdapterFactory(adapterFactory);
-		this.gson = builder.create();
 	}
 
 	/**
@@ -92,11 +80,12 @@ public class EditorAssetDatabase extends AssetDatabase {
 			return null;
 		}
 
-		SerializedJelloObject asset = (SerializedJelloObject) this.invokeConstructor(assetClass,
-				this.toFullPath(pathWithNameAndExtension));
+		AssetLocation location = new AssetLocation(pathWithNameAndExtension);
+		SerializedJelloObject asset = (SerializedJelloObject) this.invokeConstructor(assetClass, location);
 		this.saveAsset(asset);
 
-		CachedAsset cachedAsset = new CachedAsset(pathWithNameAndExtension, assetClass);
+		CachedAsset cachedAsset = new CachedAsset(location, assetClass);
+		cachedAsset.instance = asset;
 		this.assets.add(cachedAsset);
 
 		return asset;
@@ -114,25 +103,15 @@ public class EditorAssetDatabase extends AssetDatabase {
 			throw new IllegalArgumentException("asset may not be null");
 		}
 
-		File file = asset.getFullPath().toFile();
+		File file = asset.location.getFullPath().toFile();
 		try (FileWriter writer = new FileWriter(file)) {
 			// Write the class name as the first line.
 			String fullClassName = asset.getClass().getName();
 			writer.write(fullClassName + "\n");
 
-			// Serialize the class and write it to JSON.
-			RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory
-					.of(JelloComponent.class);
-			for (Class<JelloComponent> component : JelloEditor.instance.componentList) {
-				adapterFactory.registerSubtype(component, component.getName());
-			}
+			Gson gson = this.createGsonBuilder().create();
 
-			GsonBuilder builder = new GsonBuilder();
-			builder.setPrettyPrinting();
-			builder.serializeNulls();
-			builder.registerTypeAdapterFactory(adapterFactory);
-			Gson gson = builder.create();
-
+			this.assetAdapterFactory.wroteRoot = false;
 			asset.onSerialize();
 
 			gson.toJson(asset, writer);
@@ -190,5 +169,20 @@ public class EditorAssetDatabase extends AssetDatabase {
 		}
 
 		throw new NotImplementedException();
+	}
+
+	@Override
+	protected GsonBuilder createGsonBuilder() {
+		GsonBuilder builder = super.createGsonBuilder();
+
+		// When Components are deserialized, this makes sure their exact type is created
+		// again, instead of the parent type.
+		RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+		for (Class<JelloComponent> component : JelloEditor.instance.componentList) {
+			adapterFactory.registerSubtype(component, component.getName());
+		}
+		builder.registerTypeAdapterFactory(adapterFactory);
+
+		return builder;
 	}
 }

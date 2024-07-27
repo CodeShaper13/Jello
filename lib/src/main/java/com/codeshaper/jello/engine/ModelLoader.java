@@ -1,11 +1,9 @@
 package com.codeshaper.jello.engine;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,20 +21,20 @@ public class ModelLoader {
 	private ModelLoader() {
 	}
 
-	public static MeshBuilder loadModel(Path path) {
-		return loadModel(path,
+	public static MeshBuilder loadModel(AssetLocation location) {
+		return loadModel(location,
 				aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate
 						| aiProcess_FixInfacingNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights
 						| aiProcess_PreTransformVertices);
 
 	}
 
-	public static MeshBuilder loadModel(Path path, int flags) {
-		String texturePath = path.toString();
-		try (InputStream stream = texturePath.startsWith("builtin")
-				? ModelLoader.class.getResourceAsStream("/" + texturePath)
-				: new FileInputStream(texturePath)) {
-
+	public static MeshBuilder loadModel(AssetLocation location, int flags) {
+		//String texturePath = path.toString();
+		//try (InputStream stream = texturePath.startsWith("builtin")
+		//		? ModelLoader.class.getResourceAsStream("/" + texturePath)
+		//		: new FileInputStream(texturePath)) {
+		try (InputStream stream = location.getInputSteam()) {
 			byte[] byteArray = IOUtils.toByteArray(stream);
 			ByteBuffer buffer = BufferUtils.createByteBuffer(byteArray.length);
 	        buffer.put(byteArray);

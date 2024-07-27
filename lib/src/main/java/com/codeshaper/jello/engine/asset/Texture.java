@@ -1,17 +1,16 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
 
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.system.MemoryStack;
 
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -24,8 +23,8 @@ public class Texture extends Asset {
 
 	private int textureId;
 
-	public Texture(Path file) {
-		super(file);
+	public Texture(AssetLocation location) {
+		super(location);
 		
 		JelloEditor.instance.enableEditorContext();
 		
@@ -34,8 +33,8 @@ public class Texture extends Asset {
 			IntBuffer h = stack.mallocInt(1);
 			IntBuffer channels = stack.mallocInt(1);
 
-			String texturePath = this.getFullPath().toString();						
-			try(InputStream stream = texturePath.startsWith("builtin") ? this.getClass().getResourceAsStream("/" + texturePath) :new FileInputStream(texturePath)) {
+			String texturePath = this.location.getFullPath().toString();						
+			try(InputStream stream = location.getInputSteam()) {
 				byte[] byteArray = IOUtils.toByteArray(stream);
 				ByteBuffer bytes = stack.bytes(byteArray);
 				ByteBuffer buf = stbi_load_from_memory(bytes, w, h, channels, 4);

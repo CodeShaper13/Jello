@@ -2,8 +2,6 @@ package com.codeshaper.jello.engine.asset;
 
 import static org.lwjgl.opengl.GL46.*;
 
-import java.nio.file.Path;
-
 import org.apache.commons.io.FilenameUtils;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
@@ -11,6 +9,7 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.Utils;
 
@@ -22,12 +21,12 @@ public class Shader extends Asset {
 	private final int shaderId;
 	private final boolean hasCompileError;
 
-	public Shader(Path file) {
-		super(file);
+	public Shader(AssetLocation location) {
+		super(location);
 
-		System.out.println("instantiating shader " + file.toString());
+		System.out.println("instantiating shader " + location.getPath().toString());
 
-		switch (FilenameUtils.getExtension(this.getFullPath().toString())) {
+		switch (FilenameUtils.getExtension(location.getFullPath().toString())) {
 		case "frag":
 			this.shaderType = ShaderType.FRAGMENT;
 			break;
@@ -40,7 +39,7 @@ public class Shader extends Asset {
 
 		JelloEditor.instance.enableEditorContext();
 
-		String code = Utils.readFile(file);
+		String code = Utils.readFile(location.getPath());
 		this.shaderId = glCreateShader(this.shaderType.type);
 		if (this.shaderId == 0) {
 			Debug.logError("Unable to create shader");

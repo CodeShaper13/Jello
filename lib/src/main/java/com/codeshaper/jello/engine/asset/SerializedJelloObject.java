@@ -1,7 +1,5 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.nio.file.Path;
-
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -12,14 +10,15 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.AssetLocation;
 
 @AssetFileExtension(SerializedJelloObject.EXTENSION)
 public class SerializedJelloObject extends Asset {
 
 	public static final String EXTENSION = "jelobj";
 
-	public SerializedJelloObject(Path file) {
-		super(file);
+	public SerializedJelloObject(AssetLocation location) {
+		super(location);
 	}
 
 	/**

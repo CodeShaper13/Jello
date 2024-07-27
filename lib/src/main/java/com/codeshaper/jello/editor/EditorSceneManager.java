@@ -79,7 +79,7 @@ public class EditorSceneManager extends SceneManager {
 		int sceneCount = this.getLoadedSceneCount();
 		this.editor.properties.setInt("loadedSceneCount", sceneCount);
 		for (int i = 0; i < sceneCount; i++) {
-			this.editor.properties.setString("loadedScene" + i, this.getLoadedScene(i).path.toString());
+			this.editor.properties.setString("loadedScene" + i, this.getLoadedScene(i).location.getPath().toString());
 		}
 	}
 }

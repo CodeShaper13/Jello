@@ -1,17 +1,16 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.nio.file.Path;
-
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
+import com.codeshaper.jello.engine.AssetLocation;
 
 @AssetFileExtension("java")
 public class Script extends Asset {
 
-	public Script(Path path) {
-		super(path);
+	public Script(AssetLocation location) {
+		super(location);
 	}
 	
 	@Override

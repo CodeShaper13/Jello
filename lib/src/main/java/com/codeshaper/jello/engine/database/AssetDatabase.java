@@ -22,6 +22,7 @@ import org.reflections.Reflections;
 
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.Material;
@@ -30,6 +31,12 @@ import com.codeshaper.jello.engine.component.JelloComponent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 /**
@@ -53,7 +60,7 @@ public class AssetDatabase implements ProjectReloadListener {
 			"builtin/meshes/cone.blend",
 			"builtin/meshes/cube.blend",
 			"builtin/meshes/cylinder.blend",
-			"builtin/meshes/quad.blend",			
+			"builtin/meshes/quad.blend",
 			"builtin/meshes/sphere.blend",
 			"builtin/meshes/torus.blend",
 			// Shaders
@@ -68,7 +75,10 @@ public class AssetDatabase implements ProjectReloadListener {
 	protected final Path assetsFolder;
 	protected final List<CachedAsset> assets;
 	protected final ExtentionMapping extentionMapping;
+	
 	protected RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory;
+	protected AssetTypeAdapterFactory assetAdapterFactory;
+	protected SerializedJelloObjectInstanceCreator serializedJelloObjectInstanceCreator;
 
 	public AssetDatabase(Path projectFolder) {
 		this.assetsFolder = projectFolder;
@@ -79,6 +89,9 @@ public class AssetDatabase implements ProjectReloadListener {
 		this.extentionMapping = new ExtentionMapping();
 		this.extentionMapping.compileBuiltinMappings(scan);
 		this.extentionMapping.compileThirdPartyMappings();
+
+		this.assetAdapterFactory = new AssetTypeAdapterFactory();
+		this.serializedJelloObjectInstanceCreator = new SerializedJelloObjectInstanceCreator(null, null);
 
 		JelloEditor.instance.addProjectReloadListener(this);
 	}
@@ -230,13 +243,15 @@ public class AssetDatabase implements ProjectReloadListener {
 	}
 
 	public TableModel getTableModel() {
-		DefaultTableModel model = new DefaultTableModel(this.assets.size(), 3);
-		model.setColumnIdentifiers(new String[] { "Path:", "Class:", "Is Loaded?" });
+		DefaultTableModel model = new DefaultTableModel(this.assets.size(), 4);
+		model.setColumnIdentifiers(new String[] { "Path:", "Class:", "Is Loaded?", "" });
 		for (int i = 0; i < this.assets.size(); i++) {
 			CachedAsset asset = this.assets.get(i);
 			model.setValueAt(asset.getPath(), i, 0);
 			model.setValueAt(asset.getProvidingClass().getSimpleName(), i, 1);
 			model.setValueAt(asset.isLoaded(), i, 2);
+			String s = asset.instance != null ? asset.instance.location.getPath().toString() : "NUL";
+			model.setValueAt(s, i, 3);
 		}
 
 		return model;
@@ -274,7 +289,7 @@ public class AssetDatabase implements ProjectReloadListener {
 	 * @param fullPath a full path.
 	 * @return the path relative to the /assets directory.
 	 */
-	protected Path toRelativePath(Path fullPath) {
+	public Path toRelativePath(Path fullPath) {
 		return this.assetsFolder.relativize(fullPath);
 	}
 
@@ -284,7 +299,8 @@ public class AssetDatabase implements ProjectReloadListener {
 			Debug.log("ERROR!"); // TODO
 			return false;
 		} else {
-			CachedAsset cachedAsset = new CachedAsset(path, clazz);
+			AssetLocation location = new AssetLocation(path);
+			CachedAsset cachedAsset = new CachedAsset(location, clazz);
 			this.assets.add(cachedAsset);
 			return true;
 		}
@@ -304,6 +320,17 @@ public class AssetDatabase implements ProjectReloadListener {
 			}
 		}
 		return null;
+	}
+
+	protected GsonBuilder createGsonBuilder() {
+		GsonBuilder builder = new GsonBuilder();
+
+		builder.setPrettyPrinting();
+		builder.serializeNulls();
+		builder.registerTypeAdapterFactory(this.componentAdapterFactory);
+		builder.registerTypeAdapterFactory(this.assetAdapterFactory);
+
+		return builder;
 	}
 
 	/**
@@ -343,6 +370,7 @@ public class AssetDatabase implements ProjectReloadListener {
 		} else {
 			// Asset has not been loaded, instantiate the asset.
 			Path fullAssetPath = toFullPath(assetPath);
+			AssetLocation location = new AssetLocation(assetPath);
 			Asset newInstance;
 			Class<? extends Asset> providingClass = cachedAsset.getProvidingClass();
 			if (SerializedJelloObject.class.isAssignableFrom(providingClass)) {
@@ -350,20 +378,19 @@ public class AssetDatabase implements ProjectReloadListener {
 				try (BufferedReader br = new BufferedReader(new FileReader(fullAssetPath.toFile()))) {
 					br.readLine(); // Skip the first line, it states the providing class and is not valid JSON.
 
-					GsonBuilder builder = new GsonBuilder();
-					builder.registerTypeAdapterFactory(this.componentAdapterFactory);
+					GsonBuilder builder = this.createGsonBuilder();
 					builder.registerTypeAdapter(providingClass,
-							new SerializedJelloObjectInstanceCreator(providingClass, assetPath));
-					
+							new SerializedJelloObjectInstanceCreator(providingClass, location));
 					Gson gson = builder.create();
+					
 					newInstance = (Asset) gson.fromJson(br, providingClass);
-					((SerializedJelloObject)newInstance).onDeserialize();
+					((SerializedJelloObject) newInstance).onDeserialize();
 				} catch (IOException e) {
 					e.printStackTrace();
 					newInstance = null;
 				}
 			} else {
-				newInstance = this.invokeConstructor(providingClass, fullAssetPath);
+				newInstance = this.invokeConstructor(providingClass, location);
 			}
 
 			if (newInstance != null) {
@@ -376,10 +403,10 @@ public class AssetDatabase implements ProjectReloadListener {
 		}
 	}
 
-	protected Asset invokeConstructor(Class<? extends Asset> clazz, Path assetFile) {
+	protected Asset invokeConstructor(Class<? extends Asset> clazz, AssetLocation location) {
 		try {
-			Constructor<? extends Asset> ctor = clazz.getDeclaredConstructor(Path.class);
-			return (Asset) ctor.newInstance(assetFile);
+			Constructor<? extends Asset> ctor = clazz.getDeclaredConstructor(AssetLocation.class);
+			return (Asset) ctor.newInstance(location);
 		} catch (SecurityException | IllegalAccessException | IllegalArgumentException exception) {
 			this.logError(exception.getMessage(), exception);
 		} catch (ExceptionInInitializerError exception) {
@@ -406,15 +433,15 @@ public class AssetDatabase implements ProjectReloadListener {
 
 	protected class CachedAsset {
 
-		private Path path;
-		private Class<? extends Asset> providingClass;
+		protected final AssetLocation location;
+		protected final Class<? extends Asset> providingClass;
 		/**
 		 * The instance of the Asset. If the Asset is not loaded, this is null.
 		 */
 		public Asset instance;
 
-		public CachedAsset(Path path, Class<? extends Asset> providingClass) {
-			this.path = path;
+		public CachedAsset(AssetLocation location, Class<? extends Asset> providingClass) {
+			this.location = location;
 			this.providingClass = providingClass;
 		}
 
@@ -425,14 +452,12 @@ public class AssetDatabase implements ProjectReloadListener {
 		 * @return a relative path to the Asset.
 		 */
 		public Path getPath() {
-			return this.path;
+			return this.location.getPath();
 		}
 
+		// This is only used when renaming an asset.
 		public void setPath(Path path) {
-			this.path = path;
-			if (this.isLoaded()) {
-				this.instance.path = path;
-			}
+			this.location.updateLocation(path);
 		}
 
 		/**
@@ -455,21 +480,70 @@ public class AssetDatabase implements ProjectReloadListener {
 			return this.instance != null;
 		}
 	}
-	
+
 	private class SerializedJelloObjectInstanceCreator implements InstanceCreator<Asset> {
 
 		private final Class<? extends Asset> clazz;
-		private final Path assetPath;
+		private final AssetLocation location;
 
-		public SerializedJelloObjectInstanceCreator(Class<? extends Asset> clazz, Path assetPath) {
+		public SerializedJelloObjectInstanceCreator(Class<? extends Asset> clazz, AssetLocation location) {
 			this.clazz = clazz;
-			this.assetPath = assetPath;
+			this.location = location;
 		}
 
 		@Override
 		public Asset createInstance(Type type) {
-			return invokeConstructor(this.clazz, this.assetPath);
+			return invokeConstructor(this.clazz, this.location);
 		}
 	}
 
+	public class AssetTypeAdapterFactory implements TypeAdapterFactory {
+
+		public boolean wroteRoot;
+
+		public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+			if (!Asset.class.isAssignableFrom(type.getRawType())) {
+				return null;
+			}
+
+			TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+
+			return new TypeAdapter<T>() {
+
+				public void write(JsonWriter out, T value) throws IOException {
+					if (!wroteRoot) {
+						wroteRoot = true;
+						delegate.write(out, value);
+					} else {
+						Asset asset = (Asset) value;
+						if(asset  == null) {
+							out.nullValue();
+						} else {
+							if (asset.isRuntimeAsset()) {
+								out.nullValue();//.value("NUL"); // TODO should this be null?
+							} else {
+								Path path = ((Asset) value).location.getPath();
+								out.value(path.toString());
+							}
+						}
+					}
+				}
+
+				@SuppressWarnings("unchecked")
+				public T read(JsonReader in) throws IOException {
+					JsonToken token = in.peek();
+					if (token == JsonToken.STRING) {
+						String relativePath = in.nextString();
+						Asset asset = JelloEditor.instance.assetDatabase.getAsset(relativePath);
+						return (T) asset;
+					} else if(token == JsonToken.NULL) {
+						in.nextNull();
+						return null;
+					} else {
+						return delegate.read(in);
+					}
+				}
+			};
+		}
+	}
 }

@@ -1,44 +1,32 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.nio.file.Path;
-
 import org.apache.commons.io.FilenameUtils;
 
-import com.codeshaper.jello.editor.EditorAssetDatabase;
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.IInspectable;
-import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.AssetLocation;
 
 public abstract class Asset implements IInspectable {
 
 	/**
-	 * A relative path to the file that provides this asset. Null if the asset was created at runtime.
-	 * <p>
-	 * This should NEVER be changed, instead use
-	 * {@link EditorAssetDatabase#renameAsset(Path, String)} if you want to move the
-	 * asset. If the Asset is moved at any point, this field will be updated
-	 * accordingly by the AssetDatabase.
+	 * The location of the file that provides this Asset. For Asset's created at
+	 * runtime (e.g. a dynamic {@link Mesh}) this will be null.
 	 */
-	public transient Path path;
+	public final transient AssetLocation location;
 
-	public Asset(Path path) {
-		this.path = path;
+	public Asset(AssetLocation location) {
+		this.location = location;
 	}
 
 	/**
-	 * Checks if the Asset came from a file.
+	 * Checks if the Asset created at runtime, thus does not have a providing file.
 	 * 
-	 * @return {@code true} if the Asset came from a file, {@code false} if it was
-	 *         created at runtime.
+	 * @return {@code true} if the Asset was created at runtime, {@code false} if it
+	 *         came from a file.
 	 */
-	public boolean hasProvidingFile() {
-		return this.path != null;
-	}
-	
-	public Path getFullPath() {
-		return JelloEditor.instance.assetDatabase.toFullPath(this.path);
+	public boolean isRuntimeAsset() {
+		return this.location == null;
 	}
 
 	/**
@@ -49,10 +37,10 @@ public abstract class Asset implements IInspectable {
 	 * @return the name of the asset. May be null.
 	 */
 	public String getAssetName() {
-		if (this.hasProvidingFile()) {
-			return FilenameUtils.getBaseName(this.path.toString());
-		} else {
+		if (this.isRuntimeAsset()) {
 			return null;
+		} else {
+			return FilenameUtils.getBaseName(this.location.getName());
 		}
 	}
 

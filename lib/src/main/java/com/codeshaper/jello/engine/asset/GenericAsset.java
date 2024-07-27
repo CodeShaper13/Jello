@@ -1,7 +1,6 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.nio.file.Path;
-
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
 /**
@@ -13,7 +12,7 @@ import com.codeshaper.jello.engine.database.AssetDatabase;
  */
 public final class GenericAsset extends Asset {
 
-	public GenericAsset(Path file) {
-		super(file);
+	public GenericAsset(AssetLocation location) {
+		super(location);
 	}
 }
