@@ -27,9 +27,9 @@ import org.lwjgl.opengl.awt.GLData;
 
 import com.codeshaper.jello.engine.Perspective;
 import com.codeshaper.jello.engine.component.Camera;
-import com.codeshaper.jello.engine.render.Renderer;
-import com.codeshaper.jello.engine.render.ShaderProgram;
-import com.codeshaper.jello.engine.render.UniformsMap;
+import com.codeshaper.jello.engine.rendering.GameRenderer;
+import com.codeshaper.jello.engine.rendering.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.UniformsMap;
 
 public class SceneView extends JPanel {
 
@@ -80,13 +80,13 @@ public class SceneView extends JPanel {
 		return new Dimension(100, 200);
 	}
 
-	public Renderer createContext() {
+	public GameRenderer createContext() {
 		// Hacky way of making LWJGL create a context immediately.
 		try {
-			return this.canvas.executeInContext(new Callable<Renderer>() {
+			return this.canvas.executeInContext(new Callable<GameRenderer>() {
 				@Override
-				public Renderer call() throws Exception {
-					Renderer renderer = new Renderer();
+				public GameRenderer call() throws Exception {
+					GameRenderer renderer = new GameRenderer();
 					canvas.initGL();
 					return renderer;
 				}
@@ -317,8 +317,8 @@ public class SceneView extends JPanel {
 	        		ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.vert", GL_VERTEX_SHADER),
 	        		ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.frag", GL_FRAGMENT_SHADER));
 	        this.gridUniformsMap = new UniformsMap(gridShaderProgram.getProgramId());
-	        this.gridUniformsMap.createUniform(Renderer.PROJECTION_MATRIX);
-	        this.gridUniformsMap.createUniform(Renderer.VIEW_MATRIX);
+	        this.gridUniformsMap.createUniform(GameRenderer.PROJECTION_MATRIX);
+	        this.gridUniformsMap.createUniform(GameRenderer.VIEW_MATRIX);
 	        this.gridUniformsMap.createUniform(NEAR);
 	        this.gridUniformsMap.createUniform(FAR);
 			
@@ -359,8 +359,8 @@ public class SceneView extends JPanel {
 		
 		private void drawGrid(Camera camera, Matrix4f viewMatrix) {
 			this.gridShaderProgram.bind();
-	        this.gridUniformsMap.setUniform(Renderer.PROJECTION_MATRIX, camera.getProjectionMatrix());   
-	        this.gridUniformsMap.setUniform(Renderer.VIEW_MATRIX, viewMatrix);
+	        this.gridUniformsMap.setUniform(GameRenderer.PROJECTION_MATRIX, camera.getProjectionMatrix());   
+	        this.gridUniformsMap.setUniform(GameRenderer.VIEW_MATRIX, viewMatrix);
 	        this.gridUniformsMap.setUniform(NEAR, camera.nearPlane);
 	        this.gridUniformsMap.setUniform(FAR, camera.farPlane);  
 	        

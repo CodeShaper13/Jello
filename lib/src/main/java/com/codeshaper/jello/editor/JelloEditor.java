@@ -31,7 +31,7 @@ import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
 import com.codeshaper.jello.engine.logging.ILogHandler;
-import com.codeshaper.jello.engine.render.Renderer;
+import com.codeshaper.jello.engine.rendering.GameRenderer;
 
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;
@@ -87,7 +87,7 @@ public class JelloEditor {
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
-	public final Renderer renderer;
+	public final GameRenderer renderer;
 	public final EditorProperties properties;
 	public final EditorSceneManager sceneManager;
 

@@ -17,7 +17,7 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 	private final List<Class<JelloComponent>> projectComponents;
 	
 	public ComponentList() {
-		Reflections scan = new Reflections("com.codeshaper.jello.engine.component");
+		Reflections scan = new Reflections("com.codeshaper.jello.engine");
 
 		Set<Class<? extends JelloComponent>> classes = scan.getSubTypesOf(JelloComponent.class);
 		this.builtinComponents = new ArrayList<Class<JelloComponent>>();

@@ -60,11 +60,6 @@ public class JelloComponent implements Serializable {
 	public void onEnable() {
 
 	}
-	
-	@Button
-	private void button123() {
-		System.out.println("123");
-	}
 
 	/**
 	 * Called when the component is disabled. This can be from disabling the

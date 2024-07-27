@@ -1,8 +1,9 @@
 package com.codeshaper.jello.engine.asset;
 
-import static org.lwjgl.opengl.GL46.*;
-
-import org.apache.commons.io.FilenameUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
@@ -10,110 +11,71 @@ import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
-import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.Utils;
+import com.codeshaper.jello.engine.rendering.GameRenderer;
+import com.codeshaper.jello.engine.rendering.ShaderData;
+import com.codeshaper.jello.engine.rendering.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.UniformsMap;
+import com.codeshaper.jello.engine.rendering.ShaderData.ShaderSource;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-@AssetFileExtension(".frag")
-@AssetFileExtension(".vert")
+@AssetFileExtension(".shader")
 public class Shader extends Asset {
 
-	private final ShaderType shaderType;
-	private final int shaderId;
-	private final boolean hasCompileError;
+	private ShaderData data;
+	private ShaderProgram program;
+	private UniformsMap uniformsMap;
 
 	public Shader(AssetLocation location) {
 		super(location);
 
-		System.out.println("instantiating shader " + location.getPath().toString());
+		GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.create();
 
-		switch (FilenameUtils.getExtension(location.getFullPath().toString())) {
-		case "frag":
-			this.shaderType = ShaderType.FRAGMENT;
-			break;
-		case "vert":
-			this.shaderType = ShaderType.VERTEX;
-			break;
-		default:
-			this.shaderType = ShaderType.UNKNOW;
+		try (InputStream stream = location.getInputSteam(); Reader reader = new InputStreamReader(stream)) {
+			this.data = gson.fromJson(reader, ShaderData.class);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-
+		
 		JelloEditor.instance.enableEditorContext();
 
-		String code = Utils.readFile(location.getPath());
-		this.shaderId = glCreateShader(this.shaderType.type);
-		if (this.shaderId == 0) {
-			Debug.logError("Unable to create shader");
-		}
-		glShaderSource(this.shaderId, code);
-		glCompileShader(this.shaderId);
+		this.program = new ShaderProgram(this.data.shaders);
+		this.uniformsMap = new UniformsMap(this.getProgramId());
 		
-		this.hasCompileError = glGetShaderi(this.shaderId, GL_COMPILE_STATUS) == 0;
-		if (this.hasCompileError) {
-			System.out.println("Error compiling Shader code: " + glGetShaderInfoLog(this.shaderId, 1024));
-		}
+		// Create the always present uniforms.
+		this.uniformsMap.createUniform(GameRenderer.PROJECTION_MATRIX);
+        this.uniformsMap.createUniform(GameRenderer.VIEW_MATRIX);
+        this.uniformsMap.createUniform(GameRenderer.GAME_OBJECT_MATRIX);
+        this.uniformsMap.createUniform(GameRenderer.TXT_SAMPLER);
 		
 		JelloEditor.instance.disableEditorContext();
 	}
-
+	
 	@Override
 	public void cleanup() {
 		super.cleanup();
-
-		glDeleteShader(this.shaderId);
+		
+		this.program.cleanup();
 	}
-
+	
 	@Override
 	public Editor<?> getInspectorDrawer() {
 		return new ShaderEditor(this);
 	}
-
-	/**
-	 * Gets the id of the Shader.
-	 * 
-	 * @return the Shader's id.
-	 */
-	public int getId() {
-		return this.shaderId;
+	
+	public int getProgramId() {
+		return this.program.getProgramId();
 	}
-
-	/**
-	 * Gets the type of the Shader.
-	 * 
-	 * @return the Shader's type.
-	 */
-	public ShaderType getType() {
-		return this.shaderType;
+	
+	public ShaderProgram getProgram() {
+		return this.program;
 	}
-
-	/**
-	 * Checks if the Shader has a compile error.
-	 * 
-	 * @return {@code true} if there was a compile error, {@code false} if there was
-	 *         not.
-	 */
-	public boolean hasCompileError() {
-		return this.hasCompileError;
+	
+	public UniformsMap getUniformMap() {
+		return this.uniformsMap;
 	}
-
-	public String getCompileError() {
-		JelloEditor.instance.enableEditorContext();
-		String error = glGetShaderInfoLog(this.shaderId, 1024);
-		JelloEditor.instance.disableEditorContext();
-		return error;
-	}
-
-	public enum ShaderType {
-		VERTEX(GL_VERTEX_SHADER), FRAGMENT(GL_FRAGMENT_SHADER), GEOMETRY(GL_GEOMETRY_SHADER),
-		TESS_CONTROL(GL_TESS_CONTROL_SHADER), TESS_EVALUATION_SHADER(GL_TESS_EVALUATION_SHADER),
-		COMPUTE_SHADER(GL_COMPUTE_SHADER), UNKNOW(-1);
-
-		public final int type;
-
-		ShaderType(int type) {
-			this.type = type;
-		}
-	}
-
+	
 	private class ShaderEditor extends AssetEditor<Shader> {
 
 		public ShaderEditor(Shader target) {
@@ -122,17 +84,13 @@ public class Shader extends Asset {
 
 		@Override
 		protected void drawAsset(GuiLayoutBuilder drawer) {
-			drawer.label("Shader Id: " + this.target.shaderId);
-			drawer.label("Shader Type: " + this.target.shaderType);
+			drawer.label("Program Id: " + this.target.getProgramId());
 			drawer.space(8);
-			drawer.label("Compile Status:");
-			String text;
-			if (this.target.hasCompileError) {
-				text = this.target.getCompileError();
-			} else {
-				text = "Success";
+			drawer.label("Shaders:");
+			for(ShaderSource module : this.target.data.shaders) {
+				drawer.label("Type: " + module.getType());
+				drawer.textbox(module.getSource(), 10);
 			}
-			drawer.textbox(text, 10);
 		}
 	}
 }

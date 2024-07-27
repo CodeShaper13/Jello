@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.render;
+package com.codeshaper.jello.engine.rendering;
 
 import static org.lwjgl.opengl.GL30.*;
 
@@ -12,16 +12,21 @@ import java.util.List;
 import org.lwjgl.opengl.GL30;
 
 import com.codeshaper.jello.engine.Utils;
+import com.codeshaper.jello.engine.rendering.ShaderData.ShaderSource;
 
 public class ShaderProgram {
 
 	private final int programId;
-
-    public ShaderProgram(ShaderModuleData... shaderModuleDataList) {
-        programId = glCreateProgram();
-        if (programId == 0) {
+	
+	private ShaderProgram() {
+        this.programId = glCreateProgram();
+        if (this.programId == 0) {
             throw new RuntimeException("Could not create Shader");
         }
+	}
+
+    public ShaderProgram(ShaderModuleData... shaderModuleDataList) {
+        this();
 
         List<Integer> shaderModules = new ArrayList<>();
         for(int i = 0; i < shaderModuleDataList.length; i++) {
@@ -29,6 +34,20 @@ public class ShaderProgram {
         	if(data != null) {
         		String code = Utils.readFile(data.shaderFile);
         		shaderModules.add(createShader(code, data.shaderType));
+        	}
+        }
+        
+        link(shaderModules);
+    }
+    
+    public ShaderProgram(ShaderSource[] modules) {
+        this();
+
+        List<Integer> shaderModules = new ArrayList<>();
+        for(int i = 0; i < modules.length; i++) {
+        	ShaderSource data = modules[i];
+        	if(data != null) {
+        		shaderModules.add(createShader(data.getSource(), data.getType().type));
         	}
         }
         

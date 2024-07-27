@@ -66,6 +66,7 @@ public class AssetDatabase implements ProjectReloadListener {
 			// Shaders
 			"builtin/shaders/scene.vert",
 			"builtin/shaders/scene.frag",
+			"builtin/shaders/default.shader",
 			// Textures
 			"builtin/textures/placeholderTexture.png", };
 

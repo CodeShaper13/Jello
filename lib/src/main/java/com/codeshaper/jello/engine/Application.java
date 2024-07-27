@@ -6,13 +6,13 @@ import org.joml.Matrix4f;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.component.MeshRenderer;
-import com.codeshaper.jello.engine.render.Renderer;
+import com.codeshaper.jello.engine.rendering.GameRenderer;
 
 public class Application {
 
 	private AppSettings appSettings;
 	private Window window;
-	private Renderer renderer;
+	private GameRenderer renderer;
 	private SceneManager sceneManager;
 	private boolean running;
 	
@@ -32,7 +32,7 @@ public class Application {
 			this.resize();
 			return null;
 		});
-		this.renderer = new Renderer();
+		this.renderer = new GameRenderer();
 
 		Input.initialize(this.window.getWindowHandle());
 	}
@@ -118,6 +118,7 @@ public class Application {
 
 			if (this.appSettings.targetFps <= 0 || deltaFps >= 1) {
 				for (Camera camera : Camera.getAllCameras()) {
+					// TODO sort with Camera#depth
 					if (camera.isEnabled()) {
 						this.renderer.render(this.sceneManager, camera, new Matrix4f(), this.window.getWidth(),
 								this.window.getHeight());
@@ -139,7 +140,6 @@ public class Application {
 	private void cleanup() {
 		// TODO
 		this.window.cleanup();
-		this.renderer.cleanup();
 		
 		if(this.onClose != null) {
 			this.onClose.run();
