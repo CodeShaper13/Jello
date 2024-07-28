@@ -1,9 +1,11 @@
 package com.codeshaper.jello.engine.component;
 
 import com.codeshaper.jello.editor.property.modifier.Range;
+import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.asset.AudioClip;
 
+@ComponentIcon("/editor/componentIcons/audioSource.png")
 public class AudioSource extends JelloComponent {
 
 	public AudioClip audioClip;
