@@ -236,7 +236,7 @@ public class GuiLayoutBuilder {
 		}
 
 		if (exposedField.getType().isArray()) {
-			this.addSeparatorIfRequested(panel, exposedField);
+			this.addSpaceIfRequested(panel, exposedField);
 			this.addSeparatorIfRequested(panel, exposedField);
 
 			JPanel arrayPanel = GuiBuilder.verticalArea();
