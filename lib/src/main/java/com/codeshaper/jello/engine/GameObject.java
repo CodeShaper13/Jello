@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -22,8 +23,9 @@ public class GameObject implements IInspectable {
 	private Vector3f localPosition;
 	private Quaternionf localRotation;
 	private Vector3f localScale;
+	private Matrix4f localMatrix;
 	transient Scene scene;
-	private transient GameObject parent;
+	transient GameObject parent;
 
 	/**
 	 * Creates a new GameObject and adds it to a {@link Scene}.
@@ -108,78 +110,135 @@ public class GameObject implements IInspectable {
 	public Scene getScene() {
 		return this.scene;
 	}
-
+	
 	public Vector3f getPosition() {
+		return this.getWorldMatrix().getTranslation(new Vector3f());
+	}
+
+	public Vector3f getLocalPosition() {
 		return this.localPosition;
 	}
 
-	public void setPosition(float x, float y, float z) {
+	public void setLocalPosition(float x, float y, float z) {
 		this.localPosition.set(x, y, z);
+		this.recalculateLocalMatrix();
 	}
 
-	public void setPosition(Vector3f position) {
+	public void setLocalPosition(Vector3f position) {
 		this.localPosition.set(position);
+		this.recalculateLocalMatrix();
+	}
+	
+	public Quaternionf getRotation() {
+		return this.getWorldMatrix().getNormalizedRotation(new Quaternionf());
 	}
 
-	public Quaternionf getRotation() {
+	public Quaternionf getLocalRotation() {
 		return this.localRotation;
 	}
 
-	public void setRotation(Quaternionf rotation) {
+	public void setLocalRotation(Quaternionf rotation) {
 		this.localRotation.set(rotation);
+		this.recalculateLocalMatrix();
+	}
+	
+	public Vector3f getEulerAngles() {
+		return MathHelper.quaternionToEulerAnglesDegrees(this.getRotation());
 	}
 
-	public Vector3f getEulerAngles() {
+	public Vector3f getLocalEulerAngles() {
 		return MathHelper.quaternionToEulerAnglesDegrees(this.localRotation);
 	}
 
-	public void setEulerAngles(float x, float y, float z) {
+	public void setLocalEulerAngles(float x, float y, float z) {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(new Vector3f(x, y, z)));
+		this.recalculateLocalMatrix();
 	}
 
-	public void setEulerAngles(Vector3f eulerAnglesDegrees) {
+	public void setLocalEulerAngles(Vector3f eulerAnglesDegrees) {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(eulerAnglesDegrees));
+		this.recalculateLocalMatrix();
+	}
+	
+	public Vector3f getScale() {
+		return this.getWorldMatrix().getScale(new Vector3f());
 	}
 
-	public Vector3f getScale() {
+	public Vector3f getLocalScale() {
 		return this.localScale;
 	}
 
-	public void setScale(float x, float y, float z) {
+	public void setLocalScale(float x, float y, float z) {
 		this.localScale.set(x, y, z);
+		this.recalculateLocalMatrix();
 	}
 
-	public void setScale(Vector3f scale) {
+	public void setLocalScale(Vector3f scale) {
 		this.localScale.set(scale);
+		this.recalculateLocalMatrix();
 	}
 
 	public void translate(float x, float y, float z) {
 		this.localPosition.add(new Vector3f(x, y, z));
+		this.recalculateLocalMatrix();
 	}
 
 	public void translate(Vector3f translation) {
 		this.localPosition.add(translation);
+		this.recalculateLocalMatrix();
 	}
 
 	public void rotate(float xRotation, float yRotation, float zRotation) {
-		this.localRotation.rotateXYZ((float) Math.toDegrees(xRotation), (float) Math.toDegrees(yRotation),
-				(float) Math.toDegrees(zRotation));
+		this.localRotation.rotateXYZ((float) Math.toRadians(xRotation), (float) Math.toRadians(yRotation),
+				(float) Math.toRadians(zRotation));
+		this.recalculateLocalMatrix();
 	}
 
 	public void rotate(float angle, Vector3f axis) {
 		this.localRotation.rotateAxis(angle, axis);
+		this.recalculateLocalMatrix();
 	}
 
 	public void scale(float scale) {
 		this.localScale.mul(scale);
+		this.recalculateLocalMatrix();
 	}
 
 	public void scale(float x, float y, float z) {
 		this.localScale.mul(x, y, z);
+		this.recalculateLocalMatrix();
 	}
 
 	public void scale(Vector3f scale) {
 		this.localScale.mul(scale);
+		this.recalculateLocalMatrix();
+	}
+	
+	public Matrix4f getLocalMatrix() {
+		//if(this.localMatrix == null) {
+		//	this.localMatrix = new Matrix4f();
+			this.recalculateLocalMatrix();
+		//}
+		return this.localMatrix;
+	}
+	
+	public Matrix4f getWorldMatrix() {
+		Matrix4f localMatrix = new Matrix4f(this.getLocalMatrix());
+		this.func(localMatrix);
+		return localMatrix;
+	}
+	
+	private void func(Matrix4f m) {
+		if(this.parent == null) {
+			return;
+		} else {
+			Matrix4f parentMatrix = this.parent.getLocalMatrix();
+			m.mulLocal(parentMatrix);
+		}
+	}
+
+	private void recalculateLocalMatrix() {
+		this.localMatrix.translationRotateScale(this.localPosition, this.localRotation, this.localScale);
 	}
 
 	/**
@@ -219,8 +278,8 @@ public class GameObject implements IInspectable {
 		if (parent != null && this.scene != parent.scene) {
 			return; // this and newParent belong to different scenes.
 		}
-		
-		if(parent != null && parent.isDescendantOf(this)) {
+
+		if (parent != null && parent.isDescendantOf(this)) {
 			return;
 		}
 

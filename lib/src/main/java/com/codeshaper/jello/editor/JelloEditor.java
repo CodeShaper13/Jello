@@ -302,16 +302,16 @@ public class JelloEditor {
 
 		GameObject cameraObj = new GameObject("Main Camera", scene);
 		cameraObj.addComponent(Camera.class);
-		cameraObj.setPosition(0, 5, -10);
-		cameraObj.setEulerAngles(20, 0, 0);
+		cameraObj.setLocalPosition(0, 5, -10);
+		cameraObj.setLocalEulerAngles(20, 0, 0);
 
 		GameObject meshObj = new GameObject("Cube", scene);
 		meshObj.addComponent(MeshRenderer.class);
 
 		GameObject lightObj = new GameObject("Light", scene);
 		lightObj.addComponent(Light.class);
-		lightObj.setPosition(0, 0, -2);
-		lightObj.setEulerAngles(20, 45, 0);
+		lightObj.setLocalPosition(0, 0, -2);
+		lightObj.setLocalEulerAngles(20, 45, 0);
 		
 		this.assetDatabase.saveAsset(scene);
 		
