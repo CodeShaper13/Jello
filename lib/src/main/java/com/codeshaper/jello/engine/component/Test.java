@@ -1,7 +1,5 @@
 package com.codeshaper.jello.engine.component;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import org.joml.Vector3d;
 
 import com.codeshaper.jello.editor.property.modifier.Button;
@@ -50,6 +48,7 @@ public class Test extends JelloComponent {
 		super(owner);
 	}
 	
+	/*
 	@Override
 	public void onRender() {		
 		float size = 0.1f;
@@ -100,6 +99,7 @@ public class Test extends JelloComponent {
     	
     	glEnd();
    	}
+   	*/
 	
 	@Button
 	private void Function1() {
