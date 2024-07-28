@@ -3,7 +3,6 @@ package com.codeshaper.jello.editor.inspector;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -20,13 +19,9 @@ import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.joml.Quaternionf;
-import org.joml.Vector3d;
-
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.property.ExposedField;
-import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
-import com.codeshaper.jello.editor.property.drawer.IFieldDrawer;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.component.JelloComponent;
 
@@ -163,24 +158,14 @@ public class GameObjectEditor extends Editor<GameObject> {
 	}
 		
 	private JPanel createTransformPanel() {
-		JPanel panel = new JPanel(new GridLayout(3, 1));
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+
+		builder.field(new ExposedField(this.target, "localPosition"));
+		builder.field(new ExposedField(this.target, "localRotation"));
+		builder.field(new ExposedField(this.target, "localScale"));
+		
+		JPanel panel = builder.getPanel();		
 		panel.setBorder(BorderFactory.createTitledBorder("Transform"));
-
-		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
-		try {
-			IFieldDrawer vecDrawer = drawerRegistry.getDrawer(Vector3d.class);
-			IFieldDrawer quatDrawer = drawerRegistry.getDrawer(Quaternionf.class);
-
-			ExposedField posField = new ExposedField(this.target, "localPosition");
-			ExposedField rotationField = new ExposedField(this.target, "localRotation");
-			ExposedField scaleField = new ExposedField(this.target, "localScale");
-
-			panel.add(vecDrawer.draw(posField));
-			panel.add(quatDrawer.draw(rotationField));
-			panel.add(vecDrawer.draw(scaleField));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
 		return panel;
 	}
