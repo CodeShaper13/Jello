@@ -50,21 +50,7 @@ public class GameRenderer {
 		
 		for(Scene scene : sceneManager.getScenes()) {
     		for(GameObject obj : scene.getRootGameObjects()) {
-    			if(!obj.isEnabled()) {
-    				continue;
-    			}
-    			
-        		for(JelloComponent component : obj.getAllComponents()) {
-        			if(component.isEnabled()) {
-        				if(component instanceof Renderer) {
-        					Renderer renderer = (Renderer)component;
-        					Material material = renderer.getMaterial();
-        					if(material != null) {
-            					this.addInstruction(material, renderer);
-            				}	
-        				}
-        			}
-        		}
+    			this.createInstructionsRecursively(obj);
         	}        
     	}	
 		
@@ -95,6 +81,28 @@ public class GameRenderer {
 		}
 		
 		glBindVertexArray(0);
+	}
+	
+	private void createInstructionsRecursively(GameObject gameObject) {
+		if(!gameObject.isEnabled()) {
+			return;
+		}
+		
+		for(JelloComponent component : gameObject.getAllComponents()) {
+			if(component.isEnabled()) {
+				if(component instanceof Renderer) {
+					Renderer renderer = (Renderer)component;
+					Material material = renderer.getMaterial();
+					if(material != null) {
+    					this.addInstruction(material, renderer);
+    				}	
+				}
+			}
+		}
+		
+		for(GameObject child : gameObject.getChildren()) {
+			this.createInstructionsRecursively(child);
+		}
 	}
 		
 	private void addInstruction(Material material, Renderer renderer) {
