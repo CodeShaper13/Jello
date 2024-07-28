@@ -96,6 +96,7 @@ public class Scene extends SerializedJelloObject {
 		}
 		
 		for(GameObject child : gameObject.getChildren()) {
+			child.parent = gameObject;
 			this.recursivelySetupObject(child);
 		}
 	}
