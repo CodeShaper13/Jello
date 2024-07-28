@@ -23,7 +23,7 @@ public class GameObject implements IInspectable {
 	private Quaternionf localRotation;
 	private Vector3f localScale;
 	transient Scene scene;
-	private transient GameObject parent;
+	transient GameObject parent;
 
 	/**
 	 * Creates a new GameObject and adds it to a {@link Scene}.
