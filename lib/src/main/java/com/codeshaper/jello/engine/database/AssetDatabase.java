@@ -70,6 +70,8 @@ public class AssetDatabase implements ProjectReloadListener {
 			// Textures
 			"builtin/textures/placeholderTexture.png", };
 
+	private static AssetDatabase instance;
+	
 	/**
 	 * The /assets folder located in the root of the project folder.
 	 */
@@ -80,8 +82,18 @@ public class AssetDatabase implements ProjectReloadListener {
 	protected RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory;
 	protected AssetTypeAdapterFactory assetAdapterFactory;
 	protected SerializedJelloObjectInstanceCreator serializedJelloObjectInstanceCreator;
-
+	
+	public static AssetDatabase getInstance() {
+		return instance;
+	}
+	
 	public AssetDatabase(Path projectFolder) {
+		if(instance != null) {
+			Debug.logError("An AssetDatabase has already been created!");
+		} else {
+			instance = this;
+		}
+		
 		this.assetsFolder = projectFolder;
 		this.assets = new ArrayList<CachedAsset>();
 
@@ -95,6 +107,8 @@ public class AssetDatabase implements ProjectReloadListener {
 		this.serializedJelloObjectInstanceCreator = new SerializedJelloObjectInstanceCreator(null, null);
 
 		JelloEditor.instance.addProjectReloadListener(this);
+		
+		this.buildDatabase();
 	}
 
 	@Override
@@ -113,7 +127,7 @@ public class AssetDatabase implements ProjectReloadListener {
 	/**
 	 * Builds the Asset database from scratch.
 	 */
-	public void buildDatabase() {
+	private void buildDatabase() {
 		this.unloadAll();
 
 		this.assets.clear();
@@ -323,7 +337,7 @@ public class AssetDatabase implements ProjectReloadListener {
 		return null;
 	}
 
-	protected GsonBuilder createGsonBuilder() {
+	public GsonBuilder createGsonBuilder() {
 		GsonBuilder builder = new GsonBuilder();
 
 		builder.setPrettyPrinting();

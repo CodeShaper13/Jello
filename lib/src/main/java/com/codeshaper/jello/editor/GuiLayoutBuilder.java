@@ -56,6 +56,14 @@ public class GuiLayoutBuilder {
 	}
 
 	/**
+	 * Adds a space to the layout with a size of 14 pixels (the amount of space that
+	 * {@link Space} gives.
+	 */
+	public void space() {
+		this.space(14);
+	}
+
+	/**
 	 * Adds a space in the layout.
 	 * 
 	 * @param size the size of the space in pixels.

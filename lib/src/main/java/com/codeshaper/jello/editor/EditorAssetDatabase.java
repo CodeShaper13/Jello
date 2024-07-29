@@ -14,11 +14,8 @@ import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
-import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 public class EditorAssetDatabase extends AssetDatabase {
 
@@ -169,20 +166,5 @@ public class EditorAssetDatabase extends AssetDatabase {
 		}
 
 		throw new NotImplementedException();
-	}
-
-	@Override
-	protected GsonBuilder createGsonBuilder() {
-		GsonBuilder builder = super.createGsonBuilder();
-
-		// When Components are deserialized, this makes sure their exact type is created
-		// again, instead of the parent type.
-		RuntimeTypeAdapterFactory<JelloComponent> adapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
-		for (Class<JelloComponent> component : JelloEditor.instance.componentList) {
-			adapterFactory.registerSubtype(component, component.getName());
-		}
-		builder.registerTypeAdapterFactory(adapterFactory);
-
-		return builder;
 	}
 }

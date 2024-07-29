@@ -3,8 +3,6 @@ package com.codeshaper.jello.engine;
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.MemoryUtil;
 
-import com.codeshaper.jello.engine.component.MeshRenderer;
-
 import java.util.concurrent.Callable;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -19,7 +17,7 @@ public class Window {
     private int width;
     private Callable<Void> resizeFunc;
 
-    public Window(AppSettings opts, Callable<Void> resizeFunc) {
+    public Window(ApplicationSettings opts, Callable<Void> resizeFunc) {
         this.resizeFunc = resizeFunc;
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
@@ -38,9 +36,9 @@ public class Window {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
-        if (opts.screenWidth > 0 && opts.screenHeight > 0) {
-            this.width = opts.screenWidth;
-            this.height = opts.screenHeight;
+        if (opts.windowSize.x > 0 && opts.windowSize.y > 0) {
+            this.width = opts.windowSize.x;
+            this.height = opts.windowSize.y;
         } else {
             glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -52,9 +50,10 @@ public class Window {
         if (windowHandle == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-        
-        glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> resized(w, h));
 
+        //glfwSetWindowIcon(this.windowHandle, JelloEditor.instance.assetDatabase);
+        glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> resized(w, h));
+        
         glfwSetErrorCallback((int errorCode, long msgPtr) ->
                 System.err.println(String.format("Error code [{}], msg [{}]", errorCode, MemoryUtil.memUTF8(msgPtr)))
         );

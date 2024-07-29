@@ -119,13 +119,14 @@ public class JelloEditor {
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
-		this.assetDatabase.buildDatabase();
 		this.componentList = new ComponentList();
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
 
 		this.sceneManager = new EditorSceneManager(this);
 
+		this.reloadProject();
+		
 		this.window = new EditorMainFrame(this);
 
 		this.logHandler = this.window.console;
@@ -135,9 +136,7 @@ public class JelloEditor {
 		GLFWErrorCallback.createPrint().set();
 
 		this.enableEditorContext();
-		
-		this.reloadProject();
-		
+				
 		if(isInitialLoad) {
 			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
 			if(!this.assetDatabase.exists(path)) {

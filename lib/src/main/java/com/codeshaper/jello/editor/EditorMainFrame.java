@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
+import com.codeshaper.jello.editor.window.AppSettingsWindow;
 import com.codeshaper.jello.editor.window.AssetDatabaseViewer;
 import com.codeshaper.jello.editor.window.ConsoleWindow;
 import com.codeshaper.jello.editor.window.FileBrowserWindow;
@@ -55,6 +56,7 @@ public class EditorMainFrame extends JFrame {
 		this.hierarchy = new HierarchyWindow();
 		this.fileBrowser = new FileBrowserWindow();
 		new AssetDatabaseViewer();
+		new AppSettingsWindow();
 
 		RootDockingPanel root = new RootDockingPanel(this);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, root, this.sceneView);
