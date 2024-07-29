@@ -54,7 +54,6 @@ public class GameRenderer {
         	}        
     	}	
 		
-        Matrix4f matrix = new Matrix4f();
 		for(Material material : this.instructions.keySet()) {
 			Shader shader = material.getShader();
 			ShaderProgram program = shader.getProgram();
@@ -70,9 +69,8 @@ public class GameRenderer {
 	        
 	        List<Renderer> renderers = this.instructions.get(material);
 	        for(Renderer renderer : renderers) {
-	        	GameObject obj = renderer.gameObject;
-    			matrix.translationRotateScale(obj.getPosition(), obj.getRotation(), obj.getScale());
-                uniforms.setUniform(GAME_OBJECT_MATRIX, matrix);
+	        	GameObject obj = renderer.gameObject;	        	
+                uniforms.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
                 
                 renderer.onRender();
 	        }

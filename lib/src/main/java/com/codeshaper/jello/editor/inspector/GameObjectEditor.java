@@ -137,7 +137,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 
 		this.addComponentButton.getParent().revalidate();
 	}
-	
+
 	private JPanel createHeaderPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 		this.enabledToggle = new JCheckBox();
@@ -153,20 +153,24 @@ public class GameObjectEditor extends Editor<GameObject> {
 		});
 		panel.add(this.objectName, BorderLayout.CENTER);
 		panel.add(Box.createGlue(), BorderLayout.EAST);
-		
+
 		return panel;
 	}
-		
+
 	private JPanel createTransformPanel() {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 
-		builder.field(new ExposedField(this.target, "localPosition"));
-		builder.field(new ExposedField(this.target, "localRotation"));
-		builder.field(new ExposedField(this.target, "localScale"));
-		
-		JPanel panel = builder.getPanel();		
+		builder.vector3Field("Position", this.target.getLocalPosition(), (v) -> {
+			this.target.setLocalPosition(v);
+		});
+		builder.field(new ExposedField(this.target, "localRotation"));		
+		builder.vector3Field("Scale", this.target.getLocalScale(), (v) -> {
+			this.target.setLocalScale(v);
+		});
+
+		JPanel panel = builder.getPanel();
 		panel.setBorder(BorderFactory.createTitledBorder("Transform"));
-		
+
 		return panel;
 	}
 }

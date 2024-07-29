@@ -119,13 +119,14 @@ public class JelloEditor {
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
-		this.assetDatabase.buildDatabase();
 		this.componentList = new ComponentList();
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
 
 		this.sceneManager = new EditorSceneManager(this);
 
+		this.reloadProject();
+		
 		this.window = new EditorMainFrame(this);
 
 		this.logHandler = this.window.console;
@@ -135,9 +136,7 @@ public class JelloEditor {
 		GLFWErrorCallback.createPrint().set();
 
 		this.enableEditorContext();
-		
-		this.reloadProject();
-		
+				
 		if(isInitialLoad) {
 			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
 			if(!this.assetDatabase.exists(path)) {
@@ -302,16 +301,16 @@ public class JelloEditor {
 
 		GameObject cameraObj = new GameObject("Main Camera", scene);
 		cameraObj.addComponent(Camera.class);
-		cameraObj.setPosition(0, 5, -10);
-		cameraObj.setEulerAngles(20, 0, 0);
+		cameraObj.setLocalPosition(0, 5, -10);
+		cameraObj.setLocalEulerAngles(20, 0, 0);
 
 		GameObject meshObj = new GameObject("Cube", scene);
 		meshObj.addComponent(MeshRenderer.class);
 
 		GameObject lightObj = new GameObject("Light", scene);
 		lightObj.addComponent(Light.class);
-		lightObj.setPosition(0, 0, -2);
-		lightObj.setEulerAngles(20, 45, 0);
+		lightObj.setLocalPosition(0, 0, -2);
+		lightObj.setLocalEulerAngles(20, 45, 0);
 		
 		this.assetDatabase.saveAsset(scene);
 		

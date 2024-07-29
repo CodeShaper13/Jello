@@ -1,21 +1,27 @@
 package com.codeshaper.jello.engine;
 
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.util.List;
+
 import org.joml.Math;
 import org.joml.Matrix4f;
 
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
-import com.codeshaper.jello.engine.component.MeshRenderer;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
+import com.google.gson.Gson;
 
 public class Application {
 
-	private AppSettings appSettings;
+	private ApplicationSettings appSettings;
 	private Window window;
 	private GameRenderer renderer;
 	private SceneManager sceneManager;
 	private boolean running;
-	
+
 	/**
 	 * If not null, it is invoked when the Application stops. Used by the Editor to
 	 * know when the Application closes.
@@ -27,18 +33,47 @@ public class Application {
 	}
 
 	public Application() {
-		this.appSettings = new AppSettings();
+		this(null);
+	}
+
+	public Application(SceneManager sceneManager) {
+		if (AssetDatabase.getInstance() == null) {
+			new AssetDatabase(null); // TODO what should this be in a build?
+		}
+		
+		this.appSettings = this.loadAppSettings();
+
 		this.window = new Window(this.appSettings, () -> {
 			this.resize();
 			return null;
 		});
+
+		if (sceneManager != null) {
+			// Use the Scene Manager that was supplied by the Editor.
+			this.sceneManager = sceneManager;
+		} else {
+			this.sceneManager = new SceneManager();
+			Scene startingScene = this.appSettings.startingScene;
+			if (startingScene != null) {
+				this.sceneManager.loadScene(startingScene);
+			} else {
+				// No starting scene set.
+				AssetDatabase database = AssetDatabase.getInstance();
+				List<Path> paths = database.getAllAssetsOfType(Scene.class, true);
+				if (paths.size() >= 1) {
+					this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
+				}
+			}
+		}
+
 		this.renderer = new GameRenderer();
 
 		Input.initialize(this.window.getWindowHandle());
 	}
 
 	/**
-	 * Starts the Application if it is not running already.
+	 * Starts the Application. If it is already running nothings happens and an
+	 * error is logged..
 	 */
 	public void start() {
 		if (this.running) {
@@ -46,27 +81,21 @@ public class Application {
 			return;
 		}
 
-		this.sceneManager = new SceneManager();
-
-		// Jello
-		Scene scene = new Scene(null); // TODO
-		GameObject obj = new GameObject("GameObj1", scene);
-		Camera camera = obj.addComponent(Camera.class);
-		camera.onStart();
-		obj.addComponent(MeshRenderer.class);
-		this.sceneManager.loadScene(scene);
-
 		this.running = true;
 		this.run();
 	}
 
 	/**
-	 * Stops the Application.
+	 * Shuts down the Application.
 	 */
 	public void stop() {
 		this.running = false;
 	}
 
+	public SceneManager getSceneManager() {
+		return this.sceneManager;
+	}
+	
 	public float getVolume() {
 		return 0f; // TODO
 	}
@@ -74,10 +103,6 @@ public class Application {
 	public void setVolume(float volume) {
 		volume = Math.clamp(0f, 1f, volume);
 		// TODO
-	}
-
-	public void setMouseState() {
-
 	}
 
 	private void resize() {
@@ -140,9 +165,19 @@ public class Application {
 	private void cleanup() {
 		// TODO
 		this.window.cleanup();
-		
-		if(this.onClose != null) {
+
+		if (this.onClose != null) {
 			this.onClose.run();
+		}
+	}
+
+	private ApplicationSettings loadAppSettings() {
+		Gson gson = AssetDatabase.getInstance().createGsonBuilder().create();
+		try (FileReader reader = new FileReader(new File("appSettings.json"))) {
+			return gson.fromJson(reader, ApplicationSettings.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ApplicationSettings(); // Settings are missing?
 		}
 	}
 }

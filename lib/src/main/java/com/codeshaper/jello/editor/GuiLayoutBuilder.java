@@ -15,6 +15,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -23,6 +24,7 @@ import javax.swing.SwingConstants;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.property.ExposedArrayField;
 import com.codeshaper.jello.editor.property.ExposedField;
@@ -51,6 +53,14 @@ public class GuiLayoutBuilder {
 	public GuiLayoutBuilder() {
 		this.panel = new JPanel();
 		this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
+	}
+
+	/**
+	 * Adds a space to the layout with a size of 14 pixels (the amount of space that
+	 * {@link Space} gives.
+	 */
+	public void space() {
+		this.space(14);
 	}
 
 	/**
@@ -212,6 +222,36 @@ public class GuiLayoutBuilder {
 		this.addLabelIfNecessary(label, numberField);
 	}
 
+	public void vector3Field(String label, Vector3f value, OnSubmitListerer<Vector3f> onSubmit) {
+		JPanel horizontalArea = GuiBuilder.horizontalArea();
+
+		JNumberField xField = GuiBuilder.floatField(value.x);
+		JNumberField yField = GuiBuilder.floatField(value.y);
+		JNumberField zField = GuiBuilder.floatField(value.z);
+
+		horizontalArea.add(new JLabel("X"));
+		horizontalArea.add(xField);
+		horizontalArea.add(new JLabel("Y"));
+		horizontalArea.add(yField);
+		horizontalArea.add(new JLabel("Z"));
+		horizontalArea.add(zField);
+
+		this.addNumberFieldListeners(xField, (v) -> {
+			value.setComponent(0, (float) xField.getValue());
+			onSubmit.onSubmit(value);
+		});
+		this.addNumberFieldListeners(yField, (v) -> {
+			value.setComponent(1, (float) yField.getValue());
+			onSubmit.onSubmit(value);
+		});
+		this.addNumberFieldListeners(zField, (v) -> {
+			value.setComponent(2, (float) zField.getValue());
+			onSubmit.onSubmit(value);
+		});
+
+		this.addLabelIfNecessary(label, horizontalArea);
+	}
+
 	public void field(ExposedField exposedField) {
 		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
 
@@ -309,15 +349,15 @@ public class GuiLayoutBuilder {
 			if (Modifier.isStatic(modifiers)) {
 				continue;
 			}
-			
+
 			boolean hasDontExpose = field.getAnnotation(DontExposeField.class) != null;
 			boolean hasExpose = field.getAnnotation(ExposeField.class) != null;
-			
-			if(hasDontExpose) {
+
+			if (hasDontExpose) {
 				continue;
 			}
-			
-			if(Modifier.isPublic(modifiers) || hasExpose) {
+
+			if (Modifier.isPublic(modifiers) || hasExpose) {
 				this.field(new ExposedField(object, field));
 			}
 		}
