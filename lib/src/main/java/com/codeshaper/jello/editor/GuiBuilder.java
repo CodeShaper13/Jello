@@ -362,7 +362,7 @@ public class GuiBuilder {
 		return btn;
 	}
 	
-	public static <T extends Asset> JComboBox<Path> assetReferenceField(T value, Class<T> clazz, OnSubmitListerer<T> listener) {
+	public static <T extends Asset> JComboBox<Path> assetField(T value, Class<T> clazz, OnSubmitListerer<T> listener) {
 		AssetDatabase database = AssetDatabase.getInstance();
 
 		List<Path> paths = database.getAllAssetsOfType(clazz, true);

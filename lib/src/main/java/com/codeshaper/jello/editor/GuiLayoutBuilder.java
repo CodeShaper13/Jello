@@ -20,6 +20,7 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
+import com.codeshaper.jello.editor.GuiLayoutBuilder.OnSubmitListerer;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DontExposeField;
@@ -27,6 +28,8 @@ import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.editor.swing.JNumberField;
+import com.codeshaper.jello.engine.Color;
+import com.codeshaper.jello.engine.asset.Asset;
 
 /**
  * Provides an easy way to create Uis with components organized in a descending
@@ -115,12 +118,12 @@ public class GuiLayoutBuilder {
 		this.add(GuiBuilder.label(text, icon, alignment));
 	}
 
-	public void textField(String label, String text, OnSubmitListerer<String> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textField(text, onSubmit)));
+	public void textField(String label, String text, OnSubmitListerer<String> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textField(text, listener)));
 	}
 
-	public void textArea(String label, String text, int lines, OnSubmitListerer<String> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textArea(text, lines, onSubmit)));
+	public void textArea(String label, String text, int lines, OnSubmitListerer<String> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textArea(text, lines, listener)));
 	}
 
 	public void textBox(String label, String text, int lines) {
@@ -145,8 +148,8 @@ public class GuiLayoutBuilder {
 	 * @param isOn
 	 * @param onClick
 	 */
-	public void checkbox(String label, boolean isOn, OnSubmitListerer<Boolean> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.checkBox(isOn, onSubmit)));
+	public void checkbox(String label, boolean isOn, OnSubmitListerer<Boolean> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.checkBox(isOn, listener)));
 	}
 
 	/**
@@ -154,11 +157,11 @@ public class GuiLayoutBuilder {
 	 * 
 	 * @param label    the labels text, or null to hide the label.
 	 * @param value    the fields initial value.
-	 * @param onSubmit a listener for when the field's value is submitted. May be
+	 * @param listener a listener for when the field's value is submitted. May be
 	 *                 null.
 	 */
-	public void intField(String label, int value, OnSubmitListerer<Integer> onSubmit) {
-		JNumberField numberField = GuiBuilder.intField(value, onSubmit);
+	public void intField(String label, int value, OnSubmitListerer<Integer> listener) {
+		JNumberField numberField = GuiBuilder.intField(value, listener);
 		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
@@ -167,11 +170,11 @@ public class GuiLayoutBuilder {
 	 * 
 	 * @param label    the labels text, or null to hide the label.
 	 * @param value    the fields initial value.
-	 * @param onSubmit a listener for when the field's value is submitted. May be
+	 * @param listener a listener for when the field's value is submitted. May be
 	 *                 null.
 	 */
-	public void longField(String label, long value, OnSubmitListerer<Long> onSubmit) {
-		JNumberField numberField = GuiBuilder.longField(value, onSubmit);
+	public void longField(String label, long value, OnSubmitListerer<Long> listener) {
+		JNumberField numberField = GuiBuilder.longField(value, listener);
 		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
@@ -180,11 +183,11 @@ public class GuiLayoutBuilder {
 	 * 
 	 * @param label    the labels text, or null to hide the label.
 	 * @param value    the fields initial value.
-	 * @param onSubmit a listener for when the field's value is submitted. May be
+	 * @param listener a listener for when the field's value is submitted. May be
 	 *                 null.
 	 */
-	public void floatField(String label, float value, OnSubmitListerer<Float> onSubmit) {
-		JNumberField numberField = GuiBuilder.floatField(value, onSubmit);
+	public void floatField(String label, float value, OnSubmitListerer<Float> listener) {
+		JNumberField numberField = GuiBuilder.floatField(value, listener);
 		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
@@ -193,30 +196,38 @@ public class GuiLayoutBuilder {
 	 * 
 	 * @param label    the labels text, or null to hide the label.
 	 * @param value    the fields initial value.
-	 * @param onSubmit a listener for when the field's value is submitted. May be
+	 * @param listener a listener for when the field's value is submitted. May be
 	 *                 null.
 	 */
-	public void doubleField(String label, double value, OnSubmitListerer<Double> onSubmit) {
-		JNumberField numberField = GuiBuilder.doubleField(value, onSubmit);
+	public void doubleField(String label, double value, OnSubmitListerer<Double> listener) {
+		JNumberField numberField = GuiBuilder.doubleField(value, listener);
 		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
-	public void vector2iField(String label, Vector2i value, OnSubmitListerer<Vector2i> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2iField(value, onSubmit)));
+	public void vector2iField(String label, Vector2i value, OnSubmitListerer<Vector2i> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2iField(value, listener)));
 	}
 	
-	public void vector2fField(String label, Vector2f value, OnSubmitListerer<Vector2f> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2fField(value, onSubmit)));
+	public void vector2fField(String label, Vector2f value, OnSubmitListerer<Vector2f> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2fField(value, listener)));
 	}
 	
-	public void vector3iField(String label, Vector3i value, OnSubmitListerer<Vector3i> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3iField(value, onSubmit)));
+	public void vector3iField(String label, Vector3i value, OnSubmitListerer<Vector3i> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3iField(value, listener)));
 	}
 	
-	public void vector3fField(String label, Vector3f value, OnSubmitListerer<Vector3f> onSubmit) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3fField(value, onSubmit)));
+	public void vector3fField(String label, Vector3f value, OnSubmitListerer<Vector3f> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3fField(value, listener)));
 	}
 
+	public void colorField(String label, Color color, OnSubmitListerer<Color> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.colorField(color, listener)));
+	}
+	
+	public <T extends Asset> void assetField(String label, T value, Class<T> clazz, OnSubmitListerer<T> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.assetField(value, clazz, listener)));
+	}
+	
 	public void field(ExposedField exposedField) {
 		JComponent fieldComponent = GuiBuilder.field(exposedField);
 		if(fieldComponent != null) {
