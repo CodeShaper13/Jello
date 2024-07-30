@@ -21,9 +21,9 @@ public class QuaternionfDrawer implements IFieldDrawer {
 		
 		Vector3f eu = MathHelper.quaternionToEulerAnglesDegrees((Quaternionf)field.get());
 		
-		JNumberField xField = GuiBuilder.floatField(eu.x);
-		JNumberField yField = GuiBuilder.floatField(eu.y);
-		JNumberField zField = GuiBuilder.floatField(eu.z);
+		JNumberField xField = GuiBuilder.floatField(eu.x, null);
+		JNumberField yField = GuiBuilder.floatField(eu.y, null);
+		JNumberField zField = GuiBuilder.floatField(eu.z, null);
 		
 		ActionListener listener = new ActionListener() {
 			

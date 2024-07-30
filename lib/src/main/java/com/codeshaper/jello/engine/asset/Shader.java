@@ -89,7 +89,7 @@ public class Shader extends Asset {
 			drawer.label("Shaders:");
 			for(ShaderSource module : this.target.data.shaders) {
 				drawer.label("Type: " + module.getType());
-				drawer.textbox(module.getSource(), 10);
+				drawer.textBox(null, module.getSource(), 10);
 			}
 		}
 	}

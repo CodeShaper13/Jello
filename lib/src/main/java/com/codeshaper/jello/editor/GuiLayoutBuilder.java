@@ -1,10 +1,6 @@
 package com.codeshaper.jello.editor;
 
 import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -12,34 +8,25 @@ import java.lang.reflect.Modifier;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 
-import com.codeshaper.jello.editor.property.ExposedArrayField;
 import com.codeshaper.jello.editor.property.ExposedField;
-import com.codeshaper.jello.editor.property.IExposedField;
-import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
-import com.codeshaper.jello.editor.property.drawer.IFieldDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DontExposeField;
 import com.codeshaper.jello.editor.property.modifier.ExposeField;
-import com.codeshaper.jello.editor.property.modifier.HideIf;
 import com.codeshaper.jello.editor.property.modifier.Separator;
-import com.codeshaper.jello.editor.property.modifier.ShowIf;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.editor.swing.JNumberField;
-import com.codeshaper.jello.editor.window.InspectorWindow;
 
 /**
  * Provides an easy way to create Uis with components organized in a descending
@@ -128,12 +115,16 @@ public class GuiLayoutBuilder {
 		this.add(GuiBuilder.label(text, icon, alignment));
 	}
 
-	public void textbox(String text, int lines) {
-		JTextArea textArea = new JTextArea(lines, 0);
-		textArea.setEnabled(false);
-		textArea.setText(text);
-		JScrollPane scroll = new JScrollPane(textArea);
-		this.add(scroll);
+	public void textField(String label, String text, OnSubmitListerer<String> onSubmit) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textField(text, onSubmit)));
+	}
+
+	public void textArea(String label, String text, int lines, OnSubmitListerer<String> onSubmit) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textArea(text, lines, onSubmit)));
+	}
+
+	public void textBox(String label, String text, int lines) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textBox(text, lines)));
 	}
 
 	/**
@@ -144,11 +135,7 @@ public class GuiLayoutBuilder {
 	 * @param onClick run when the button is clicked. May be null.
 	 */
 	public void button(String label, Icon icon, Runnable onClick) {
-		JButton btn = GuiBuilder.button(label, icon);
-		if (onClick != null) {
-			btn.addActionListener(e -> onClick.run());
-		}
-		this.add(btn);
+		this.add(GuiBuilder.button(label, icon, onClick));
 	}
 
 	/**
@@ -159,11 +146,7 @@ public class GuiLayoutBuilder {
 	 * @param onClick
 	 */
 	public void checkbox(String label, boolean isOn, OnSubmitListerer<Boolean> onSubmit) {
-		JCheckBox checkBox = GuiBuilder.checkBox(isOn);
-		if (onSubmit != null) {
-			checkBox.addActionListener((e) -> onSubmit.onSubmit(checkBox.isSelected()));
-		}
-		this.addLabelIfNecessary(label, checkBox);
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.checkBox(isOn, onSubmit)));
 	}
 
 	/**
@@ -175,9 +158,8 @@ public class GuiLayoutBuilder {
 	 *                 null.
 	 */
 	public void intField(String label, int value, OnSubmitListerer<Integer> onSubmit) {
-		JNumberField numberField = GuiBuilder.intField(value);
-		this.addNumberFieldListeners(numberField, onSubmit);
-		this.addLabelIfNecessary(label, numberField);
+		JNumberField numberField = GuiBuilder.intField(value, onSubmit);
+		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
 	/**
@@ -189,9 +171,8 @@ public class GuiLayoutBuilder {
 	 *                 null.
 	 */
 	public void longField(String label, long value, OnSubmitListerer<Long> onSubmit) {
-		JNumberField numberField = GuiBuilder.longField(value);
-		this.addNumberFieldListeners(numberField, onSubmit);
-		this.addLabelIfNecessary(label, numberField);
+		JNumberField numberField = GuiBuilder.longField(value, onSubmit);
+		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
 	/**
@@ -203,9 +184,8 @@ public class GuiLayoutBuilder {
 	 *                 null.
 	 */
 	public void floatField(String label, float value, OnSubmitListerer<Float> onSubmit) {
-		JNumberField numberField = GuiBuilder.floatField(value);
-		this.addNumberFieldListeners(numberField, onSubmit);
-		this.addLabelIfNecessary(label, numberField);
+		JNumberField numberField = GuiBuilder.floatField(value, onSubmit);
+		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
 	/**
@@ -217,121 +197,40 @@ public class GuiLayoutBuilder {
 	 *                 null.
 	 */
 	public void doubleField(String label, double value, OnSubmitListerer<Double> onSubmit) {
-		JNumberField numberField = GuiBuilder.doubleField(value);
-		this.addNumberFieldListeners(numberField, onSubmit);
-		this.addLabelIfNecessary(label, numberField);
+		JNumberField numberField = GuiBuilder.doubleField(value, onSubmit);
+		this.add(this.prefixLabelIfNecessary(label, numberField));
 	}
 
-	public void vector3Field(String label, Vector3f value, OnSubmitListerer<Vector3f> onSubmit) {
-		JPanel horizontalArea = GuiBuilder.horizontalArea();
-
-		JNumberField xField = GuiBuilder.floatField(value.x);
-		JNumberField yField = GuiBuilder.floatField(value.y);
-		JNumberField zField = GuiBuilder.floatField(value.z);
-
-		horizontalArea.add(new JLabel("X"));
-		horizontalArea.add(xField);
-		horizontalArea.add(new JLabel("Y"));
-		horizontalArea.add(yField);
-		horizontalArea.add(new JLabel("Z"));
-		horizontalArea.add(zField);
-
-		this.addNumberFieldListeners(xField, (v) -> {
-			value.setComponent(0, (float) xField.getValue());
-			onSubmit.onSubmit(value);
-		});
-		this.addNumberFieldListeners(yField, (v) -> {
-			value.setComponent(1, (float) yField.getValue());
-			onSubmit.onSubmit(value);
-		});
-		this.addNumberFieldListeners(zField, (v) -> {
-			value.setComponent(2, (float) zField.getValue());
-			onSubmit.onSubmit(value);
-		});
-
-		this.addLabelIfNecessary(label, horizontalArea);
+	public void vector2iField(String label, Vector2i value, OnSubmitListerer<Vector2i> onSubmit) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2iField(value, onSubmit)));
+	}
+	
+	public void vector2fField(String label, Vector2f value, OnSubmitListerer<Vector2f> onSubmit) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2fField(value, onSubmit)));
+	}
+	
+	public void vector3iField(String label, Vector3i value, OnSubmitListerer<Vector3i> onSubmit) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3iField(value, onSubmit)));
+	}
+	
+	public void vector3fField(String label, Vector3f value, OnSubmitListerer<Vector3f> onSubmit) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3fField(value, onSubmit)));
 	}
 
 	public void field(ExposedField exposedField) {
-		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
-
-		HideIf hideIf = exposedField.getAnnotation(HideIf.class);
-		if (hideIf != null) {
-			try {
-				if (EditorUtil.invokeMethod(exposedField, hideIf.value())) {
-					return; // Don't draw the field.
-				}
-			} catch (Exception e) {
+		JComponent fieldComponent = GuiBuilder.field(exposedField);
+		if(fieldComponent != null) {
+			
+			Space space = exposedField.getAnnotation(Space.class);
+			if (space != null) {
+				this.panel.add(Box.createVerticalStrut(space.value()));
 			}
-		}
-
-		ShowIf showIf = exposedField.getAnnotation(ShowIf.class);
-		if (showIf != null) {
-			try {
-				if (!EditorUtil.invokeMethod(exposedField, showIf.value())) {
-					return; // Don't draw the field.
-				}
-			} catch (Exception e) {
+			
+			if (exposedField.getAnnotation(Separator.class) != null) {
+				this.panel.add(new JSeparator());
 			}
-		}
-
-		if (exposedField.getType().isArray()) {
-			this.addSpaceIfRequested(panel, exposedField);
-			this.addSeparatorIfRequested(panel, exposedField);
-
-			JPanel arrayPanel = GuiBuilder.verticalArea();
-
-			Object arrayInstance = exposedField.get();
-			int arrayLength = arrayInstance == null ? 0 : Array.getLength(arrayInstance);
-
-			JNumberField numField = GuiBuilder.intField(arrayLength);
-			numField.addActionListener(e -> {
-				int newLength = (int) numField.getValue();
-				Object newArray = Array.newInstance(exposedField.getType().componentType(), newLength);
-
-				if (arrayInstance != null) {
-					System.arraycopy(arrayInstance, 0, newArray, 0, Math.min(arrayLength, newLength));
-				}
-
-				exposedField.set(newArray);
-				JelloEditor.getWindow(InspectorWindow.class).refresh();
-			});
-
-			panel.add(GuiBuilder.combine(GuiBuilder.label(exposedField),
-					GuiBuilder.combine(GuiBuilder.label("Length"), numField)));
-
-			if (arrayInstance != null) {
-				IFieldDrawer drawer = drawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
-				if (drawer != null) {
-					for (int i = 0; i < arrayLength; i++) {
-						JPanel fieldPanel;
-						try {
-							fieldPanel = drawer
-									.draw(new ExposedArrayField(exposedField.backingField, arrayInstance, i));
-							arrayPanel.add(fieldPanel);
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
-			}
-
-			panel.add(arrayPanel);
-		} else {
-			IFieldDrawer drawer = drawerRegistry.getDrawer(exposedField.getType());
-			if (drawer != null) {
-				this.addSpaceIfRequested(panel, exposedField);
-				this.addSeparatorIfRequested(panel, exposedField);
-
-				// Draw the field.
-				JPanel fieldPanel;
-				try {
-					fieldPanel = drawer.draw(exposedField);
-					panel.add(fieldPanel);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			
+			this.panel.add(fieldComponent);
 		}
 	}
 
@@ -384,55 +283,14 @@ public class GuiLayoutBuilder {
 		}
 	}
 
-	private void addLabelIfNecessary(String label, JComponent component) {
+	private JComponent prefixLabelIfNecessary(String label, JComponent component) {
 		if (label != null) {
-			this.add(GuiBuilder.combine(GuiBuilder.label(label), component));
+			return GuiBuilder.combine(GuiBuilder.label(label), component);
 		} else {
-			this.add(component);
+			return component;
 		}
 	}
-
-	@SuppressWarnings("unchecked")
-	private <T> void addNumberFieldListeners(JNumberField numberField, OnSubmitListerer<T> onSubmit) {
-		if (onSubmit != null) {
-			numberField.addActionListener((e) -> onSubmit.onSubmit((T) numberField.getValue()));
-			numberField.addFocusListener(new FocusAdapter() {
-				@Override
-				public void focusLost(FocusEvent e) {
-					EventQueue.invokeLater(() -> {
-						onSubmit.onSubmit((T) numberField.getValue());
-					});
-				}
-			});
-		}
-	}
-
-	/*
-	 * Adds a space if the field requests one.
-	 * 
-	 * @param panel
-	 * 
-	 * @param field
-	 */
-	private void addSpaceIfRequested(JPanel panel, IExposedField field) {
-		Space space = field.getAnnotation(Space.class);
-		if (space != null) {
-			panel.add(Box.createVerticalStrut(space.value()));
-		}
-	}
-
-	/**
-	 * Adds a separator if the field requests one.
-	 * 
-	 * @param panel
-	 * @param field
-	 */
-	private void addSeparatorIfRequested(JPanel panel, IExposedField field) {
-		if (field.getAnnotation(Separator.class) != null) {
-			panel.add(new JSeparator());
-		}
-	}
-
+	
 	public interface OnSubmitListerer<T> {
 
 		void onSubmit(T value);

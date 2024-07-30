@@ -29,7 +29,7 @@ public class Script extends Asset {
 			super.drawAsset(drawer); // Draws default inspector
 			
 			drawer.label("Compilation Errors:");
-			drawer.textbox("No Errors", 10);
+			drawer.textBox(null, "No Errors", 10);
 		}
 	}
 }

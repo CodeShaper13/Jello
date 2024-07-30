@@ -160,11 +160,11 @@ public class GameObjectEditor extends Editor<GameObject> {
 	private JPanel createTransformPanel() {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 
-		builder.vector3Field("Position", this.target.getLocalPosition(), (v) -> {
+		builder.vector3fField("Position", this.target.getLocalPosition(), (v) -> {
 			this.target.setLocalPosition(v);
 		});
 		builder.field(new ExposedField(this.target, "localRotation"));		
-		builder.vector3Field("Scale", this.target.getLocalScale(), (v) -> {
+		builder.vector3fField("Scale", this.target.getLocalScale(), (v) -> {
 			this.target.setLocalScale(v);
 		});
 

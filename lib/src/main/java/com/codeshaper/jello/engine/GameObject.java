@@ -26,7 +26,7 @@ public class GameObject implements IInspectable {
 	private Matrix4f localMatrix;
 	transient Scene scene;
 	transient GameObject parent;
-
+	
 	/**
 	 * Creates a new GameObject and adds it to a {@link Scene}.
 	 * 
@@ -35,8 +35,10 @@ public class GameObject implements IInspectable {
 	 * @throws IllegalArgumentException if {@code scene} is null.
 	 */
 	public GameObject(String name, Scene scene) {
-		this(name);
+		this();
 
+		this.setName(name);
+		
 		if (scene == null) {
 			throw new IllegalArgumentException("scene may not be null.");
 		}
@@ -52,7 +54,9 @@ public class GameObject implements IInspectable {
 	 * @throws IllegalArgumentException if {@code parent} is null.
 	 */
 	public GameObject(String name, GameObject parent) {
-		this(name);
+		this();
+		
+		this.setName(name);
 
 		if (parent == null) {
 			throw new IllegalArgumentException("parent may not be null.");
@@ -64,8 +68,7 @@ public class GameObject implements IInspectable {
 		this.setParent(parent);
 	}
 
-	private GameObject(String name) {
-		this.setName(name);
+	private GameObject() {
 		this.isEnabled = true;
 		this.children = new ArrayList<GameObject>();
 		this.components = new ArrayList<JelloComponent>();
@@ -73,6 +76,8 @@ public class GameObject implements IInspectable {
 		this.localPosition = new Vector3f(0f, 0f, 0f);
 		this.localRotation = new Quaternionf();
 		this.localScale = new Vector3f(1f, 1f, 1f);
+		
+		this.localMatrix = new Matrix4f();
 	}
 
 	@Override

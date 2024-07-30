@@ -82,7 +82,7 @@ public class TextAsset extends Asset {
 				}
 			}
 			
-			drawer.textbox(text, 10);
+			drawer.textBox(null, text, 10);
 		}
 	}
 }
