@@ -14,7 +14,7 @@ public class AssetDrawer implements IFieldDrawer {
 	@SuppressWarnings("unchecked")
 	@Override
 	public JPanel draw(IExposedField field) {
-		JComboBox<Path> comboBox = GuiBuilder.assetReferenceField(
+		JComboBox<Path> comboBox = GuiBuilder.assetField(
 				(Asset)field.get(),
 				(Class<Asset>) field.getType(),
 				(v) -> {
