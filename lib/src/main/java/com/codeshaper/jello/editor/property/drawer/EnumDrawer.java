@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 
-public class EnumDrawer implements IFieldDrawer {
+public class EnumDrawer extends FieldDrawer {
 
 	@Override
 	public JPanel draw(IExposedField field) {
@@ -15,6 +15,7 @@ public class EnumDrawer implements IFieldDrawer {
 		comboBox.addActionListener(e -> {
 			field.set(comboBox.getSelectedItem());
 		});
+		comboBox.setEnabled(!field.isReadOnly());
 		
 		return GuiBuilder.combine(GuiBuilder.label(field), comboBox);
 	}

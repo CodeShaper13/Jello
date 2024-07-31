@@ -29,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -39,7 +40,7 @@ import com.codeshaper.jello.editor.property.ExposedArrayField;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
-import com.codeshaper.jello.editor.property.drawer.IFieldDrawer;
+import com.codeshaper.jello.editor.property.drawer.FieldDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
 import com.codeshaper.jello.editor.property.modifier.MaxValue;
@@ -165,10 +166,10 @@ public class GuiBuilder {
 		String label;
 
 		Button buttonAnnotation = method.getAnnotation(Button.class);
-		if (buttonAnnotation != null) {
-			label = buttonAnnotation.value();
-		} else {
+		if (StringUtils.isWhitespace(buttonAnnotation.value())) {
 			label = method.getName();
+		} else {
+			label = buttonAnnotation.value();
 		}
 
 		JButton button = new JButton(label);
@@ -348,6 +349,10 @@ public class GuiBuilder {
 		return panel;
 	}
 
+	public static JPanel quaternionField(Quaternionf quaternion, OnSubmitListerer<Quaternionf> listener) {
+		return null;
+	}
+	
 	public static JButton colorField(Color color, OnSubmitListerer<Color> listener) {
 		JButton btn = new JButton();
 		btn.setBackground(color.toAwtColor());		
@@ -362,6 +367,7 @@ public class GuiBuilder {
 		return btn;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static <T extends Asset> JComboBox<Path> assetField(T value, Class<T> clazz, OnSubmitListerer<T> listener) {
 		AssetDatabase database = AssetDatabase.getInstance();
 
@@ -438,7 +444,7 @@ public class GuiBuilder {
 					GuiBuilder.combine(GuiBuilder.label("Length"), lengthField)));
 
 			if (arrayInstance != null) {
-				IFieldDrawer drawer = drawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
+				FieldDrawer drawer = drawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
 				if (drawer != null) {
 					for (int i = 0; i < arrayLength; i++) {
 						JPanel fieldPanel = drawer.draw(new ExposedArrayField(((ExposedField)field).backingField, arrayInstance, i));
@@ -449,7 +455,7 @@ public class GuiBuilder {
 
 			return arrayPanel;
 		} else {
-			IFieldDrawer drawer = drawerRegistry.getDrawer(field.getType());
+			FieldDrawer drawer = drawerRegistry.getDrawer(field.getType());
 			if (drawer != null) {
 				return drawer.draw(field);
 			} else {

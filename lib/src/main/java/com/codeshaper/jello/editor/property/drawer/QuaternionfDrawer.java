@@ -13,7 +13,8 @@ import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.swing.JNumberField;
 import com.codeshaper.jello.engine.MathHelper;
 
-public class QuaternionfDrawer implements IFieldDrawer {
+@FieldDrawerType(Quaternionf.class)
+public class QuaternionfDrawer extends FieldDrawer {
 
 	@Override
 	public JPanel draw(IExposedField field) {

@@ -1,6 +1,6 @@
 package com.codeshaper.jello.engine.component;
 
-import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
@@ -36,7 +36,8 @@ public class Test extends JelloComponent {
 	@DisplayAs("My Boolean")
 	public boolean bool = true;
 	public EnumTest testEnum = EnumTest.BANANA;
-	public Vector3d vector = new Vector3d(1.05, 2.1, 3.2);
+	@ReadOnly
+	public Vector3f vector = new Vector3f(1.05f, 2.1f, 3.2f);
 	@Separator
 	public Mesh mesh = null;
 	@ExposeField

@@ -120,8 +120,7 @@ public class JelloEditor {
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
 		this.componentList = new ComponentList();
-		this.filedDrawers = new FieldDrawerRegistry();
-		this.filedDrawers.registerBuiltinDrawers();
+		this.filedDrawers = new FieldDrawerRegistry(this);
 
 		this.sceneManager = new EditorSceneManager(this);
 

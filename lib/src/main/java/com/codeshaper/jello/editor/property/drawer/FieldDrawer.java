@@ -4,7 +4,7 @@ import javax.swing.JPanel;
 
 import com.codeshaper.jello.editor.property.IExposedField;
 
-public interface IFieldDrawer {
+public abstract class FieldDrawer {
 
-	public JPanel draw(IExposedField field);
+	public abstract JPanel draw(IExposedField field);
 }
