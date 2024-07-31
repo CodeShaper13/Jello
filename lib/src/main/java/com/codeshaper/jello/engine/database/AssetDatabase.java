@@ -56,6 +56,10 @@ import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 public class AssetDatabase implements ProjectReloadListener {
 
 	private final String[] builtinAsset = new String[] {
+			// Audio Clips
+			"builtin/beep.ogg",
+			// Font
+			"arial.ttf",
 			// Meshes
 			"builtin/meshes/cone.blend",
 			"builtin/meshes/cube.blend",
