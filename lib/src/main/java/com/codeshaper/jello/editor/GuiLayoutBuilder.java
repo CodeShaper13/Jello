@@ -50,7 +50,7 @@ public class GuiLayoutBuilder {
 	 * {@link Space} gives.
 	 */
 	public void space() {
-		this.space(14);
+		this.space(10);
 	}
 
 	/**
@@ -290,6 +290,9 @@ public class GuiLayoutBuilder {
 		if (this.isHorizontal()) {
 			this.horizontalPanel.add(component);
 		} else {
+			if(this.panel.getComponentCount() != 0) {
+				this.panel.add(Box.createVerticalStrut(4));
+			}
 			this.panel.add(component);
 		}
 	}

@@ -15,5 +15,5 @@ public @interface Space {
 	/**
 	 * The height of the space in pixels.
 	 */
-	int value() default 14;
+	int value() default 10;
 }

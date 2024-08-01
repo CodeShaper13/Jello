@@ -347,6 +347,7 @@ public class AssetDatabase implements ProjectReloadListener {
 		builder.setPrettyPrinting();
 		builder.serializeNulls();
 		builder.registerTypeAdapterFactory(this.componentAdapterFactory);
+		this.assetAdapterFactory.wroteRoot = true;
 		builder.registerTypeAdapterFactory(this.assetAdapterFactory);
 
 		return builder;
@@ -535,11 +536,11 @@ public class AssetDatabase implements ProjectReloadListener {
 						delegate.write(out, value);
 					} else {
 						Asset asset = (Asset) value;
-						if(asset  == null) {
+						if(asset == null) {
 							out.nullValue();
 						} else {
 							if (asset.isRuntimeAsset()) {
-								out.nullValue();//.value("NUL"); // TODO should this be null?
+								out.nullValue();
 							} else {
 								Path path = ((Asset) value).location.getPath();
 								out.value(path.toString());
