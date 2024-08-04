@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.FilenameUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 
 /**
  * An {@link AssetLocation} provides the location of an Asset within the
@@ -71,7 +72,7 @@ public final class AssetLocation {
 		if (this.pointsToBuiltin()) {
 			return this.getPath();
 		} else {
-			return JelloEditor.instance.assetsFolder.resolve(this.relativePath);
+			return AssetDatabase.getInstance().assetsFolder.resolve(this.relativePath);
 		}
 	}
 

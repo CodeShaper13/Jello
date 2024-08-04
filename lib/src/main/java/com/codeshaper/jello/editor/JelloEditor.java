@@ -25,6 +25,7 @@ import com.codeshaper.jello.editor.event.ProjectSaveListener;
 import com.codeshaper.jello.editor.event.SceneChangeListener;
 import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.engine.Application;
+import com.codeshaper.jello.engine.Application.LaunchArguments;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
@@ -83,7 +84,6 @@ public class JelloEditor {
 	public final Path rootProjectFolder;
 	public final Path assetsFolder;
 	public final EditorAssetDatabase assetDatabase;
-	public final ComponentList componentList;
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
@@ -119,7 +119,6 @@ public class JelloEditor {
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
-		this.componentList = new ComponentList();
 		this.filedDrawers = new FieldDrawerRegistry();
 		this.filedDrawers.registerBuiltinDrawers();
 
@@ -201,8 +200,13 @@ public class JelloEditor {
 		if (this.isInPlaying()) {
 			return false;
 		}
+		
+		LaunchArguments args = new LaunchArguments();
+		for(Scene scene : this.sceneManager.getScenes()) {
+			args.addStartingScene(scene);
+		}
 
-		this.application = new Application();
+		this.application = new Application(this.sceneManager);
 		this.application.onClose = () -> {
 			this.application = null;
 

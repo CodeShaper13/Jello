@@ -20,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.reflections.Reflections;
 
+import com.codeshaper.jello.editor.ComponentList;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.engine.AssetLocation;
@@ -53,7 +54,7 @@ import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
  * <p>
  * {@code assetDatabase.getAsset("builtin/textures/placeholderTexture.png"); }
  */
-public class AssetDatabase implements ProjectReloadListener {
+public class AssetDatabase {
 
 	private final String[] builtinAsset = new String[] {
 			// Meshes
@@ -75,9 +76,11 @@ public class AssetDatabase implements ProjectReloadListener {
 	/**
 	 * The /assets folder located in the root of the project folder.
 	 */
-	protected final Path assetsFolder;
+	public final Path assetsFolder;
+	
 	protected final List<CachedAsset> assets;
 	protected final ExtentionMapping extentionMapping;
+	protected final ComponentList componentList;
 	
 	protected RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory;
 	protected AssetTypeAdapterFactory assetAdapterFactory;
@@ -102,26 +105,13 @@ public class AssetDatabase implements ProjectReloadListener {
 		this.extentionMapping = new ExtentionMapping();
 		this.extentionMapping.compileBuiltinMappings(scan);
 		this.extentionMapping.compileThirdPartyMappings();
+		
+		this.componentList = new ComponentList();
 
 		this.assetAdapterFactory = new AssetTypeAdapterFactory();
 		this.serializedJelloObjectInstanceCreator = new SerializedJelloObjectInstanceCreator(null, null);
-
-		JelloEditor.instance.addProjectReloadListener(this);
 		
 		this.buildDatabase();
-	}
-
-	@Override
-	public void onProjectReload(Phase phase) {
-		if (phase == Phase.REBUILD) {
-			this.refreshDatabase();
-			this.extentionMapping.compileThirdPartyMappings();
-		} else if (phase == Phase.POST_REBUILD) {
-			this.componentAdapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
-			for (Class<JelloComponent> component : JelloEditor.instance.componentList) {
-				this.componentAdapterFactory.registerSubtype(component, component.getName());
-			}
-		}
 	}
 
 	/**
@@ -144,6 +134,20 @@ public class AssetDatabase implements ProjectReloadListener {
 			Path path = iter.next().toPath();
 			this.tryAddAsset(this.toRelativePath(path));
 		}
+		
+		this.compileThirdPartyExtensionMappings();
+		this.func();
+	}
+	
+	protected void compileThirdPartyExtensionMappings() {
+		this.extentionMapping.compileThirdPartyMappings();
+	}
+	
+	protected void func() {
+		this.componentAdapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+		for (Class<JelloComponent> component : this.componentList) {
+			this.componentAdapterFactory.registerSubtype(component, component.getName());
+		}
 	}
 
 	/**
@@ -155,6 +159,10 @@ public class AssetDatabase implements ProjectReloadListener {
 		this.buildDatabase();
 	}
 
+	public Iterable<Class<JelloComponent>> getallComponents() {
+		return this.componentList;
+	}
+	
 	/**
 	 * Checks if an Asset exists.
 	 * 
@@ -550,7 +558,7 @@ public class AssetDatabase implements ProjectReloadListener {
 					JsonToken token = in.peek();
 					if (token == JsonToken.STRING) {
 						String relativePath = in.nextString();
-						Asset asset = JelloEditor.instance.assetDatabase.getAsset(relativePath);
+						Asset asset = getAsset(relativePath);
 						return (T) asset;
 					} else if(token == JsonToken.NULL) {
 						in.nextNull();

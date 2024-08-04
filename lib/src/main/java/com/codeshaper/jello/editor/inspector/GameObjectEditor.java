@@ -63,7 +63,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 		this.addComponentButton.addActionListener(e -> {
 			JDialog dialog = new JDialog(JelloEditor.instance.window, "Add Component");
 			DefaultListModel<Class<JelloComponent>> model = new DefaultListModel<Class<JelloComponent>>();
-			for (Class<JelloComponent> clazz : JelloEditor.instance.componentList) {
+			for (Class<JelloComponent> clazz : JelloEditor.instance.assetDatabase.getallComponents()) {
 				model.addElement(clazz);
 			}
 			JList<Class<JelloComponent>> list = new JList<Class<JelloComponent>>(model);

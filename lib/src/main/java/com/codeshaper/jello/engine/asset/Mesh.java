@@ -3,7 +3,6 @@ package com.codeshaper.jello.engine.asset;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.MeshBuilder;
@@ -37,9 +36,7 @@ public class Mesh extends Asset {
 		this.constructMesh(positions, textCoords, indices);
 	}
 	
-	private void constructMesh(float[] positions, float[] textCoords, int[] indices) {
-		JelloEditor.instance.enableEditorContext();
-		
+	private void constructMesh(float[] positions, float[] textCoords, int[] indices) {		
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			this.numVertices = indices.length;
 			vboIdList = new ArrayList<>();

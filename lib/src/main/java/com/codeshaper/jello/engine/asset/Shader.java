@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
@@ -38,8 +37,6 @@ public class Shader extends Asset {
 			e.printStackTrace();
 		}
 		
-		JelloEditor.instance.enableEditorContext();
-
 		this.program = new ShaderProgram(this.data.shaders);
 		this.uniformsMap = new UniformsMap(this.getProgramId());
 		
@@ -48,8 +45,6 @@ public class Shader extends Asset {
         this.uniformsMap.createUniform(GameRenderer.VIEW_MATRIX);
         this.uniformsMap.createUniform(GameRenderer.GAME_OBJECT_MATRIX);
         this.uniformsMap.createUniform(GameRenderer.TXT_SAMPLER);
-		
-		JelloEditor.instance.disableEditorContext();
 	}
 	
 	@Override

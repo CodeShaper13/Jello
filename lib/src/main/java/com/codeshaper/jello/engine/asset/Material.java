@@ -2,12 +2,12 @@ package com.codeshaper.jello.engine.asset;
 
 import static org.lwjgl.opengl.GL30.*;
 
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 
 @CreateAssetEntry(fileName = "material", location = "Material")
 public class Material extends SerializedJelloObject {
@@ -34,7 +34,7 @@ public class Material extends SerializedJelloObject {
 	 */
 	public Shader getShader() {
 		if(this.shader == null) {
-	        return (Shader)JelloEditor.instance.assetDatabase.getAsset("builtin/shaders/default.shader");
+	        return (Shader)AssetDatabase.getInstance().getAsset("builtin/shaders/default.shader");
 		} else {
 			return this.shader;
 		}

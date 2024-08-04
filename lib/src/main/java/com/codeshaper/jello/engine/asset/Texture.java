@@ -25,9 +25,7 @@ public class Texture extends Asset {
 
 	public Texture(AssetLocation location) {
 		super(location);
-		
-		JelloEditor.instance.enableEditorContext();
-		
+				
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			IntBuffer w = stack.mallocInt(1);
 			IntBuffer h = stack.mallocInt(1);

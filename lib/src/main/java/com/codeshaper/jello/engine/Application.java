@@ -1,13 +1,24 @@
 package com.codeshaper.jello.engine;
 
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.SwingUtilities;
 
 import org.joml.Math;
 import org.joml.Matrix4f;
+import org.lwjgl.glfw.GLFWNativeWin32;
+import org.lwjgl.opengl.WGL;
+import org.lwjgl.system.windows.User32;
 
+import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
@@ -32,43 +43,67 @@ public class Application {
 		new Application().start();
 	}
 
+	// Called from builds.
 	public Application() {
 		this(null);
 	}
+	
+	// Called from Editor.
+	public Application(SceneManager sceneManger) {
+		this.appSettings = new ApplicationSettings(); // this.loadAppSettings();
 
-	public Application(SceneManager sceneManager) {
-		if (AssetDatabase.getInstance() == null) {
-			new AssetDatabase(null); // TODO what should this be in a build?
+		this.window = new Window(this.appSettings);
+
+		if (AssetDatabase.getInstance() == null) { // null in builds.
+			Path projectFolder = Path.of("D:\\Jello\\Projects\\devProject\\assets"); // TODO what should this be in a
+																					 // build?
+			new AssetDatabase(projectFolder);
 		}
-		
-		this.appSettings = this.loadAppSettings();
 
-		this.window = new Window(this.appSettings, () -> {
-			this.resize();
-			return null;
-		});
+		this.renderer = new GameRenderer();
 
-		if (sceneManager != null) {
-			// Use the Scene Manager that was supplied by the Editor.
-			this.sceneManager = sceneManager;
-		} else {
+		if (sceneManager == null) { // null in builds.
 			this.sceneManager = new SceneManager();
 			Scene startingScene = this.appSettings.startingScene;
 			if (startingScene != null) {
 				this.sceneManager.loadScene(startingScene);
 			} else {
-				// No starting scene set.
+				// No starting scene set. We're assuming the user forgot to set a starting scene
+				// because there's only one in their project. Search the Asset Database for all
+				// Scenes and load the first one we find.
 				AssetDatabase database = AssetDatabase.getInstance();
 				List<Path> paths = database.getAllAssetsOfType(Scene.class, true);
 				if (paths.size() >= 1) {
 					this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
 				}
 			}
+		} else {
+			this.sceneManager = sceneManger;
+			/*
+			if (launchArgs.startingScenes.size() > 0) {
+				for (Path path : launchArgs.startingScenes) {
+					Asset asset = AssetDatabase.getInstance().getAsset(path);
+					if (asset instanceof Scene) {
+						this.sceneManager.loadScene((Scene) asset);
+					}
+				}
+			} else {
+				Scene startingScene = this.appSettings.startingScene;
+				if (startingScene != null) {
+					this.sceneManager.loadScene(startingScene);
+				} else {
+					// No starting scene set.
+					AssetDatabase database = AssetDatabase.getInstance();
+					List<Path> paths = database.getAllAssetsOfType(Scene.class, true);
+					if (paths.size() >= 1) {
+						this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
+					}
+				}
+			}
+			*/
 		}
 
-		this.renderer = new GameRenderer();
-
-		Input.initialize(this.window.getWindowHandle());
+		Input.initialize(this.window.windowHandle);
 	}
 
 	/**
@@ -82,20 +117,36 @@ public class Application {
 		}
 
 		this.running = true;
-		this.run();
+
+		if (this.isEditor()) {
+			SwingUtilities.invokeLater(new EditorLoop());
+		} else {
+			new BuildLoop().run();
+		}
 	}
 
 	/**
-	 * Shuts down the Application.
+	 * Stops down the Application. This does not immediately stop the Application.
+	 * Another frame may still be run.
 	 */
 	public void stop() {
 		this.running = false;
 	}
 
+	/**
+	 * Checks if the Application is running along side the Editor.
+	 * 
+	 * @return {@code true} if the Application was launched from the Editor,
+	 *         {@code false} if it was launched as a build.
+	 */
+	public boolean isEditor() {
+		return JelloEditor.instance != null;
+	}
+
 	public SceneManager getSceneManager() {
 		return this.sceneManager;
 	}
-	
+
 	public float getVolume() {
 		return 0f; // TODO
 	}
@@ -103,63 +154,6 @@ public class Application {
 	public void setVolume(float volume) {
 		volume = Math.clamp(0f, 1f, volume);
 		// TODO
-	}
-
-	private void resize() {
-		// Nothing to be done yet
-	}
-
-	private void run() {
-		long initialTime = System.currentTimeMillis();
-		float timeU = 1000.0f / this.appSettings.targetUps;
-		float timeR = this.appSettings.targetFps > 0 ? 1000.0f / this.appSettings.targetFps : 0;
-		float deltaUpdate = 0;
-		float deltaFps = 0;
-
-		long updateTime = initialTime;
-		while (running && !window.windowShouldClose()) {
-			window.pollEvents();
-
-			long now = System.currentTimeMillis();
-			deltaUpdate += (now - initialTime) / timeU;
-			deltaFps += (now - initialTime) / timeR;
-
-			if (this.appSettings.targetFps <= 0 || deltaFps >= 1) {
-				// appLogic.input(window, scene, now - initialTime);
-			}
-
-			if (deltaUpdate >= 1) {
-				long diffTimeMillis = now - updateTime;
-				for (Scene scene : this.sceneManager.getScenes()) {
-					for (GameObject obj : scene.getRootGameObjects()) {
-						for (JelloComponent component : obj.getAllComponents()) {
-							component.onUpdate(diffTimeMillis);
-						}
-					}
-				}
-				updateTime = now;
-				deltaUpdate--;
-			}
-
-			if (this.appSettings.targetFps <= 0 || deltaFps >= 1) {
-				for (Camera camera : Camera.getAllCameras()) {
-					// TODO sort with Camera#depth
-					if (camera.isEnabled()) {
-						this.renderer.render(this.sceneManager, camera, new Matrix4f(), this.window.getWidth(),
-								this.window.getHeight());
-					}
-				}
-
-				deltaFps--;
-				window.update();
-			}
-
-			Input.onEndOfFrame();
-
-			initialTime = now;
-		}
-
-		this.cleanup();
 	}
 
 	private void cleanup() {
@@ -173,11 +167,132 @@ public class Application {
 
 	private ApplicationSettings loadAppSettings() {
 		Gson gson = AssetDatabase.getInstance().createGsonBuilder().create();
-		try (FileReader reader = new FileReader(new File("appSettings.json"))) {
-			return gson.fromJson(reader, ApplicationSettings.class);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ApplicationSettings(); // Settings are missing?
+		File file = new File("appSettings.json");
+		if (file.exists()) {
+			try (FileReader reader = new FileReader(file)) {
+				return gson.fromJson(reader, ApplicationSettings.class);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return new ApplicationSettings(); // Settings are missing?
+	}
+
+	private abstract class Loop implements Runnable {
+
+		protected long initialTime;
+
+		protected float timeU;
+		protected float timeR;
+		protected float deltaUpdate;
+		protected float deltaFps;
+		protected long updateTime;
+
+		public Loop() {
+			this.initialTime = System.currentTimeMillis();
+
+			this.timeU = 1000.0f / appSettings.targetUps;
+			this.timeR = appSettings.targetFps > 0 ? 1000.0f / appSettings.targetFps : 0;
+			this.deltaUpdate = 0;
+			this.deltaFps = 0;
+			this.updateTime = initialTime;
+		}
+
+		public void preformLoopIteration() {
+			long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.windowHandle);
+			long hdc = User32.GetDC(hwnd);
+			WGL.wglMakeCurrent(hdc, JelloEditor.instance.window.sceneView.canvas.getCanvasContext());
+			
+			glfwPollEvents();
+
+			long now = System.currentTimeMillis();
+			deltaUpdate += (now - initialTime) / timeU;
+			deltaFps += (now - initialTime) / timeR;
+
+			if (appSettings.targetFps <= 0 || deltaFps >= 1) {
+				// appLogic.input(window, scene, now - initialTime);
+			}
+
+			if (deltaUpdate >= 1) {
+				long diffTimeMillis = now - updateTime;
+				for (Scene scene : sceneManager.getScenes()) {
+					for (GameObject obj : scene.getRootGameObjects()) {
+						for (JelloComponent component : obj.getAllComponents()) {
+							component.onUpdate(diffTimeMillis);
+						}
+					}
+				}
+				updateTime = now;
+				deltaUpdate--;
+			}
+
+			if (appSettings.targetFps <= 0 || deltaFps >= 1) {
+				for (Scene scene : sceneManager.getScenes()) {
+					for (GameObject obj : scene.getRootGameObjects()) {
+						Camera camera = obj.getComponent(Camera.class);
+						if (camera != null) {
+							renderer.render(sceneManager, camera, new Matrix4f(), window.getWidth(),
+									window.getHeight());
+						}
+					}
+				}
+
+				for (Camera camera : Camera.getAllCameras()) {
+					// TODO sort with Camera#depth
+					if (camera.isEnabled()) {
+						renderer.render(sceneManager, camera, new Matrix4f(), window.getWidth(), window.getHeight());
+					}
+				}
+
+				deltaFps--;
+				glfwSwapBuffers(window.windowHandle);
+			}
+
+			Input.onEndOfFrame();
+
+			initialTime = now;
+		}
+	}
+
+	private class EditorLoop extends Loop implements Runnable {
+
+		@Override
+		public void run() {
+			if (!running || glfwWindowShouldClose(window.windowHandle)) {
+				cleanup();
+				return;
+			}
+
+			this.preformLoopIteration();
+
+			SwingUtilities.invokeLater(this);
+		}
+
+	}
+
+	private class BuildLoop extends Loop {
+
+		@Override
+		public void run() {
+			while (running && !glfwWindowShouldClose(window.windowHandle)) {
+				this.preformLoopIteration();
+			}
+
+			cleanup();
+		}
+	}
+
+	public static class LaunchArguments {
+
+		public final List<Path> startingScenes;
+
+		public LaunchArguments() {
+			this.startingScenes = new ArrayList<Path>();
+		}
+
+		public LaunchArguments addStartingScene(Scene scene) {
+			this.startingScenes.add(scene.location.getPath());
+			return this;
 		}
 	}
 }

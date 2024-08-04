@@ -348,13 +348,21 @@ public class SceneView extends JPanel {
 			
 			this.swapBuffers();
 		}
+		
+		@Override
+		protected void afterRender() {
+			// TODO Auto-generated method stub
+			super.afterRender();
+		
+			this.platformCanvas.makeCurrent(this.context);
+		}
 
 		public long getCanvasContext() {
 			return this.context;
 		}
 
 		public void makeContextCurrent(long context) {
-			this.platformCanvas.makeCurrent(this.context);
+			//this.platformCanvas.makeCurrent(this.context);
 		}
 		
 		private void drawGrid(Camera camera, Matrix4f viewMatrix) {

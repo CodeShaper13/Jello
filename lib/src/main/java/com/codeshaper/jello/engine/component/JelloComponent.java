@@ -8,6 +8,10 @@ public class JelloComponent {
 	public transient GameObject gameObject;
 
 	private boolean isEnabled;
+	
+	public JelloComponent() {
+		
+	}
 
 	public JelloComponent(GameObject owner) {
 		this.gameObject = owner;

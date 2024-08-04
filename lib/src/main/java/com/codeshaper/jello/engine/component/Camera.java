@@ -67,11 +67,14 @@ public class Camera extends JelloComponent {
 
 	private transient Matrix4f projectionMatrix;
 
+	public Camera() {
+		this.projectionMatrix = new Matrix4f();
+	}
+	
 	public Camera(GameObject owner) {
 		super(owner);
 
 		this.projectionMatrix = new Matrix4f();
-
 		this.refreshProjectionMatrix(100, 100);
 	}
 

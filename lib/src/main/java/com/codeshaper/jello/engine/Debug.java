@@ -48,7 +48,7 @@ public class Debug {
 	}
 	
 	private static void internalLog(LogType logType, Object context, String message, Object... args) {
-		ILogHandler handler = JelloEditor.instance.logHandler;
+		ILogHandler handler = JelloEditor.instance != null ? JelloEditor.instance.logHandler : null;
 		if(handler != null) {
 			StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 			if(stackTrace.length > 4) {

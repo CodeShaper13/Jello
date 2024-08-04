@@ -21,6 +21,8 @@ import com.codeshaper.jello.engine.component.Renderer;
 
 public class GameRenderer {
 	
+	private static boolean capsCreated = false;
+	
 	public static final String PROJECTION_MATRIX = "projectionMatrix";
 	public static final String VIEW_MATRIX = "viewMatrix";
 	public static final String GAME_OBJECT_MATRIX = "modelMatrix";
@@ -29,7 +31,10 @@ public class GameRenderer {
 	private final HashMap<Material, List<Renderer>> instructions;
         
 	public GameRenderer() {
-		GL.createCapabilities();
+		if(!capsCreated) {
+			GL.createCapabilities();
+			capsCreated = true;
+		}
 		
         glEnable(GL_DEPTH_TEST);  
         glEnable(GL_BLEND);

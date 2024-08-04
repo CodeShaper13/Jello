@@ -10,17 +10,32 @@ import java.nio.file.Path;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
+import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
+import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.google.gson.Gson;
+import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
-public class EditorAssetDatabase extends AssetDatabase {
+public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadListener {
 
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
+		
+		JelloEditor.instance.addProjectReloadListener(this);
+	}
+	
+	@Override
+	public void onProjectReload(Phase phase) {
+		if (phase == Phase.REBUILD) {
+			this.refreshDatabase();
+			this.compileThirdPartyExtensionMappings();
+		} else if (phase == Phase.POST_REBUILD) {
+			this.func();
+		}
 	}
 
 	/**
