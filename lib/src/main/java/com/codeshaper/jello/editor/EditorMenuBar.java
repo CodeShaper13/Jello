@@ -52,7 +52,7 @@ public class EditorMenuBar extends JMenuBar {
 			});
 			this.add(save);
 
-			JMenuItem openInExplorer = new JMenuItem("Open In Explorer");
+			JMenuItem openInExplorer = new JMenuItem("Open Project In Explorer");
 			openInExplorer.addActionListener((e) -> {
 				Path assetsFolder = JelloEditor.instance.rootProjectFolder;
 				try {
@@ -68,6 +68,14 @@ public class EditorMenuBar extends JMenuBar {
 				System.exit(0);
 			});
 			this.add(exit);
+			
+			JelloEditor.instance.addPlayModeListener((state) -> {
+				if(state == State.STARTED) {
+					save.setEnabled(false);
+				} else if(state == State.STOPPED) {
+					save.setEnabled(true);
+				}
+			});
 		}
 	}
 

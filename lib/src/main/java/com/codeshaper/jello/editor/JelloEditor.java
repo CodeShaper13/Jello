@@ -149,9 +149,14 @@ public class JelloEditor {
 
 	/**
 	 * Saves the project. This saves all open Scenes and and Editor preferences, and
-	 * raise the {@link ProjectSaveListener} event.
+	 * raise the {@link ProjectSaveListener} event. Saving is prohibited in play
+	 * mode. If this is called during play mode, nothing happens.
 	 */
 	public void saveProject() {
+		if (this.isInPlayMode()) {
+			return; // Can't save in Play mode.
+		}
+
 		this.sceneManager.saveAllScenes();
 		this.sceneManager.writeOpenScenesToPreferences();
 
