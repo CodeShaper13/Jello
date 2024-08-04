@@ -26,9 +26,10 @@ import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.google.gson.Gson;
 
 public class Application {
+	
+	public Window window;
 
 	private ApplicationSettings appSettings;
-	private Window window;
 	private GameRenderer renderer;
 	private SceneManager sceneManager;
 	private boolean running;

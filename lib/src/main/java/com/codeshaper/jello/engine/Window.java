@@ -23,13 +23,15 @@ public class Window {
 	private int width;
 
 	Window(ApplicationSettings appSettings) {
+		boolean isBuild = JelloEditor.instance == null;
+
 		if (!glfwInit()) {
 			Debug.logError("Unable to initialize GLFW.  Hard crash will likely follow...");
 		}
 
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+		glfwWindowHint(GLFW_RESIZABLE, appSettings.isResizeable ? GL_TRUE : GL_FALSE);
 
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -43,14 +45,15 @@ public class Window {
 		if (appSettings.fullscreen) {
 			glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 			GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-			width = vidMode.width();
-			height = vidMode.height();
+			this.width = vidMode.width();
+			this.height = vidMode.height();
 		} else {
 			this.width = appSettings.windowSize.x;
 			this.height = appSettings.windowSize.y;
 		}
 
-		this.windowHandle = glfwCreateWindow(this.width, this.height, appSettings.windowTitle, NULL, NULL);
+		long monitor = appSettings.fullscreen ? glfwGetPrimaryMonitor() : NULL;
+		this.windowHandle = glfwCreateWindow(this.width, this.height, appSettings.windowTitle, monitor, NULL);
 		if (this.windowHandle == NULL) {
 			Debug.logError("Failed to create GLFW Window.  Hard crash will likely follow...");
 		}
@@ -58,15 +61,14 @@ public class Window {
 		// TODO set window icons.
 		// glfwSetWindowIcon(this.windowHandle, JelloEditor.instance.assetDatabase);
 
-		glfwSetFramebufferSizeCallback(windowHandle, (window, w, h) -> this.onWindowResize(w, h));
+		glfwSetFramebufferSizeCallback(this.windowHandle, (window, w, h) -> this.onWindowResize(w, h));
 		glfwSetErrorCallback((errorCode, messagePointer) -> this.onError(errorCode, messagePointer));
-		glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
+		glfwSetKeyCallback(this.windowHandle, (window, key, scancode, action, mods) -> {
 			this.onKeyCallBack(key, action);
 		});
 
-		if (JelloEditor.instance == null) {
-			// This is a build.
-			glfwMakeContextCurrent(windowHandle);
+		if (isBuild) {
+			glfwMakeContextCurrent(this.windowHandle);
 		}
 
 		if (appSettings.useVSync) {
@@ -75,19 +77,19 @@ public class Window {
 			glfwSwapInterval(0);
 		}
 
-		glfwShowWindow(windowHandle);
+		glfwShowWindow(this.windowHandle);
 
-		// What does this do? Isn't width and height already set?
+		// Get the actual size of the window now that it's been created.
 		int[] arrWidth = new int[1];
 		int[] arrHeight = new int[1];
-		glfwGetFramebufferSize(windowHandle, arrWidth, arrHeight);
-		width = arrWidth[0];
-		height = arrHeight[0];
+		glfwGetFramebufferSize(this.windowHandle, arrWidth, arrHeight);
+		this.width = arrWidth[0];
+		this.height = arrHeight[0];
 	}
 
 	public void cleanup() {
-		Callbacks.glfwFreeCallbacks(windowHandle);
-		glfwDestroyWindow(windowHandle);
+		Callbacks.glfwFreeCallbacks(this.windowHandle);
+		glfwDestroyWindow(this.windowHandle);
 		glfwTerminate();
 		GLFWErrorCallback callback = glfwSetErrorCallback(null);
 		if (callback != null) {
@@ -113,16 +115,33 @@ public class Window {
 		return width;
 	}
 
+	/**
+	 * Sets the size of the window. If the window is in full screen mode, this sets
+	 * the resolution of the window.
+	 * 
+	 * @param width  the new width of the window
+	 * @param height the new height of the window
+	 */
 	public void setSize(int width, int height) {
-		throw new UnsupportedOperationException("Not yet implemented"); // TODO
+		glfwSetWindowSize(this.windowHandle, width, height);
 	}
 
+	/**
+	 * 
+	 * @return {@code true} if the window is in full screen mode;
+	 */
 	public boolean isFullscreen() {
 		throw new UnsupportedOperationException("Not yet implemented"); // TODO
 	}
 
-	public void setFullsreen(boolean fullscreen) {
-		throw new UnsupportedOperationException("Not yet implemented"); // TODO
+	/**
+	 * Sets if the window is full screen or not.
+	 * 
+	 * @param fullScreen should the windwow be in full screen mode?
+	 */
+	public void setFullsreen(boolean fullScreen) {
+		long monitor = fullScreen ? glfwGetPrimaryMonitor() : NULL;
+		glfwSetWindowMonitor(this.windowHandle, monitor, 0, 0, this.width, this.height, GL_DONT_CARE);
 	}
 
 	private void onError(int errorCode, long msgPtr) {

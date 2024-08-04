@@ -112,6 +112,7 @@ public class AppSettingsWindow extends EditorWindow {
 		builder.textField("Window Title", settings.windowTitle, v -> { settings.windowTitle = v; });
 		builder.assetField("Window Icon", settings.windowIcon, Texture.class, v -> { settings.windowIcon = v; });
 		builder.checkbox("Fullscreen", settings.fullscreen, (v) -> { settings.fullscreen = v; });
+		builder.checkbox("Resizeable", settings.isResizeable, (v) -> { settings.isResizeable = v; });
 		builder.vector2iField("WindowSize", settings.windowSize, v -> {
 			settings.windowSize.setComponent(0, Math.max(0, v.x));
 			settings.windowSize.setComponent(1, Math.max(0, v.y));

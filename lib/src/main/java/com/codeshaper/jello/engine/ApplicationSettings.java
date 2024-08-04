@@ -11,6 +11,7 @@ public class ApplicationSettings {
     public String windowTitle;
     public Texture windowIcon;
     public boolean fullscreen;
+    public boolean isResizeable;
     public Vector2i windowSize;
     public boolean useVSync;    
     public int targetFps;
@@ -21,6 +22,7 @@ public class ApplicationSettings {
     	this.windowTitle = "Jello";
     	this.windowIcon = null;
     	this.fullscreen = false;
+    	this.isResizeable = true;
         this.windowSize = new Vector2i(800, 800);
         this.useVSync = true;
         this.targetFps = 30;
