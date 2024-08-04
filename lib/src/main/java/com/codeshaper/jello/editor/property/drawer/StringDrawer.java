@@ -14,7 +14,8 @@ import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.property.modifier.TextBox;
 
-public class StringDrawer implements IFieldDrawer {
+@FieldDrawerType(String.class)
+public class StringDrawer extends FieldDrawer {
 
 	@Override
 	public JPanel draw(IExposedField field) {		

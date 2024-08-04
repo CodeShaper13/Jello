@@ -7,14 +7,15 @@ import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.engine.Color;
 
-public class ColorDrawer implements IFieldDrawer {
+@FieldDrawerType(Color.class)
+public class ColorDrawer extends FieldDrawer {
 
 	@Override
 	public JPanel draw(IExposedField field) {
 		JButton colorField = GuiBuilder.colorField((Color) field.get(), (v) -> {
 			field.set(v);
-
 		});
+		colorField.setEnabled(!field.isReadOnly());
 
 		return GuiBuilder.combine(GuiBuilder.label(field), colorField);
 	}

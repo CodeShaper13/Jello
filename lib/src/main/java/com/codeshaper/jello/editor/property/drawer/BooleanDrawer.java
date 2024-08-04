@@ -6,7 +6,9 @@ import javax.swing.JPanel;
 import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 
-public class BooleanDrawer implements IFieldDrawer {
+@FieldDrawerType(boolean.class)
+@FieldDrawerType(Boolean.class)
+public class BooleanDrawer extends FieldDrawer {
 
 	@Override
 	public JPanel draw(IExposedField field) {

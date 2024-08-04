@@ -9,7 +9,8 @@ import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.engine.asset.Asset;
 
-public class AssetDrawer implements IFieldDrawer {
+@FieldDrawerType(Asset.class)
+public class AssetDrawer extends FieldDrawer {
 
 	@SuppressWarnings("unchecked")
 	@Override

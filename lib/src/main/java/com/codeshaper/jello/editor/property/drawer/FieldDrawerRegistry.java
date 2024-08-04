@@ -1,93 +1,106 @@
 package com.codeshaper.jello.editor.property.drawer;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.Set;
 
-import org.joml.Quaternionf;
-import org.joml.Vector2d;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
-import org.joml.Vector4d;
-import org.joml.Vector4f;
-import org.joml.Vector4i;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
 
-import com.codeshaper.jello.editor.GuiBuilder;
-import com.codeshaper.jello.engine.Color;
-import com.codeshaper.jello.engine.asset.Asset;
+import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
+import com.codeshaper.jello.engine.Debug;
 
 public class FieldDrawerRegistry {
 
-	private boolean areBuiltinDrawersRegistered;
-	private HashMap<Class<?>, IFieldDrawer> drawers;
+	private HashMap<Class<?>, FieldDrawer> builtinDrawers;
+	private HashMap<Class<?>, FieldDrawer> projectDefinedDrawers;
 
-	public FieldDrawerRegistry() {
-		this.drawers = new HashMap<Class<?>, IFieldDrawer>();
+	public FieldDrawerRegistry(JelloEditor editor) {
+		this.builtinDrawers = new HashMap<Class<?>, FieldDrawer>();
+		this.builtinDrawers = new HashMap<Class<?>, FieldDrawer>();
+
+		editor.addProjectReloadListener((phase) -> this.onProjectReload(phase));
+
+		Reflections scan = new Reflections("com.codeshaper.jello.editor");
+		Set<Class<?>> classes = scan
+				.get(Scanners.TypesAnnotated.of(FieldDrawerType.class, FieldDrawerType.Internal.class).asClass());
+		this.populateMapping(classes, this.builtinDrawers);
 	}
 
 	/**
-	 * Registers all of the builtin field drawers. If this method has already been
-	 * called, nothing happens.
+	 * Gets a {@link FieldDrawer} for {@code type} If no {@link FieldDrawer}
+	 * exists for the {@code type}, {@code null} is returned.
+	 * 
+	 * @param type the type to get a {@link FieldDrawer} for.
+	 * @return a {@link FieldDrawer}.
 	 */
-	public void registerBuiltinDrawers() {
-		if (areBuiltinDrawersRegistered) {
-			return;
+	public FieldDrawer getDrawer(Class<?> type) {
+		FieldDrawer drawer = this.checkMap(type, this.builtinDrawers);
+		if (builtinDrawers != null) {
+			return drawer;
+		} else {
+			return this.checkMap(type, this.projectDefinedDrawers);
 		}
-
-		final String w = "w";
-		final String x = "x";
-		final String y = "y";
-		final String z = "z";
-
-		this.registerDrawer(byte.class, new NumberDrawer());
-		this.registerDrawer(Byte.class, new NumberDrawer());
-		this.registerDrawer(int.class, new NumberDrawer());
-		this.registerDrawer(Integer.class, new NumberDrawer());
-		this.registerDrawer(long.class, new NumberDrawer());
-		this.registerDrawer(Long.class, new NumberDrawer());
-		this.registerDrawer(short.class, new NumberDrawer());
-		this.registerDrawer(Short.class, new NumberDrawer());
-		this.registerDrawer(float.class, new NumberDrawer());
-		this.registerDrawer(Float.class, new NumberDrawer());
-		this.registerDrawer(double.class, new NumberDrawer());
-		this.registerDrawer(Double.class, new NumberDrawer());
-		this.registerDrawer(boolean.class, new BooleanDrawer());
-		this.registerDrawer(Boolean.class, new BooleanDrawer());
-		this.registerDrawer(String.class, new StringDrawer());
-		this.registerDrawer(Enum.class, new EnumDrawer());
-		this.registerDrawer(Vector2i.class, new VectorDrawer(x, y));
-		this.registerDrawer(Vector2f.class, new VectorDrawer(x, y));
-		this.registerDrawer(Vector2d.class, new VectorDrawer(x, y));
-		this.registerDrawer(Vector3i.class, new VectorDrawer(x, y, z));
-		this.registerDrawer(Vector3f.class, new VectorDrawer(x, y, z));
-		this.registerDrawer(Vector3d.class, new VectorDrawer(x, y, z));
-		this.registerDrawer(Vector4i.class, new VectorDrawer(w, x, y, z));
-		this.registerDrawer(Vector4f.class, new VectorDrawer(w, x, y, z));
-		this.registerDrawer(Vector4d.class, new VectorDrawer(w, x, y, z));
-		this.registerDrawer(Quaternionf.class, new QuaternionfDrawer());
-		this.registerDrawer(Color.class, new ColorDrawer());
-		this.registerDrawer(Asset.class, new AssetDrawer());
-
-		areBuiltinDrawersRegistered = true;
 	}
 
-	public void registerDrawer(Class<?> type, IFieldDrawer drawer) {
-		if (this.drawers.containsKey(type)) {
-			System.out.println("There is already a Property Drawer registered");
-			return;
+	private void onProjectReload(Phase phase) {
+		if (phase == Phase.REBUILD) {
+			// TODO
 		}
+	}
+	
+	private void populateMapping(Set<Class<?>> drawerClasses, HashMap<Class<?>, FieldDrawer> map) {
+		for (Class<?> drawerClass : drawerClasses) {
+			for (FieldDrawerType targetTypeAnnotation : drawerClass.getAnnotationsByType(FieldDrawerType.class)) {
+				int modifiers = drawerClass.getModifiers();
+				if (Modifier.isAbstract(modifiers)) {
+					Debug.logError("FieldDrawerType annotations are not allowed on abstract classes.");
+					break;
+				}
+				if (Modifier.isInterface(modifiers)) {
+					Debug.logError("FieldDrawerType annotations are not allowed on interfaces");
+					break;
+				}
+				if (!FieldDrawer.class.isAssignableFrom(drawerClass)) {
+					Debug.logError("FieldDrawerType annotations are only allowed on subclasses of FieldDrawer");
+					break;
+				}
 
-		this.drawers.put(type, drawer);
+				try {
+					Class<?> drawerTargetClass = targetTypeAnnotation.value();
+					Constructor<?> ctor = drawerClass.getConstructor();
+					FieldDrawer drawer = (FieldDrawer) ctor.newInstance();
+					map.put(drawerTargetClass, drawer);
+				} catch (NoSuchMethodException | SecurityException e) {
+					Debug.logError(
+							"Classse with the FieldDrawerType annotations must have a public, no argument constructor");
+					break;
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
-	public IFieldDrawer getDrawer(Class<?> type) {
-		for (var entry : this.drawers.entrySet()) {
-			if (entry.getKey().isAssignableFrom(type)) {
+	private FieldDrawer checkMap(Class<?> clazz, HashMap<Class<?>, FieldDrawer> map) {
+		for (var entry : map.entrySet()) {
+			if (entry.getKey().isAssignableFrom(clazz)) {
 				return entry.getValue();
 			}
 		}
-
 		return null;
 	}
 }
