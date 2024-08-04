@@ -1,8 +1,6 @@
 package com.codeshaper.jello.engine;
 
-import static org.lwjgl.glfw.GLFW.glfwPollEvents;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+import static org.lwjgl.glfw.GLFW.*;
 
 import java.io.File;
 import java.io.FileReader;
@@ -27,30 +25,43 @@ import com.google.gson.Gson;
 
 public class Application {
 	
-	public Window window;
-
+	private static Application instance;
+	
+	public final Window window;
+	public final SceneManager sceneManager;
+	
 	private ApplicationSettings appSettings;
 	private GameRenderer renderer;
-	private SceneManager sceneManager;
 	private boolean running;
 
 	/**
 	 * If not null, it is invoked when the Application stops. Used by the Editor to
 	 * know when the Application closes.
 	 */
-	public Runnable onClose;
+	private Runnable onClose;
 
 	public static void main(String[] args) {
 		new Application().start();
 	}
 
+	public static Application getInstance() {
+		return Application.instance;
+	}
+	
 	// Called from builds.
-	public Application() {
-		this(null);
+	private Application() {
+		this(null, null);
 	}
 	
 	// Called from Editor.
-	public Application(SceneManager sceneManger) {
+	public Application(SceneManager sceneManager, Runnable onClose) {
+		if(Application.instance != null) {
+			throw new Error("Multiple Application instances can not be created!");
+		}
+		
+		Application.instance = this;
+		this.onClose = onClose;
+		
 		this.appSettings = new ApplicationSettings(); // this.loadAppSettings();
 
 		this.window = new Window(this.appSettings);
@@ -79,7 +90,7 @@ public class Application {
 				}
 			}
 		} else {
-			this.sceneManager = sceneManger;
+			this.sceneManager = sceneManager;
 			/*
 			if (launchArgs.startingScenes.size() > 0) {
 				for (Path path : launchArgs.startingScenes) {
@@ -144,10 +155,6 @@ public class Application {
 		return JelloEditor.instance != null;
 	}
 
-	public SceneManager getSceneManager() {
-		return this.sceneManager;
-	}
-
 	public float getVolume() {
 		return 0f; // TODO
 	}
@@ -158,12 +165,13 @@ public class Application {
 	}
 
 	private void cleanup() {
-		// TODO
 		this.window.cleanup();
 
 		if (this.onClose != null) {
 			this.onClose.run();
 		}
+		
+		Application.instance = null;
 	}
 
 	private ApplicationSettings loadAppSettings() {
