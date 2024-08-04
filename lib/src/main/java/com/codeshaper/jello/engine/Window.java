@@ -126,7 +126,7 @@ public class Window {
 	}
 
 	private void onError(int errorCode, long msgPtr) {
-		System.err.println(String.format("Error code [{}], msg [{}]", errorCode, MemoryUtil.memUTF8(msgPtr)));
+		System.err.println(String.format("Error code [%s], msg [%s]", errorCode, MemoryUtil.memUTF8(msgPtr)));
 	}
 
 	private void onWindowResize(int newWidth, int newHeight) {
