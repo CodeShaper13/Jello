@@ -101,7 +101,7 @@ public class JelloEditor {
 		JelloEditor.instance = this;
 
 		boolean isInitialLoad = false;
-		
+
 		this.rootProjectFolder = projectFolder;
 
 		// Create the /assets folder if it doesn't exist.
@@ -125,7 +125,7 @@ public class JelloEditor {
 		this.sceneManager = new EditorSceneManager(this);
 
 		this.reloadProject();
-		
+
 		this.window = new EditorMainFrame(this);
 
 		this.logHandler = this.window.console;
@@ -135,10 +135,10 @@ public class JelloEditor {
 		GLFWErrorCallback.createPrint().set();
 
 		this.enableEditorContext();
-				
-		if(isInitialLoad) {
+
+		if (isInitialLoad) {
 			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
-			if(!this.assetDatabase.exists(path)) {
+			if (!this.assetDatabase.exists(path)) {
 				Scene scene = this.constructDefaultScene(path);
 				this.sceneManager.loadScene(scene);
 			}
@@ -191,13 +191,13 @@ public class JelloEditor {
 	}
 
 	/**
-	 * Starts play mode.
+	 * Starts play mode. If play mode has already been started, nothing happens.
 	 * 
 	 * @return {@link true} if play mode started, {@link false} if it could not be
 	 *         for any reason.
 	 */
 	public boolean startPlaymode() {
-		if (this.isInPlaying()) {
+		if (this.isInPlayMode()) {
 			return false;
 		}
 
@@ -217,11 +217,11 @@ public class JelloEditor {
 	}
 
 	/**
-	 * Stops the Application. The Application does not stop immediately, it will
-	 * terminate on it's next frame a perform any necessary cleanup.
+	 * Stops play mode. The Application does not stop immediately, it will terminate
+	 * on it's next frame. If play mode has not been started, nothing happens.
 	 */
 	public void stopPlaymode() {
-		if (!this.isInPlaying()) {
+		if (!this.isInPlayMode()) {
 			return;
 		}
 
@@ -239,7 +239,7 @@ public class JelloEditor {
 	 * @return {@link true} if the Editor is in play mode, {@link false} if it is
 	 *         not.
 	 */
-	public boolean isInPlaying() {
+	public boolean isInPlayMode() {
 		return this.application != null;
 	}
 
@@ -309,9 +309,9 @@ public class JelloEditor {
 		lightObj.addComponent(Light.class);
 		lightObj.setLocalPosition(0, 0, -2);
 		lightObj.setLocalEulerAngles(20, 45, 0);
-		
+
 		this.assetDatabase.saveAsset(scene);
-		
+
 		return scene;
 	}
 

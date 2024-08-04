@@ -17,6 +17,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
+import com.codeshaper.jello.editor.event.PlayModeListener.State;
 import com.codeshaper.jello.engine.Debug;
 
 import ModernDocking.Dockable;
@@ -134,7 +135,20 @@ public class EditorMenuBar extends JMenuBar {
 			stop.addActionListener((e) -> {
 				JelloEditor.instance.stopPlaymode();
 			});
+			stop.setEnabled(false);
 			this.add(stop);
+			
+			JelloEditor.instance.addPlayModeListener((state) -> {
+				if(state == State.STARTED) {
+					run.setEnabled(false);
+					runCurrent.setEnabled(false);
+					stop.setEnabled(true);
+				} else if(state == State.STOPPED) {
+					run.setEnabled(true);
+					runCurrent.setEnabled(true);
+					stop.setEnabled(false);
+				}
+			});
 		}
 	}
 
