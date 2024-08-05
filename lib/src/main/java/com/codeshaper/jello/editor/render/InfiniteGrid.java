@@ -7,6 +7,8 @@ import org.joml.Matrix4f;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.ShaderSource;
+import com.codeshaper.jello.engine.rendering.ShaderType;
 
 public class InfiniteGrid {
 
@@ -17,10 +19,10 @@ public class InfiniteGrid {
 
 	public InfiniteGrid() {
 		this.shaderProgram = new ShaderProgram(
-				ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.vert",
-						GL_VERTEX_SHADER),
-				ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.frag",
-						GL_FRAGMENT_SHADER));
+				new ShaderSource("/editorGridShaders/editorGrid.vert",
+						ShaderType.VERTEX),
+				new ShaderSource("/editorGridShaders/editorGrid.frag",
+						ShaderType.FRAGMENT));
 		this.shaderProgram.createUniform(GameRenderer.PROJECTION_MATRIX);
 		this.shaderProgram.createUniform(GameRenderer.VIEW_MATRIX);
 		this.shaderProgram.createUniform(NEAR);

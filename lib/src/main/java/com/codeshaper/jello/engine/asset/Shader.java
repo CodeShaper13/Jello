@@ -13,7 +13,7 @@ import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.ShaderData;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
-import com.codeshaper.jello.engine.rendering.ShaderData.ShaderSource;
+import com.codeshaper.jello.engine.rendering.ShaderSource;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
