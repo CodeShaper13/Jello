@@ -7,35 +7,32 @@ import org.joml.Matrix4f;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
-import com.codeshaper.jello.engine.rendering.UniformsMap;
 
 public class InfiniteGrid {
 
 	private static final String NEAR = "near";
 	private static final String FAR = "far";
 
-	private ShaderProgram gridShaderProgram;
-	private UniformsMap gridUniformsMap;
+	private ShaderProgram shaderProgram;
 
 	public InfiniteGrid() {
-		this.gridShaderProgram = new ShaderProgram(
+		this.shaderProgram = new ShaderProgram(
 				ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.vert",
 						GL_VERTEX_SHADER),
 				ShaderProgram.ShaderModuleData.fromResources("/editorGridShaders/editorGrid.frag",
 						GL_FRAGMENT_SHADER));
-		this.gridUniformsMap = new UniformsMap(gridShaderProgram.getProgramId());
-		this.gridUniformsMap.createUniform(GameRenderer.PROJECTION_MATRIX);
-		this.gridUniformsMap.createUniform(GameRenderer.VIEW_MATRIX);
-		this.gridUniformsMap.createUniform(NEAR);
-		this.gridUniformsMap.createUniform(FAR);
+		this.shaderProgram.createUniform(GameRenderer.PROJECTION_MATRIX);
+		this.shaderProgram.createUniform(GameRenderer.VIEW_MATRIX);
+		this.shaderProgram.createUniform(NEAR);
+		this.shaderProgram.createUniform(FAR);
 	}
 
 	public void drawGrid(Camera camera, Matrix4f viewMatrix) {
-		this.gridShaderProgram.bind();
-		this.gridUniformsMap.setUniform(GameRenderer.PROJECTION_MATRIX, camera.getProjectionMatrix());
-		this.gridUniformsMap.setUniform(GameRenderer.VIEW_MATRIX, viewMatrix);
-		this.gridUniformsMap.setUniform(NEAR, camera.getNearPlane());
-		this.gridUniformsMap.setUniform(FAR, camera.getFarPlane());
+		this.shaderProgram.bind();
+		this.shaderProgram.setUniform(GameRenderer.PROJECTION_MATRIX, camera.getProjectionMatrix());
+		this.shaderProgram.setUniform(GameRenderer.VIEW_MATRIX, viewMatrix);
+		this.shaderProgram.setUniform(NEAR, camera.getNearPlane());
+		this.shaderProgram.setUniform(FAR, camera.getFarPlane());
 
 		glBegin(GL_QUADS);
 		glVertex2f(-1f, -1f);
@@ -44,6 +41,6 @@ public class InfiniteGrid {
 		glVertex2f(1f, -1f);
 		glEnd();
 
-		this.gridShaderProgram.unbind();
+		this.shaderProgram.unbind();
 	}
 }

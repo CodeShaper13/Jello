@@ -13,7 +13,6 @@ import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.ShaderData;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
-import com.codeshaper.jello.engine.rendering.UniformsMap;
 import com.codeshaper.jello.engine.rendering.ShaderData.ShaderSource;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -23,7 +22,6 @@ public class Shader extends Asset {
 
 	private ShaderData data;
 	private ShaderProgram program;
-	private UniformsMap uniformsMap;
 
 	public Shader(AssetLocation location) {
 		super(location);
@@ -38,13 +36,12 @@ public class Shader extends Asset {
 		}
 		
 		this.program = new ShaderProgram(this.data.shaders);
-		this.uniformsMap = new UniformsMap(this.getProgramId());
 		
 		// Create the always present uniforms.
-		this.uniformsMap.createUniform(GameRenderer.PROJECTION_MATRIX);
-        this.uniformsMap.createUniform(GameRenderer.VIEW_MATRIX);
-        this.uniformsMap.createUniform(GameRenderer.GAME_OBJECT_MATRIX);
-        this.uniformsMap.createUniform(GameRenderer.TXT_SAMPLER);
+		this.program.createUniform(GameRenderer.PROJECTION_MATRIX);
+        this.program.createUniform(GameRenderer.VIEW_MATRIX);
+        this.program.createUniform(GameRenderer.GAME_OBJECT_MATRIX);
+        this.program.createUniform(GameRenderer.TXT_SAMPLER);
 	}
 	
 	@Override
@@ -60,15 +57,11 @@ public class Shader extends Asset {
 	}
 	
 	public int getProgramId() {
-		return this.program.getProgramId();
+		return this.program.programId;
 	}
 	
 	public ShaderProgram getProgram() {
 		return this.program;
-	}
-	
-	public UniformsMap getUniformMap() {
-		return this.uniformsMap;
 	}
 	
 	private class ShaderEditor extends AssetEditor<Shader> {

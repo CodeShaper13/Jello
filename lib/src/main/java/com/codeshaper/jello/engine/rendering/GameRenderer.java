@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL;
 
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
@@ -64,10 +63,9 @@ public class GameRenderer {
 			ShaderProgram program = shader.getProgram();
 			program.bind();
 			
-			UniformsMap uniforms = shader.getUniformMap();
-	        uniforms.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
-	        uniforms.setUniform(VIEW_MATRIX, viewMatrix);
-	        uniforms.setUniform(TXT_SAMPLER, 0);
+			program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
+	        program.setUniform(VIEW_MATRIX, viewMatrix);
+	        program.setUniform(TXT_SAMPLER, 0);
 	        
 	        material.bindTextures();
 	        // TODO bind textures and other stuff specified in the material.
@@ -75,7 +73,7 @@ public class GameRenderer {
 	        List<Renderer> renderers = this.instructions.get(material);
 	        for(Renderer renderer : renderers) {
 	        	GameObject obj = renderer.gameObject;	        	
-                uniforms.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
+	        	program.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
                 
                 renderer.onRender();
 	        }
