@@ -36,7 +36,6 @@ public class GameRenderer {
 			capsCreated = true;
 		}
 		
-        glEnable(GL_DEPTH_TEST);  
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
@@ -50,6 +49,7 @@ public class GameRenderer {
         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);        
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, w, h);
+        glEnable(GL_DEPTH_TEST);
 		
 		this.instructions.clear();
 		

@@ -6,7 +6,9 @@ import java.util.List;
 import org.joml.Math;
 import org.joml.Matrix4f;
 
+import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
+import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.Space;
@@ -45,6 +47,7 @@ public class Camera extends JelloComponent {
 	 * Controls the Camera's field of view when {@link Camera#perspective} is
 	 * {@link Perspective#PERSPECTVE}.
 	 */
+	@ExposeField
 	@DisplayAs("Field of View")
 	@Range(min = 0f, max = 180f)
 	private float fov = 60f;
@@ -54,8 +57,12 @@ public class Camera extends JelloComponent {
 	 */
 	@MinValue(0)
 	public float zoom = 1f;
-	public float nearPlane = 0.01f;
-	public float farPlane = 1000f;
+	@ExposeField
+	@MinValue(0)
+	private float nearPlane = 0.01f;
+	@ExposeField
+	@MinValue(0)
+	private float farPlane = 1000f;
 
 	@Space
 
@@ -70,12 +77,11 @@ public class Camera extends JelloComponent {
 	public Camera() {
 		this.projectionMatrix = new Matrix4f();
 	}
-	
+
 	public Camera(GameObject owner) {
 		super(owner);
 
 		this.projectionMatrix = new Matrix4f();
-		this.refreshProjectionMatrix(100, 100);
 	}
 
 	@Override
@@ -90,6 +96,22 @@ public class Camera extends JelloComponent {
 		super.onDestroy();
 
 		Camera.cameras.remove(this);
+	}
+
+	@Override
+	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
+		super.onDrawGizmos(gizmos, isSelected);
+
+		float aspect = 1f;
+
+		gizmos.color(Color.white);
+		gizmos.drawFrustum(
+				this.gameObject.getPosition(),
+				this.gameObject.getRotation(),
+				this.fov,
+				this.nearPlane,
+				this.farPlane,
+				aspect);
 	}
 
 	/**
@@ -110,6 +132,22 @@ public class Camera extends JelloComponent {
 		this.fov = Math.clamp(0, 180, fov);
 	}
 
+	public float getNearPlane() {
+		return this.nearPlane;
+	}
+	
+	public void setNearPlane(float distance) {
+		this.nearPlane = Math.max(0, distance);
+	}
+	
+	public float getFarPlane() {
+		return this.farPlane;
+	}
+	
+	public void setFarPlane(float distance) {
+		this.farPlane = Math.max(0, distance);
+	}
+	
 	public void refreshProjectionMatrix(int width, int height) {
 		if (this.perspective == Perspective.PERSPECTVE) {
 			this.projectionMatrix.setPerspective(Math.toRadians(this.fov), (float) width / height, this.nearPlane,
@@ -119,6 +157,12 @@ public class Camera extends JelloComponent {
 		}
 	}
 
+	/**
+	 * The projection matrix of the Camera. This is null in the Editor, and only set
+	 * during play mode.
+	 * 
+	 * @return the Camera's project matrix.
+	 */
 	public Matrix4f getProjectionMatrix() {
 		return this.projectionMatrix;
 	}

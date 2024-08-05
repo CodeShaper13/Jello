@@ -1,5 +1,7 @@
 package com.codeshaper.jello.editor;
 
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL30.*;
 
 import java.awt.BorderLayout;
@@ -21,12 +23,14 @@ import javax.swing.SwingUtilities;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.awt.AWTGLCanvas;
 import org.lwjgl.opengl.awt.GLData;
 
+import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Perspective;
+import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.component.Camera;
+import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
 import com.codeshaper.jello.engine.rendering.UniformsMap;
@@ -34,7 +38,7 @@ import com.codeshaper.jello.engine.rendering.UniformsMap;
 public class SceneView extends JPanel {
 
 	private final SceneViewToolbar toolbar;
-	private final CameraController cc;
+	public final CameraController cc;
 	
 	public final SceneAWTGLCanvas canvas;
 	/**
@@ -46,6 +50,7 @@ public class SceneView extends JPanel {
 		this.setLayout(new BorderLayout());
 
 		this.sceneCamera = new Camera(null);
+		this.sceneCamera.setFarPlane(10_000f);
 		this.canvas = new SceneAWTGLCanvas(new GLData());
 		this.toolbar = new SceneViewToolbar();
 
@@ -306,9 +311,12 @@ public class SceneView extends JPanel {
 
 	    private ShaderProgram gridShaderProgram;
 	    private UniformsMap gridUniformsMap;
+	    private GizmoDrawer gizmoDrawer;
 		
 		public SceneAWTGLCanvas(GLData glData) {
 			super(glData);
+			
+			this.gizmoDrawer = new GizmoDrawer();
 		}
 
 		@Override
@@ -329,23 +337,33 @@ public class SceneView extends JPanel {
 		public void paintGL() {
 			boolean isWireframeEnabled = toolbar.isWireframeEnabled();
 			if (isWireframeEnabled) {
-				glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			} else {
-				glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 			
 			sceneCamera.perspective = toolbar.getPerspective();
 
 			Matrix4f viewMatrix = cc.getViewMatrix();
 			JelloEditor.instance.renderer.render(JelloEditor.instance.sceneManager, sceneCamera, viewMatrix, this.getWidth(), this.getHeight());
-
+			
+			if(isWireframeEnabled) {
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Turn wire frame off for gizmos.
+			}
+			
+			if(toolbar.isGizmosEnabled()) {
+				glDisable(GL_DEPTH_TEST);
+				this.drawGizmos(sceneCamera, viewMatrix);
+		        glEnable(GL_DEPTH_TEST);
+			}
+			
 			if(toolbar.isGridEnabled()) {
 				if(isWireframeEnabled) {
-					glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 				this.drawGrid(sceneCamera, viewMatrix);			
 			}
-			
+						
 			this.swapBuffers();
 		}
 		
@@ -369,8 +387,8 @@ public class SceneView extends JPanel {
 			this.gridShaderProgram.bind();
 	        this.gridUniformsMap.setUniform(GameRenderer.PROJECTION_MATRIX, camera.getProjectionMatrix());   
 	        this.gridUniformsMap.setUniform(GameRenderer.VIEW_MATRIX, viewMatrix);
-	        this.gridUniformsMap.setUniform(NEAR, camera.nearPlane);
-	        this.gridUniformsMap.setUniform(FAR, camera.farPlane);  
+	        this.gridUniformsMap.setUniform(NEAR, camera.getNearPlane());
+	        this.gridUniformsMap.setUniform(FAR, camera.getFarPlane());  
 	        
 	        glBegin(GL_QUADS);
 	        glVertex2f(-1f, -1f);
@@ -380,6 +398,38 @@ public class SceneView extends JPanel {
 	        glEnd(); 
 	        
 	        this.gridShaderProgram.unbind();
+		}
+	
+		private void drawGizmos(Camera sceneCamera, Matrix4f viewMatrix) {
+			Matrix4f projection = sceneCamera.getProjectionMatrix();
+			Matrix4f m = new Matrix4f(projection);
+			m.mul(viewMatrix);
+			glLoadMatrixf(m.get(new float[16]));
+			
+			GameObject selectedGameObject = JelloEditor.instance.window.hierarchy.getSelected();
+			
+			for(Scene scene : JelloEditor.instance.sceneManager.getScenes()) {
+	    		for(GameObject obj : scene.getRootGameObjects()) {
+	    			this.func(obj, selectedGameObject);
+	        	}        
+	    	}			
+		}
+		
+		private void func(GameObject gameObject, GameObject selectedGameObject) {
+			if(!gameObject.isEnabled()) {
+				return;
+			}
+			
+			for(JelloComponent component : gameObject.getAllComponents()) {
+				if(component.isEnabled()) {
+					this.gizmoDrawer.reset();
+					component.onDrawGizmos(this.gizmoDrawer, gameObject == selectedGameObject);
+				}
+			}
+			
+			for(GameObject child : gameObject.getChildren()) {
+				this.func(child, selectedGameObject);
+			}
 		}
 	}
 }

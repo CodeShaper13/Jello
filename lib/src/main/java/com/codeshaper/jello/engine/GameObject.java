@@ -23,10 +23,10 @@ public class GameObject implements IInspectable {
 	private Vector3f localPosition;
 	private Quaternionf localRotation;
 	private Vector3f localScale;
-	private Matrix4f localMatrix;
+	private transient Matrix4f localMatrix;
 	transient Scene scene;
 	transient GameObject parent;
-	
+
 	/**
 	 * Creates a new GameObject and adds it to a {@link Scene}.
 	 * 
@@ -38,7 +38,7 @@ public class GameObject implements IInspectable {
 		this();
 
 		this.setName(name);
-		
+
 		if (scene == null) {
 			throw new IllegalArgumentException("scene may not be null.");
 		}
@@ -55,7 +55,7 @@ public class GameObject implements IInspectable {
 	 */
 	public GameObject(String name, GameObject parent) {
 		this();
-		
+
 		this.setName(name);
 
 		if (parent == null) {
@@ -76,7 +76,6 @@ public class GameObject implements IInspectable {
 		this.localPosition = new Vector3f(0f, 0f, 0f);
 		this.localRotation = new Quaternionf();
 		this.localScale = new Vector3f(1f, 1f, 1f);
-		
 		this.localMatrix = new Matrix4f();
 	}
 
@@ -115,7 +114,7 @@ public class GameObject implements IInspectable {
 	public Scene getScene() {
 		return this.scene;
 	}
-	
+
 	public Vector3f getPosition() {
 		return this.getWorldMatrix().getTranslation(new Vector3f());
 	}
@@ -133,7 +132,7 @@ public class GameObject implements IInspectable {
 		this.localPosition.set(position);
 		this.recalculateLocalMatrix();
 	}
-	
+
 	public Quaternionf getRotation() {
 		return this.getWorldMatrix().getNormalizedRotation(new Quaternionf());
 	}
@@ -146,7 +145,7 @@ public class GameObject implements IInspectable {
 		this.localRotation.set(rotation);
 		this.recalculateLocalMatrix();
 	}
-	
+
 	public Vector3f getEulerAngles() {
 		return MathHelper.quaternionToEulerAnglesDegrees(this.getRotation());
 	}
@@ -164,7 +163,7 @@ public class GameObject implements IInspectable {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(eulerAnglesDegrees));
 		this.recalculateLocalMatrix();
 	}
-	
+
 	public Vector3f getScale() {
 		return this.getWorldMatrix().getScale(new Vector3f());
 	}
@@ -218,23 +217,68 @@ public class GameObject implements IInspectable {
 		this.localScale.mul(scale);
 		this.recalculateLocalMatrix();
 	}
-	
+
+	/**
+	 * Gets a normalized vector pointing to the right (along the red axis) of this GameObject.
+	 * A new vector is returned so it is safe to modify. If you don't want to
+	 * allocate a new vector, use {@link GameObject#getRight(Vector3f)}.
+	 * 
+	 * @return a vector pointing to the right.
+	 */
+	public Vector3f getRight() {
+		return this.getLocalMatrix().positiveX(new Vector3f());
+	}
+
+	public Vector3f getRight(Vector3f vector) {
+		return this.getLocalMatrix().positiveX(vector);
+	}
+
+	/**
+	 * Gets a normalized vector pointing up (along the green axis) of this GameObject.
+	 * A new vector is returned so it is safe to modify. If you don't want to
+	 * allocate a new vector, use {@link GameObject#getUp(Vector3f)}.
+	 * 
+	 * @return a vector pointing up.
+	 */
+	public Vector3f getUp() {
+		return this.getLocalMatrix().positiveY(new Vector3f());
+	}
+
+	public Vector3f getUp(Vector3f vector) {
+		return this.getLocalMatrix().positiveY(vector);
+	}
+
+	/**
+	 * Gets a normalized vector pointing forward (along the blue axis) of this GameObject.
+	 * A new vector is returned so it is safe to modify. If you don't want to
+	 * allocate a new vector, use {@link GameObject#getForward(Vector3f)}.
+	 * 
+	 * @return a vector pointing forward.
+	 */
+	public Vector3f getForward() {
+		return this.getLocalMatrix().positiveZ(new Vector3f());
+	}
+
+	public Vector3f getForward(Vector3f vector) {
+		return this.getLocalMatrix().positiveZ(vector);
+	}
+
 	public Matrix4f getLocalMatrix() {
-		//if(this.localMatrix == null) {
-		//	this.localMatrix = new Matrix4f();
-			this.recalculateLocalMatrix();
-		//}
+		// if(this.localMatrix == null) {
+		// this.localMatrix = new Matrix4f();
+		this.recalculateLocalMatrix();
+		// }
 		return this.localMatrix;
 	}
-	
+
 	public Matrix4f getWorldMatrix() {
 		Matrix4f localMatrix = new Matrix4f(this.getLocalMatrix());
 		this.func(localMatrix);
 		return localMatrix;
 	}
-	
+
 	private void func(Matrix4f m) {
-		if(this.parent == null) {
+		if (this.parent == null) {
 			return;
 		} else {
 			Matrix4f parentMatrix = this.parent.getLocalMatrix();

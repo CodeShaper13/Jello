@@ -12,11 +12,13 @@ import javax.swing.SwingUtilities;
 
 import org.joml.Math;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.opengl.WGL;
 import org.lwjgl.system.windows.User32;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.SceneView.CameraController;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
@@ -67,7 +69,7 @@ public class Application {
 		this.window = new Window(this.appSettings);
 
 		if (AssetDatabase.getInstance() == null) { // null in builds.
-			Path projectFolder = Path.of("D:\\Jello\\Projects\\devProject\\assets"); // TODO what should this be in a
+			Path projectFolder = Path.of("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets"); // TODO what should this be in a
 																					 // build?
 			new AssetDatabase(projectFolder);
 		}
@@ -207,11 +209,7 @@ public class Application {
 			this.updateTime = initialTime;
 		}
 
-		public void preformLoopIteration() {
-			long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.windowHandle);
-			long hdc = User32.GetDC(hwnd);
-			WGL.wglMakeCurrent(hdc, JelloEditor.instance.window.sceneView.canvas.getCanvasContext());
-			
+		public void preformLoopIteration() {			
 			glfwPollEvents();
 
 			long now = System.currentTimeMillis();
@@ -240,7 +238,12 @@ public class Application {
 					for (GameObject obj : scene.getRootGameObjects()) {
 						Camera camera = obj.getComponent(Camera.class);
 						if (camera != null) {
-							renderer.render(sceneManager, camera, new Matrix4f(), window.getWidth(),
+							Matrix4f m = camera.gameObject.getLocalMatrix();
+							Vector3f v = new Vector3f();
+							m.getTranslation(v);
+							v.mul(-1f);
+							m.setTranslation(v);
+							renderer.render(sceneManager, camera, m, window.getWidth(),
 									window.getHeight());
 						}
 					}
@@ -271,6 +274,10 @@ public class Application {
 				cleanup();
 				return;
 			}
+			
+			long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.windowHandle);
+			long hdc = User32.GetDC(hwnd);
+			WGL.wglMakeCurrent(hdc, JelloEditor.instance.window.sceneView.canvas.getCanvasContext());
 
 			this.preformLoopIteration();
 

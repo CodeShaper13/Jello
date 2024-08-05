@@ -64,6 +64,21 @@ public class HierarchyWindow extends EditorWindow {
 		menu.add(refresh);
 	}
 
+	/**
+	 * Gets the {@link GameObject} that is selected. If no GameObject is selected,
+	 * or a Scene is selected, {@code null} is returned.
+	 * 
+	 * @return
+	 */
+	public GameObject getSelected() {
+		Object selected = this.tree.getLastSelectedPathComponent();
+		if (selected instanceof GameObject) {
+			return (GameObject) selected;
+		}
+
+		return null;
+	}
+
 	private class HierarchyTree extends JTree {
 
 		public HierarchyTree(TreeModel model) {
@@ -200,7 +215,7 @@ public class HierarchyWindow extends EditorWindow {
 		public void reloadSelected() {
 			this.reload(tree.getSelectionPath());
 		}
-		
+
 		public void reload(TreePath path) {
 			this.raiseEvent(new TreeModelEvent(this, path));
 		}
@@ -328,7 +343,7 @@ public class HierarchyWindow extends EditorWindow {
 			newChild.addActionListener(e -> {
 				new GameObject("New GameObject", gameObject);
 				model.reloadSelected();
-		        // TODO tree.expandPath(new TreePath(defaultMutableTreeNode.getPath()));
+				// TODO tree.expandPath(new TreePath(defaultMutableTreeNode.getPath()));
 			});
 			this.add(newChild);
 

@@ -1,6 +1,11 @@
 package com.codeshaper.jello.engine.component;
 
+import org.joml.Vector3f;
+
+import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.inspector.ComponentDrawer;
+import com.codeshaper.jello.editor.property.modifier.Button;
+import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
 
 public class JelloComponent {
@@ -8,9 +13,9 @@ public class JelloComponent {
 	public transient GameObject gameObject;
 
 	private boolean isEnabled;
-	
+
 	public JelloComponent() {
-		
+
 	}
 
 	public JelloComponent(GameObject owner) {
@@ -76,7 +81,35 @@ public class JelloComponent {
 	public void onDestroy() {
 
 	}
-	
+
+	/**
+	 * Called every frame to draw gizmos (helpful lines, icons, and more) for the
+	 * component. This is not called if gizmos are disabled in the sceen view, and
+	 * in builds.
+	 * 
+	 * @param gizmos     a reference to {@link GizmoDrawer} for drawing gizmos.
+	 * @param isSelected {@code true} if {@link GameObject} owning this component is
+	 *                   selected.
+	 */
+	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
+		if (isSelected) {
+			Vector3f position = this.gameObject.getPosition();
+			Vector3f preAllocVec = new Vector3f();
+			gizmos.color(Color.red);
+			gizmos.drawRay(position, this.gameObject.getRight(preAllocVec));
+			gizmos.color(Color.green);
+			gizmos.drawRay(position, this.gameObject.getUp(preAllocVec));
+			gizmos.color(Color.blue);
+			gizmos.drawRay(position, this.gameObject.getForward(preAllocVec));
+		}
+	}
+
+	@Button
+	private void movePositiveZ() {
+		Vector3f shift = this.gameObject.getLocalMatrix().positiveZ(new Vector3f());
+		this.gameObject.setLocalPosition(shift.add(this.gameObject.getLocalPosition()));
+	}
+
 	public ComponentDrawer<?> getComponentDrawer() {
 		return new ComponentDrawer<JelloComponent>(this);
 	}
