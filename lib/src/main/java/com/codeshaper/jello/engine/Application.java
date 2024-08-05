@@ -18,7 +18,6 @@ import org.lwjgl.opengl.WGL;
 import org.lwjgl.system.windows.User32;
 
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.SceneView.CameraController;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
@@ -277,7 +276,7 @@ public class Application {
 			
 			long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.windowHandle);
 			long hdc = User32.GetDC(hwnd);
-			WGL.wglMakeCurrent(hdc, JelloEditor.instance.window.sceneView.canvas.getCanvasContext());
+			WGL.wglMakeCurrent(hdc, JelloEditor.instance.window.sceneView.getContext());
 
 			this.preformLoopIteration();
 

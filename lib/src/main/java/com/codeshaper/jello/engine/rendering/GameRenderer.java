@@ -32,7 +32,7 @@ public class GameRenderer {
         
 	public GameRenderer() {
 		if(!capsCreated) {
-			GL.createCapabilities();
+			//GL.createCapabilities();
 			capsCreated = true;
 		}
 		

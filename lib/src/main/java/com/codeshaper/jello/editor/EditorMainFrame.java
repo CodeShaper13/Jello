@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
+import com.codeshaper.jello.editor.render.SceneViewPanel;
 import com.codeshaper.jello.editor.window.AppSettingsWindow;
 import com.codeshaper.jello.editor.window.AssetDatabaseViewer;
 import com.codeshaper.jello.editor.window.ConsoleWindow;
@@ -29,7 +30,7 @@ import ModernDocking.layouts.WindowLayout;
 
 public class EditorMainFrame extends JFrame {
 
-	public final SceneView sceneView;
+	public final SceneViewPanel sceneView;
 
 	// Fields to hold all of the builtin windows.
 	public final InspectorWindow inspector;
@@ -49,7 +50,7 @@ public class EditorMainFrame extends JFrame {
 		Docking.initialize(this);
 		AppState.setPersistFile(new File(editor.rootProjectFolder.toFile(), "layout.xml"));
 
-		this.sceneView = new SceneView();
+		this.sceneView = new SceneViewPanel();
 
 		this.inspector = new InspectorWindow();
 		this.console = new ConsoleWindow();

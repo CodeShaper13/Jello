@@ -16,7 +16,6 @@ import javax.swing.event.EventListenerList;
 import org.apache.commons.io.FilenameUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
-import com.codeshaper.jello.editor.SceneView.SceneAWTGLCanvas;
 import com.codeshaper.jello.editor.event.PlayModeListener;
 import com.codeshaper.jello.editor.event.PlayModeListener.State;
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
@@ -127,14 +126,13 @@ public class JelloEditor {
 		this.reloadProject();
 
 		this.window = new EditorMainFrame(this);
+		this.window.sceneView.createContext();
 
 		this.logHandler = this.window.console;
 
-		this.renderer = this.window.sceneView.createContext();
-
+		this.renderer = new GameRenderer();
+		
 		GLFWErrorCallback.createPrint().set();
-
-		this.enableEditorContext();
 
 		if (isInitialLoad) {
 			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
@@ -173,16 +171,6 @@ public class JelloEditor {
 
 	public void preformRedo() {
 		Debug.logWarning("Redo is not yet implemented."); // TODO implement redo.
-	}
-
-	public void enableEditorContext() {
-		SceneAWTGLCanvas canvas = this.window.sceneView.canvas;
-		canvas.makeContextCurrent(canvas.getCanvasContext());
-	}
-
-	public void disableEditorContext() {
-		SceneAWTGLCanvas canvas = this.window.sceneView.canvas;
-		canvas.makeContextCurrent(0);
 	}
 
 	public void reloadProject() {
