@@ -26,6 +26,8 @@ public class GameObject implements IInspectable {
 	private transient Matrix4f localMatrix;
 	transient Scene scene;
 	transient GameObject parent;
+	
+	private transient boolean isTransformDirty = true;
 
 	/**
 	 * Creates a new GameObject and adds it to a {@link Scene}.
@@ -36,7 +38,7 @@ public class GameObject implements IInspectable {
 	 */
 	public GameObject(String name, Scene scene) {
 		this();
-
+		
 		this.setName(name);
 
 		if (scene == null) {
@@ -116,34 +118,50 @@ public class GameObject implements IInspectable {
 	}
 
 	public Vector3f getPosition() {
-		return this.getWorldMatrix().getTranslation(new Vector3f());
+		return this.getPosition(new Vector3f());
+	}
+	
+	public Vector3f getPosition(Vector3f vector) {
+		return this.getWorldMatrix().getTranslation(vector);
 	}
 
 	public Vector3f getLocalPosition() {
-		return this.localPosition;
+		return new Vector3f(this.localPosition);
+	}
+	
+	public Vector3f getLocalPosition(Vector3f vector) {
+		return vector.set(this.localPosition);
 	}
 
 	public void setLocalPosition(float x, float y, float z) {
 		this.localPosition.set(x, y, z);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void setLocalPosition(Vector3f position) {
 		this.localPosition.set(position);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public Quaternionf getRotation() {
-		return this.getWorldMatrix().getNormalizedRotation(new Quaternionf());
+		return this.getRotation(new Quaternionf());
+	}
+	
+	public Quaternionf getRotation(Quaternionf quaternion) {
+		return this.getWorldMatrix().getNormalizedRotation(quaternion);
 	}
 
 	public Quaternionf getLocalRotation() {
-		return this.localRotation;
+		return new Quaternionf(this.localRotation);
+	}
+	
+	public Quaternionf getLocalRotation(Quaternionf quaternion) {
+		return quaternion.set(this.localRotation);
 	}
 
 	public void setLocalRotation(Quaternionf rotation) {
 		this.localRotation.set(rotation);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public Vector3f getEulerAngles() {
@@ -156,66 +174,76 @@ public class GameObject implements IInspectable {
 
 	public void setLocalEulerAngles(float x, float y, float z) {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(new Vector3f(x, y, z)));
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void setLocalEulerAngles(Vector3f eulerAnglesDegrees) {
 		this.localRotation.set(MathHelper.quaternionFromEulerAnglesDegrees(eulerAnglesDegrees));
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public Vector3f getScale() {
-		return this.getWorldMatrix().getScale(new Vector3f());
+		return this.getScale(new Vector3f());
+	}
+	
+	public Vector3f getScale(Vector3f vector) {
+		return this.getWorldMatrix().getScale(vector);
 	}
 
 	public Vector3f getLocalScale() {
-		return this.localScale;
+		return new Vector3f(this.localScale);
+	}
+	
+	public Vector3f getLocalScale(Vector3f vector) {
+		return vector.set(this.localScale);
 	}
 
 	public void setLocalScale(float x, float y, float z) {
 		this.localScale.set(x, y, z);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void setLocalScale(Vector3f scale) {
 		this.localScale.set(scale);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void translate(float x, float y, float z) {
-		this.localPosition.add(new Vector3f(x, y, z));
-		this.recalculateLocalMatrix();
+		this.localPosition.add(x, y, z);
+		this.isTransformDirty = true;
 	}
 
 	public void translate(Vector3f translation) {
 		this.localPosition.add(translation);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void rotate(float xRotation, float yRotation, float zRotation) {
-		this.localRotation.rotateXYZ((float) Math.toRadians(xRotation), (float) Math.toRadians(yRotation),
+		this.localRotation.rotateXYZ(
+				(float) Math.toRadians(xRotation),
+				(float) Math.toRadians(yRotation),
 				(float) Math.toRadians(zRotation));
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void rotate(float angle, Vector3f axis) {
 		this.localRotation.rotateAxis(angle, axis);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void scale(float scale) {
 		this.localScale.mul(scale);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void scale(float x, float y, float z) {
 		this.localScale.mul(x, y, z);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	public void scale(Vector3f scale) {
 		this.localScale.mul(scale);
-		this.recalculateLocalMatrix();
+		this.isTransformDirty = true;
 	}
 
 	/**
@@ -264,19 +292,31 @@ public class GameObject implements IInspectable {
 	}
 
 	public Matrix4f getLocalMatrix() {
-		// if(this.localMatrix == null) {
-		// this.localMatrix = new Matrix4f();
-		this.recalculateLocalMatrix();
-		// }
-		return this.localMatrix;
+		return this.getLocalMatrix(new Matrix4f());
+	}
+	
+	public Matrix4f getLocalMatrix(Matrix4f matrix) {
+		if(this.isTransformDirty) {
+			this.localMatrix.translationRotateScale(this.localPosition, this.localRotation, this.localScale);
+			this.isTransformDirty = false;
+		}
+		return matrix.set(this.localMatrix);
 	}
 
 	public Matrix4f getWorldMatrix() {
-		Matrix4f localMatrix = new Matrix4f(this.getLocalMatrix());
+		return this.getWorldMatrix(new Matrix4f());
+	}
+	
+	public Matrix4f getWorldMatrix(Matrix4f matrix) {
+		Matrix4f localMatrix = this.getLocalMatrix(matrix);
 		this.func(localMatrix);
 		return localMatrix;
 	}
 
+	public boolean isDirty() {
+		return this.isTransformDirty;
+	}
+	
 	private void func(Matrix4f m) {
 		if (this.parent == null) {
 			return;
@@ -284,10 +324,6 @@ public class GameObject implements IInspectable {
 			Matrix4f parentMatrix = this.parent.getLocalMatrix();
 			m.mulLocal(parentMatrix);
 		}
-	}
-
-	private void recalculateLocalMatrix() {
-		this.localMatrix.translationRotateScale(this.localPosition, this.localRotation, this.localScale);
 	}
 
 	/**
