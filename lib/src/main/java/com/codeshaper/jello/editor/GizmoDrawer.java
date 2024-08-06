@@ -3,6 +3,7 @@ package com.codeshaper.jello.editor;
 import static org.lwjgl.opengl.GL30.*;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -18,18 +19,24 @@ import com.codeshaper.jello.engine.Color;
  */
 public class GizmoDrawer {
 
-	private Matrix4f preAllocMatrix;
-	private Vector3f p0;
-	private Vector3f p1;
-	private Vector3f p2;
-	private Vector3f p3;
-	private Vector3f p4;
-	private Vector3f p5;
-	private Vector3f p6;
-	private Vector3f p7;
+	private static final int DEFAULT_CIRCLE_SEGMENTS = 24;
+
+	// Pre-allocated objects that are used when drawing the gizmos. Should save on
+	// GC collections.
+	private final Vector3f p0;
+	private final Vector3f p1;
+	private final Vector3f p2;
+	private final Vector3f p3;
+	private final Vector3f p4;
+	private final Vector3f p5;
+	private final Vector3f p6;
+	private final Vector3f p7;
+	private final Quaternionf q0;
+	private final Matrix4f preAllocMatrix;
+
+	private int circleSegments;
 
 	public GizmoDrawer() {
-		this.preAllocMatrix = new Matrix4f();
 		this.p0 = new Vector3f();
 		this.p1 = new Vector3f();
 		this.p2 = new Vector3f();
@@ -38,6 +45,10 @@ public class GizmoDrawer {
 		this.p5 = new Vector3f();
 		this.p6 = new Vector3f();
 		this.p7 = new Vector3f();
+		this.q0 = new Quaternionf();
+		this.preAllocMatrix = new Matrix4f();
+
+		this.circleSegments = DEFAULT_CIRCLE_SEGMENTS;
 	}
 
 	/**
@@ -46,6 +57,8 @@ public class GizmoDrawer {
 	public void reset() {
 		Color defaultColor = Color.white;
 		glColor3f(defaultColor.r, defaultColor.g, defaultColor.b);
+
+		this.circleSegments = DEFAULT_CIRCLE_SEGMENTS;
 	}
 
 	/**
@@ -56,6 +69,24 @@ public class GizmoDrawer {
 	 */
 	public void color(Color color) {
 		glColor3f(color.r, color.g, color.b);
+	}
+
+	/**
+	 * Sets the number of line segments to use when drawing circles. Higher numbers
+	 * will result in smoother circles with more overhead. The minimum number of
+	 * segments is 4. Passing less than 4 for {@code segments} will set the number
+	 * to 4.
+	 * <p>
+	 * The default number of segments is 24.
+	 * 
+	 * @param segments the number of line segments in circles.
+	 */
+	public void circleSegments(int segments) {
+		if (segments <= 4) {
+			segments = 4;
+		}
+
+		this.circleSegments = 24;
 	}
 
 	/**
@@ -170,8 +201,20 @@ public class GizmoDrawer {
 		this.drawLine(p3, p7);
 	}
 
-	public void drawCircle(Vector3f position, Quaternionf rotation, float radius) {
-		throw new NotImplementedException(); // TODO
+	public void drawWireCircle(Vector3f position, Quaternionf rotation, float radius) {
+		float angle = 0f;
+		Matrix4f m = this.createMatrix(position, rotation);
+
+		glBegin(GL_LINE_LOOP);
+
+		for (int i = 0; i < this.circleSegments; i++) {
+			p0.set(Math.sin(Math.toRadians(angle)) * radius, 0, Math.cos(Math.toRadians(angle)) * radius);
+			m.transformPosition(p0);
+			glVertex3f(p0.x, p0.y, p0.z);
+			angle += (360f / this.circleSegments);
+		}
+
+		glEnd();
 	}
 
 	public void drawSphere(Vector3f position, float radius) {
@@ -181,6 +224,14 @@ public class GizmoDrawer {
 		 * position.z); glEnd();
 		 */
 		throw new NotImplementedException(); // TODO
+	}
+
+	public void drawWireSphere(Vector3f position, float radius) {
+		q0.identity();
+		float radians = Math.toRadians(90);
+		this.drawWireCircle(position, null, radius);
+		this.drawWireCircle(position, q0.rotateZ(radians), radius);
+		this.drawWireCircle(position, q0.rotateX(radians), radius);
 	}
 
 	public void drawFrustum(Vector3f position, Quaternionf rotation, float fov, float nearPlane, float farPlane,
@@ -195,16 +246,11 @@ public class GizmoDrawer {
 
 		Vector4f[] f = new Vector4f[] {
 				// near face
-				new Vector4f(1, 1, -1, 1),
-				new Vector4f(-1, 1, -1, 1),
-				new Vector4f(1, -1, -1, 1),
+				new Vector4f(1, 1, -1, 1), new Vector4f(-1, 1, -1, 1), new Vector4f(1, -1, -1, 1),
 				new Vector4f(-1, -1, -1, 1),
 				// far face
-				new Vector4f(1, 1, 1, 1),
-				new Vector4f(-1, 1, 1, 1),
-				new Vector4f(1, -1, 1, 1),
-				new Vector4f(-1, -1, 1, 1)
-		};
+				new Vector4f(1, 1, 1, 1), new Vector4f(-1, 1, 1, 1), new Vector4f(1, -1, 1, 1),
+				new Vector4f(-1, -1, 1, 1) };
 
 		Vector3f[] v = new Vector3f[] { p0, p1, p2, p3, p4, p5, p6, p7 };
 		for (int i = 0; i < 8; i++) {
