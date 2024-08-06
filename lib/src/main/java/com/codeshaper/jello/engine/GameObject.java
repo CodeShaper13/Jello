@@ -226,11 +226,11 @@ public class GameObject implements IInspectable {
 	 * @return a vector pointing to the right.
 	 */
 	public Vector3f getRight() {
-		return this.getLocalMatrix().positiveX(new Vector3f());
+		return this.getRight(new Vector3f());
 	}
 
 	public Vector3f getRight(Vector3f vector) {
-		return this.getLocalMatrix().positiveX(vector);
+		return this.getLocalMatrix().invert().positiveX(vector);
 	}
 
 	/**
@@ -241,11 +241,11 @@ public class GameObject implements IInspectable {
 	 * @return a vector pointing up.
 	 */
 	public Vector3f getUp() {
-		return this.getLocalMatrix().positiveY(new Vector3f());
+		return this.getUp(new Vector3f());
 	}
 
 	public Vector3f getUp(Vector3f vector) {
-		return this.getLocalMatrix().positiveY(vector);
+		return this.getLocalMatrix().invert().positiveY(vector);
 	}
 
 	/**
@@ -256,11 +256,11 @@ public class GameObject implements IInspectable {
 	 * @return a vector pointing forward.
 	 */
 	public Vector3f getForward() {
-		return this.getLocalMatrix().positiveZ(new Vector3f());
+		return this.getForward(new Vector3f());
 	}
 
 	public Vector3f getForward(Vector3f vector) {
-		return this.getLocalMatrix().positiveZ(vector);
+		return this.getLocalMatrix().invert().positiveZ(vector);
 	}
 
 	public Matrix4f getLocalMatrix() {
