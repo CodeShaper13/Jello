@@ -108,7 +108,7 @@ public class GizmoDrawer {
 	 * @param size     the size of the cube.
 	 * @param rotation the rotation of the cube, or {@code null} for no rotation.
 	 */
-	public void drawCube(Vector3f position, Vector3f size, Quaternionf rotation) {
+	public void drawCube(Vector3f position, Quaternionf rotation, Vector3f size) {
 		size.mul(0.5f); // Convert to radius.
 
 		Matrix4f m = this.createMatrix(position, rotation);
@@ -137,7 +137,7 @@ public class GizmoDrawer {
 	 * @param size     the size of the cube.
 	 * @param rotation the rotation of the cube, or {@code null} for no rotation.
 	 */
-	public void drawWireCube(Vector3f position, Vector3f size, Quaternionf rotation) {
+	public void drawWireCube(Vector3f position, Quaternionf rotation, Vector3f size) {
 		size.mul(0.5f); // Convert to radius.
 
 		Matrix4f m = this.createMatrix(position, rotation);
@@ -170,11 +170,11 @@ public class GizmoDrawer {
 		this.drawLine(p3, p7);
 	}
 
-	public void drawCircle(Vector3f position, float radius, Quaternionf rotation) {
+	public void drawCircle(Vector3f position, Quaternionf rotation, float radius) {
 		throw new NotImplementedException(); // TODO
 	}
 
-	public void drawSphere(Vector3f position, float radius, Quaternionf rotation) {
+	public void drawSphere(Vector3f position, float radius) {
 		/*
 		 * glPointSize(10.0f); glEnable(GL_POINT_SIZE); glEnable(GL_POINT_SMOOTH);
 		 * glEnable(GL_BLEND); glBegin(GL_POINTS); glVertex3f(position.x, position.y,
