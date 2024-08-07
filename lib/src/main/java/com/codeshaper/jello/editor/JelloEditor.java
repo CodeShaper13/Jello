@@ -299,7 +299,7 @@ public class JelloEditor {
 		meshObj.addComponent(MeshRenderer.class);
 
 		GameObject lightObj = new GameObject("Light", scene);
-		lightObj.addComponent(Light.class);
+		lightObj.addComponent(DirectionalLight.class);
 		lightObj.setLocalPosition(0, 0, -2);
 		lightObj.setLocalEulerAngles(20, 45, 0);
 
