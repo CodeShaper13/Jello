@@ -1,0 +1,16 @@
+package <package_name>;
+
+import com.codeshaper.jello.engine.component.JelloComponent;
+
+public class <class_name> extends JelloComponent {
+	
+	@Override
+	public void onStart() {
+		// Called when the GameObject is created.
+	}
+	
+	@Override
+	public void onUpdate(float deltaTime) {
+		// Called every frame.
+	}
+}

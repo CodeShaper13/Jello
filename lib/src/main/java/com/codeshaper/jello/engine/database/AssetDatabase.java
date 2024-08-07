@@ -21,8 +21,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.reflections.Reflections;
 
 import com.codeshaper.jello.editor.ComponentList;
-import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
@@ -310,6 +308,7 @@ public class AssetDatabase {
 	 * a relative path, nothing happens.
 	 * <p>
 	 * D:\MyProject\assets\water.jelobj -> water.jelobj
+	 * <p>
 	 * D:\MyProject\assets\materials\water.jelobj -> materials\water.jelobj
 	 * </p>
 	 * 
@@ -320,16 +319,16 @@ public class AssetDatabase {
 		return this.assetsFolder.relativize(fullPath);
 	}
 
-	private boolean tryAddAsset(Path path) {
-		Class<? extends Asset> clazz = this.getProvidingClass(path);
+	protected CachedAsset tryAddAsset(Path relativePath) {		
+		Class<? extends Asset> clazz = this.getProvidingClass(relativePath);
 		if (clazz == null) {
 			Debug.log("ERROR!"); // TODO
-			return false;
+			return null;
 		} else {
-			AssetLocation location = new AssetLocation(path);
+			AssetLocation location = new AssetLocation(relativePath);
 			CachedAsset cachedAsset = new CachedAsset(location, clazz);
 			this.assets.add(cachedAsset);
-			return true;
+			return cachedAsset;
 		}
 	}
 

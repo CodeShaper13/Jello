@@ -43,7 +43,6 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
-import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 public class FileBrowserWindow extends EditorWindow {
 
@@ -127,7 +126,7 @@ public class FileBrowserWindow extends EditorWindow {
 			}
 
 			@Override
-			protected void onCreate(File directory, SerializedJelloObject asset) {
+			protected void onCreate(File newAsset) {
 				fileList.refresh();
 			}
 		};

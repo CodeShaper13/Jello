@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
@@ -45,18 +46,13 @@ public class CreateAssetEntries implements Iterable<CreateAssetEntries.MenuEntry
 
 	@Override
 	public Iterator<MenuEntry> iterator() {
-		return this.createAssetEntries.iterator();
+		return Stream.concat(this.createAssetEntries.stream(), this.builtinEntries.stream()).iterator();
 	}
 
 	@Override
 	public void onProjectReload(Phase phase) {
 		if(phase == Phase.REBUILD) {
 			this.createAssetEntries.clear();
-
-			// Add builtin Assets
-			for (MenuEntry entry : this.builtinEntries) {
-				this.createAssetEntries.add(entry);
-			}
 
 			// Scan for and add project Assets.
 

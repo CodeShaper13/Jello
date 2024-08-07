@@ -1,0 +1,19 @@
+{
+  "shaders": [
+    {
+      "type": "vertex",
+      "source":
+"
+...
+"
+       
+    },
+    {
+      "type": "fragment",
+      "source":
+"
+...
+"
+    }  
+  ]
+}

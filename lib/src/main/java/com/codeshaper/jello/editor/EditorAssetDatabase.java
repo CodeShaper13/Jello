@@ -15,10 +15,8 @@ import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
-import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.google.gson.Gson;
-import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadListener {
 
@@ -104,6 +102,15 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 	}
 
 	/**
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public boolean addAsset(Path path) {
+		return this.tryAddAsset(path) != null;
+	}
+	
+	/**
 	 * Saves a {@link SerializedJelloObject} Asset to disk.
 	 * 
 	 * @param asset the Asset to save.
@@ -180,6 +187,6 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 			Debug.logError("[Asset Database]: destination must be a directory");
 		}
 
-		throw new NotImplementedException();
+		throw new NotImplementedException(); // TODO implement
 	}
 }
