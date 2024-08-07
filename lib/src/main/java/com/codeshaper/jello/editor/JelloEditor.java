@@ -29,6 +29,7 @@ import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
+import com.codeshaper.jello.engine.database.ComponentList;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 

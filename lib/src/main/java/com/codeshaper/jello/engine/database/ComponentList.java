@@ -1,5 +1,6 @@
-package com.codeshaper.jello.editor;
+package com.codeshaper.jello.engine.database;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,17 +18,20 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 	private final List<Class<JelloComponent>> projectComponents;
 	
 	public ComponentList() {
-		Reflections scan = new Reflections("com.codeshaper.jello.engine");
-
-		Set<Class<? extends JelloComponent>> classes = scan.getSubTypesOf(JelloComponent.class);
 		this.builtinComponents = new ArrayList<Class<JelloComponent>>();
-		for(var clazz : classes) {
-			@SuppressWarnings("unchecked")
-			Class<JelloComponent> c = (Class<JelloComponent>)clazz;
-			this.builtinComponents.add(c);
-		}		
-				
 		this.projectComponents = new ArrayList<Class<JelloComponent>>();
+		
+		// Get all builtin components.
+		Reflections scan = new Reflections("com.codeshaper.jello.engine");
+		Set<Class<? extends JelloComponent>> classes = scan.getSubTypesOf(JelloComponent.class);
+		for(var clazz : classes) {
+			int modifiers = clazz.getModifiers();
+			if(!Modifier.isAbstract(modifiers)) {
+				@SuppressWarnings("unchecked")
+				Class<JelloComponent> c = (Class<JelloComponent>)clazz;
+				this.builtinComponents.add(c);	
+			}
+		}		
 	}
 	
 	public void compileProjectComponents() {
