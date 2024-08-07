@@ -28,6 +28,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -384,6 +385,8 @@ public class GuiBuilder {
 					} else {
 						this.setText("(Missing)");
 					}
+				} else if(v != null) {
+					this.setText(FilenameUtils.removeExtension(v.toString()));;
 				}
 				
 				return this;
