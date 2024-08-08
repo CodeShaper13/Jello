@@ -28,12 +28,15 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.joml.Vector4f;
+import org.joml.Vector4i;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder.OnSubmitListerer;
 import com.codeshaper.jello.editor.property.ExposedArrayField;
@@ -349,6 +352,66 @@ public class GuiBuilder {
 		return panel;
 	}
 
+	public static JPanel vector4iField(Vector4i value, OnSubmitListerer<Vector4i> listener) {
+		JPanel panel = GuiBuilder.horizontalArea();
+
+		panel.add(new JLabel("X"));
+		panel.add(GuiBuilder.intField(value.x, (v) -> {
+			value.setComponent(0, v);
+			listener.onSubmit(value);
+		}));
+
+		panel.add(new JLabel("Y"));
+		panel.add(GuiBuilder.intField(value.y, (v) -> {
+			value.setComponent(1, v);
+			listener.onSubmit(value);
+		}));
+
+		panel.add(new JLabel("Z"));
+		panel.add(GuiBuilder.intField(value.z, (v) -> {
+			value.setComponent(2, v);
+			listener.onSubmit(value);
+		}));
+		
+		panel.add(new JLabel("W"));
+		panel.add(GuiBuilder.intField(value.w, (v) -> {
+			value.setComponent(3, v);
+			listener.onSubmit(value);
+		}));
+
+		return panel;
+	}
+
+	public static JPanel vector4fField(Vector4f value, OnSubmitListerer<Vector4f> listener) {
+		JPanel panel = GuiBuilder.horizontalArea();
+
+		panel.add(new JLabel("X"));
+		panel.add(GuiBuilder.floatField(value.x, (v) -> {
+			value.setComponent(0, v);
+			listener.onSubmit(value);
+		}));
+
+		panel.add(new JLabel("Y"));
+		panel.add(GuiBuilder.floatField(value.y, (v) -> {
+			value.setComponent(1, v);
+			listener.onSubmit(value);
+		}));
+
+		panel.add(new JLabel("Z"));
+		panel.add(GuiBuilder.floatField(value.z, (v) -> {
+			value.setComponent(2, v);
+			listener.onSubmit(value);
+		}));
+		
+		panel.add(new JLabel("W"));
+		panel.add(GuiBuilder.floatField(value.w, (v) -> {
+			value.setComponent(3, v);
+			listener.onSubmit(value);
+		}));
+
+		return panel;
+	}
+
 	public static JPanel quaternionField(Quaternionf quaternion, OnSubmitListerer<Quaternionf> listener) {
 		return null;
 	}
@@ -384,6 +447,8 @@ public class GuiBuilder {
 					} else {
 						this.setText("(Missing)");
 					}
+				} else if(v != null) {
+					this.setText(FilenameUtils.removeExtension(v.toString()));;
 				}
 				
 				return this;

@@ -107,12 +107,6 @@ public class JelloComponent {
 		}
 	}
 
-	@Button
-	private void movePositiveZ() {
-		Vector3f shift = this.gameObject.getLocalMatrix().positiveZ(new Vector3f());
-		this.gameObject.setLocalPosition(shift.add(this.gameObject.getLocalPosition()));
-	}
-
 	public ComponentDrawer<?> getComponentDrawer() {
 		return new ComponentDrawer<JelloComponent>(this);
 	}

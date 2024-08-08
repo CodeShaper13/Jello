@@ -29,6 +29,7 @@ import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
+import com.codeshaper.jello.engine.database.ComponentList;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 
@@ -299,7 +300,7 @@ public class JelloEditor {
 		meshObj.addComponent(MeshRenderer.class);
 
 		GameObject lightObj = new GameObject("Light", scene);
-		lightObj.addComponent(Light.class);
+		lightObj.addComponent(DirectionalLight.class);
 		lightObj.setLocalPosition(0, 0, -2);
 		lightObj.setLocalEulerAngles(20, 45, 0);
 

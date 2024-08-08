@@ -4,6 +4,8 @@ import static org.lwjgl.opengl.GL30.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -22,6 +24,8 @@ import com.codeshaper.jello.engine.component.JelloComponent;
 
 public class SceneViewPanel extends JPanel {
 
+	private final int FPS = 20;
+
 	private final EditorCameraController cameraController;
 	private final SceneViewToolbar toolbar;
 	private final SceneAWTGLCanvas canvas;
@@ -39,26 +43,25 @@ public class SceneViewPanel extends JPanel {
 
 		this.canvas = new SceneAWTGLCanvas();
 		this.canvas.keepContextCurrent = true;
-		
+
 		this.add(this.toolbar = new SceneViewToolbar(), BorderLayout.NORTH);
 		this.add(this.canvas, BorderLayout.CENTER);
 
-		SwingUtilities.invokeLater(new Runnable() {
+		Timer timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				if (!canvas.isValid()) {
-					System.out.println("Clearing Capabilities");
-					GL.setCapabilities(null);
-					return;
-				}
+				SwingUtilities.invokeLater(() -> {
+					if (!canvas.isValid()) {
+						GL.setCapabilities(null);
+						timer.cancel();
+						return;
+					}
 
-				if (isValid()) {
 					canvas.render();
-				}
-
-				SwingUtilities.invokeLater(this);
+				});
 			}
-		});
+		}, 0, 1000L / FPS);
 
 		this.cameraController = new EditorCameraController();
 		this.canvas.addMouseMotionListener(this.cameraController);
@@ -80,10 +83,10 @@ public class SceneViewPanel extends JPanel {
 	}
 
 	public class SceneAWTGLCanvas extends AWTGLCanvasContextControl {
-		
+
 		private GizmoDrawer gizmoDrawer;
 		private InfiniteGrid infiniteGrid;
-		
+
 		public SceneAWTGLCanvas() {
 			super();
 
@@ -124,13 +127,13 @@ public class SceneViewPanel extends JPanel {
 				if (isWireframeEnabled) {
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
-				
+
 				this.infiniteGrid.drawGrid(sceneCamera, viewMatrix);
 			}
 
 			this.swapBuffers();
 		}
-		
+
 		private void drawGizmos(Camera sceneCamera, Matrix4f viewMatrix) {
 			// TODO optimize to avoid memory allocation.
 			Matrix4f projection = sceneCamera.getProjectionMatrix();
