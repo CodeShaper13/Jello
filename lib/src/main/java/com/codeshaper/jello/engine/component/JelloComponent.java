@@ -84,8 +84,11 @@ public class JelloComponent {
 
 	/**
 	 * Called every frame to draw gizmos (helpful lines, icons, and more) for the
-	 * component. This is not called if gizmos are disabled in the sceen view, and
-	 * in builds.
+	 * component. This is not called if gizmos are disabled in the scene view, and
+	 * never in builds.
+	 * <p>
+	 * Execution of this method is wrapped in a try block, so if an exception is
+	 * thrown it will not compromise the state of the Editor.
 	 * 
 	 * @param gizmos     a reference to {@link GizmoDrawer} for drawing gizmos.
 	 * @param isSelected {@code true} if {@link GameObject} owning this component is

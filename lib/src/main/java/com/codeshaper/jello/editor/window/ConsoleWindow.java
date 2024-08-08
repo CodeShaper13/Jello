@@ -43,8 +43,8 @@ public class ConsoleWindow extends EditorWindow implements ILogHandler {
 	private final LogEntryModel listModel;
 	private final ListLogEntry logEntryList;
 	private final JScrollPane traceScrollPane;
-	private final DefaultListModel<StackTraceElement> traceModel;
-	private final JList<StackTraceElement> traceTextArea;
+	private final DefaultListModel<String> traceModel;
+	private final JList<String> traceTextArea;
 
 	private LogEntry selectedEntry;
 
@@ -64,8 +64,8 @@ public class ConsoleWindow extends EditorWindow implements ILogHandler {
 		this.logScrollPane = new JScrollPane(this.logEntryList);
 
 		// Bottom.
-		this.traceModel = new DefaultListModel<StackTraceElement>();
-		this.traceTextArea = new JList<StackTraceElement>(this.traceModel);
+		this.traceModel = new DefaultListModel<String>();
+		this.traceTextArea = new JList<String>(this.traceModel);
 		this.traceScrollPane = new JScrollPane(this.traceTextArea);
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.logScrollPane, this.traceScrollPane);
@@ -137,16 +137,16 @@ public class ConsoleWindow extends EditorWindow implements ILogHandler {
 		this.traceModel.clear();
 		if (entry != null ) {
 			if (entry.trace != null) {
-				for (StackTraceElement element : entry.trace) {
+				for (String element : entry.trace) {
 					this.traceModel.addElement(element);
 				}
 			}
 			
-			if(entry.context instanceof GameObject gameObject) {
+			if(entry.context instanceof GameObject) {
 				// TODO highlight in hierarchy.
-			} else if(entry.context instanceof Component component) {
+			} else if(entry.context instanceof Component) {
 				// TODO highlight in hierarchy.
-			} else if(entry.context instanceof Asset asset) {
+			} else if(entry.context instanceof Asset) {
 				// TODO highlight in file browser.
 			}
 		}

@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GL;
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.swing.AWTGLCanvasContextControl;
+import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.component.Camera;
@@ -154,7 +155,11 @@ public class SceneViewPanel extends JPanel {
 			for (JelloComponent component : gameObject.getAllComponents()) {
 				if (component.isEnabled()) {
 					this.gizmoDrawer.reset();
-					component.onDrawGizmos(this.gizmoDrawer, gameObject == selectedGameObject);
+					try {
+						component.onDrawGizmos(this.gizmoDrawer, gameObject == selectedGameObject);
+					} catch(Exception exception) {
+						Debug.log(exception);
+					}
 				}
 			}
 
