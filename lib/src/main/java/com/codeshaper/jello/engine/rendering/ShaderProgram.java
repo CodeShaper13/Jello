@@ -1,6 +1,6 @@
 package com.codeshaper.jello.engine.rendering;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL41.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL41;
 import org.lwjgl.system.MemoryStack;
 
 import com.codeshaper.jello.engine.Debug;
@@ -64,7 +64,7 @@ public class ShaderProgram {
 	public void setUniform(String uniformName, float value) {
 		glUniform1f(this.getUniformLocation(uniformName), value);
 	}
-	
+    
     public void setUniform(String uniformName, Vector2f value) {
         glUniform2f(this.getUniformLocation(uniformName), value.x, value.y);
     }
@@ -82,11 +82,15 @@ public class ShaderProgram {
 			glUniformMatrix4fv(this.getUniformLocation(uniformName), false, value.get(stack.mallocFloat(16)));
 		}
 	}
+	
+	public boolean doesUniformExist(String uniformName) {
+		return glGetUniformLocation(this.programId, uniformName) >= 0;
+	}
     
     public void cleanup() {
         this.unbind();
-        if (programId != 0) {
-            glDeleteProgram(programId);
+        if (this.programId != 0) {
+            glDeleteProgram(this.programId);
         }
     }
 
@@ -115,7 +119,7 @@ public class ShaderProgram {
         }
 
         shaderModules.forEach(s -> glDetachShader(programId, s));
-        shaderModules.forEach(GL30::glDeleteShader);
+        shaderModules.forEach(GL41::glDeleteShader);
     }
 
     private int getUniformLocation(String uniformName) {

@@ -58,6 +58,17 @@ public class Color {
 		this(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
 	}
 
+	/**
+	 * Creates a new color with {@link Vector4f#x} as the red component,
+	 * {@link Vector4f#y} as the green component, {@link Vector4f#z} as the blue
+	 * component and {@link Vector4f#w} as the alpha component.
+	 * 
+	 * @param vector the vector to create the color from.
+	 */
+	public Color(Vector4f vector) {
+		this(vector.x, vector.y, vector.z, vector.w);
+	}
+
 	public Color setR(float red) {
 		return new Color(red, this.g, this.b);
 	}
@@ -77,7 +88,7 @@ public class Color {
 	public java.awt.Color toAwtColor() {
 		return new java.awt.Color(this.r, this.g, this.b, this.a);
 	}
-	
+
 	public Vector4f toVector4f() {
 		return new Vector4f(this.r, this.g, this.b, this.a);
 	}

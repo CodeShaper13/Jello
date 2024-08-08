@@ -25,7 +25,6 @@ public class GameRenderer {
 	public static final String PROJECTION_MATRIX = "projectionMatrix";
 	public static final String VIEW_MATRIX = "viewMatrix";
 	public static final String GAME_OBJECT_MATRIX = "modelMatrix";
-	public static final String TXT_SAMPLER = "txtSampler";
     
 	private final HashMap<Material, List<Renderer>> instructions;
         
@@ -60,25 +59,25 @@ public class GameRenderer {
 		
 		for(Material material : this.instructions.keySet()) {
 			Shader shader = material.getShader();
-			ShaderProgram program = shader.getProgram();
-			program.bind();
-			
-			program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
-	        program.setUniform(VIEW_MATRIX, viewMatrix);
-	        program.setUniform(TXT_SAMPLER, 0);
-	        
-	        material.bindTextures();
-	        // TODO bind textures and other stuff specified in the material.
-	        
-	        List<Renderer> renderers = this.instructions.get(material);
-	        for(Renderer renderer : renderers) {
-	        	GameObject obj = renderer.gameObject;	        	
-	        	program.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
-                
-                renderer.onRender();
-	        }
-	        
-			program.unbind();
+			if(shader != null) {
+				ShaderProgram program = shader.getProgram();
+				program.bind();
+				
+				program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
+		        program.setUniform(VIEW_MATRIX, viewMatrix);
+		        
+		        material.setUniforms();
+		        
+		        List<Renderer> renderers = this.instructions.get(material);
+		        for(Renderer renderer : renderers) {
+		        	GameObject obj = renderer.gameObject;	        	
+		        	program.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
+	                
+	                renderer.onRender();
+		        }
+		        
+				program.unbind();
+			}
 		}
 		
 		glBindVertexArray(0);

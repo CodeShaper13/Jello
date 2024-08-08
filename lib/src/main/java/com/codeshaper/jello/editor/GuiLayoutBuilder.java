@@ -19,8 +19,9 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.joml.Vector4f;
+import org.joml.Vector4i;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder.OnSubmitListerer;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DontExposeField;
@@ -71,7 +72,7 @@ public class GuiLayoutBuilder {
 	 * one to be added.
 	 */
 	public void separator() {
-		int orientation = this.isHorizontal() ? SwingConstants.HORIZONTAL : SwingConstants.VERTICAL;
+		int orientation = this.isHorizontal() ? SwingConstants.VERTICAL : SwingConstants.HORIZONTAL;
 		this.add(new JSeparator(orientation));
 	}
 
@@ -218,6 +219,14 @@ public class GuiLayoutBuilder {
 	
 	public void vector3fField(String label, Vector3f value, OnSubmitListerer<Vector3f> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3fField(value, listener)));
+	}
+	
+	public void vector4iField(String label, Vector4i value, OnSubmitListerer<Vector4i> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector4iField(value, listener)));
+	}
+	
+	public void vector4fField(String label, Vector4f value, OnSubmitListerer<Vector4f> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector4fField(value, listener)));
 	}
 
 	public void colorField(String label, Color color, OnSubmitListerer<Color> listener) {
