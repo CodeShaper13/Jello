@@ -20,7 +20,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.reflections.Reflections;
 
-import com.codeshaper.jello.editor.ComponentList;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
