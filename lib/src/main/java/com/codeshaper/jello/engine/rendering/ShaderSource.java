@@ -9,8 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ShaderSource {
 
-	private final ShaderType type;
-	private final String source;
+	/**
+	 * The type of the Shader.
+	 */
+	public final ShaderType type;
+	/**
+	 * The Shader's source code.
+	 */
+	public final String source;
 
 	public ShaderSource() {
 		this.type = ShaderType.UNKNOW;
@@ -28,13 +34,5 @@ public class ShaderSource {
 		
 		this.source = source;
 		this.type = type;
-	}
-
-	public ShaderType getType() {
-		return this.type;
-	}
-
-	public String getSource() {
-		return this.source;
 	}
 }

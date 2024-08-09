@@ -1,14 +1,9 @@
 package com.codeshaper.jello.engine.asset;
 
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrBuilder;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
@@ -16,13 +11,10 @@ import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.ShaderData;
-import com.codeshaper.jello.engine.rendering.ShaderData.Property;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
 import com.codeshaper.jello.engine.rendering.ShaderSource;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
@@ -40,45 +32,22 @@ public class Shader extends Asset {
 	public Shader(AssetLocation location) {
 		super(location);
 
-		GsonBuilder builder = new GsonBuilder();
-		Gson gson = builder.create();
-
-		StrBuilder errorBuilder = new StrBuilder();
+		Gson gson = new Gson();
 
 		try (InputStream stream = location.getInputSteam(); Reader reader = new InputStreamReader(stream)) {
 			this.data = gson.fromJson(reader, ShaderData.class);
 		} catch (JsonSyntaxException e) {
-			e.printStackTrace();
-			errorBuilder.appendln("Error parsing JSON. " + e.getMessage());
+			Debug.log(e, this);
+			this.error = "Error parsing JSON. " + e.getMessage();
 		} catch (JsonIOException e) {
-			errorBuilder.appendln("Error reading JSON. " + e.getMessage());
+			Debug.log(e, this);
+			this.error = "Error reading JSON. " + e.getMessage();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Debug.log(e, this);
 		}
 
-		this.program = new ShaderProgram(this.data.shaders);
-
-		// Create the default uniforms.
-		this.program.createUniform(GameRenderer.PROJECTION_MATRIX);
-		this.program.createUniform(GameRenderer.VIEW_MATRIX);
-		this.program.createUniform(GameRenderer.GAME_OBJECT_MATRIX);
-
-		// Create the uniforms defined by the shader's properties.
-		for (Property property : this.data.properties) {
-			String uniform = property.uniform;
-			if (this.program.doesUniformExist(uniform)) {
-				this.program.createUniform(property.uniform);
-			} else {
-				Debug.logWarning(
-						"Error in Shader \"%s\".  A property is defined, \"%s\" without a matching uniform.",
-						location.getName(),
-						uniform);
-			}
-		}
-
-		if (errorBuilder.size() > 0) {
-			this.error = errorBuilder.toString();
-			Debug.logErrorWithContext(this, "Error creating shader \"" + location.getName() + "\"");
+		if (this.data != null) {
+			this.program = new ShaderProgram(this.data.shaders);
 		}
 	}
 
@@ -86,7 +55,9 @@ public class Shader extends Asset {
 	public void cleanup() {
 		super.cleanup();
 
-		this.program.cleanup();
+		if (this.program != null) {
+			this.program.deleteProgram();
+		}
 	}
 
 	@Override
@@ -95,15 +66,27 @@ public class Shader extends Asset {
 	}
 
 	/**
-	 * Gets the Shader's program id. If the shader file is invalid or there was some
-	 * other error, 0 is returned indicating an error.
+	 * Gets the Shader's Shader Program Id. If this Shader is invalid, 0 is
+	 * returned.
 	 * 
 	 * @return the Shader's program id.
+	 * @see Shader#isInvalid()
 	 */
 	public int getProgramId() {
-		return this.program.programId;
+		if (this.program != null) {
+			return this.program.programId;
+		} else {
+			return 0;
+		}
 	}
 
+	/**
+	 * Gets the Shader's backing {@link ShaderData}. If this Shader is invalid, null
+	 * is returned.
+	 * 
+	 * @return
+	 * @see Shader#isInvalid()
+	 */
 	public ShaderData getData() {
 		return this.data;
 	}
@@ -112,7 +95,18 @@ public class Shader extends Asset {
 		return this.program;
 	}
 
-	public boolean hasError() {
+	/**
+	 * Checks if the Shader is invalid or not. A Shader is invalid if there was an
+	 * error during loading. this is often caused a JSON syntax error in the .shader
+	 * file.
+	 * <p>
+	 * The error that caused the Shader to be invalid can be retrieved with
+	 * {@link Shader#getError()}.
+	 * 
+	 * @return {@link true} is the Sahder is valid, {@link false} if there was some
+	 *         error during loading.
+	 */
+	public boolean isInvalid() {
 		return this.error != null;
 	}
 
@@ -134,17 +128,16 @@ public class Shader extends Asset {
 
 		@Override
 		protected void drawAsset(GuiLayoutBuilder drawer) {
-			if (this.target.hasError()) {
+			if (this.target.isInvalid()) {
 				drawer.label("There was a problem creating the Shader.");
-				System.out.println(this.target.getError());
 				drawer.textBox("Error:", this.target.getError(), 10);
 			} else {
 				drawer.label("Program Id: " + this.target.getProgramId());
 				drawer.space(8);
 				drawer.label("Shaders:");
 				for (ShaderSource module : this.target.data.shaders) {
-					drawer.label("Type: " + module.getType());
-					drawer.textBox(null, module.getSource(), 10);
+					drawer.label("Type: " + module.type);
+					drawer.textBox(null, module.source, 10);
 				}
 			}
 		}

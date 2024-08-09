@@ -17,26 +17,22 @@ import com.codeshaper.jello.engine.asset.Shader;
 import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.component.Renderer;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 
 public class GameRenderer {
-	
-	private static boolean capsCreated = false;
-	
+		
 	public static final String PROJECTION_MATRIX = "projectionMatrix";
 	public static final String VIEW_MATRIX = "viewMatrix";
 	public static final String GAME_OBJECT_MATRIX = "modelMatrix";
     
+	private final Shader errorShader;
 	private final HashMap<Material, List<Renderer>> instructions;
         
 	public GameRenderer() {
-		if(!capsCreated) {
-			//GL.createCapabilities();
-			capsCreated = true;
-		}
-		
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
+        this.errorShader = (Shader) AssetDatabase.getInstance().getAsset("builtin/shaders/error.shader");
         this.instructions = new HashMap<Material, List<Renderer>>(256);
    	}
 	
@@ -59,25 +55,28 @@ public class GameRenderer {
 		
 		for(Material material : this.instructions.keySet()) {
 			Shader shader = material.getShader();
-			if(shader != null) {
-				ShaderProgram program = shader.getProgram();
-				program.bind();
-				
-				program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
-		        program.setUniform(VIEW_MATRIX, viewMatrix);
-		        
-		        material.setUniforms();
-		        
-		        List<Renderer> renderers = this.instructions.get(material);
-		        for(Renderer renderer : renderers) {
-		        	GameObject obj = renderer.gameObject;	        	
-		        	program.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
-	                
-	                renderer.onRender();
-		        }
-		        
-				program.unbind();
+			
+			if(shader == null || shader.isInvalid()) {
+				shader = this.errorShader;
 			}
+			
+			ShaderProgram program = shader.getProgram();
+			program.bind();
+			
+			program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
+	        program.setUniform(VIEW_MATRIX, viewMatrix);
+	        
+	        material.setUniforms();
+	        
+	        List<Renderer> renderers = this.instructions.get(material);
+	        for(Renderer renderer : renderers) {
+	        	GameObject obj = renderer.gameObject;	        	
+	        	program.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
+                
+                renderer.onRender();
+	        }
+	        
+			program.unbind();
 		}
 		
 		glBindVertexArray(0);

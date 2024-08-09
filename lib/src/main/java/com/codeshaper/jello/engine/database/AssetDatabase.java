@@ -65,10 +65,13 @@ public class AssetDatabase {
 			"builtin/meshes/quad.blend",
 			"builtin/meshes/sphere.blend",
 			"builtin/meshes/torus.blend",
-			// Shaders
+			// Shader Source Files
 			"builtin/shaders/scene.vert",
 			"builtin/shaders/scene.frag",
-			"builtin/shaders/default.shader",
+			// Shaders
+			"builtin/shaders/error.shader",
+			"builtin/shaders/unlitTexture.shader",
+			"builtin/shaders/standard.shader",
 			// Textures
 			"builtin/textures/placeholderTexture.png", };
 

@@ -80,7 +80,7 @@ public class Debug {
 		if (!isInEditor()) {
 			return;
 		}
-		log(null, exception);
+		log(exception, null);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class Debug {
 	 * @param context   the object that threw the exception.
 	 * @param exception the exception to log.
 	 */
-	public static void log(Object context, Exception exception) {
+	public static void log(Exception exception, Object context) {
 		if (!isInEditor()) {
 			return;
 		}

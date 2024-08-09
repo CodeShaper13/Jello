@@ -23,10 +23,6 @@ public class InfiniteGrid {
 						ShaderType.VERTEX),
 				new ShaderSource("/editorGridShaders/editorGrid.frag",
 						ShaderType.FRAGMENT));
-		this.shaderProgram.createUniform(GameRenderer.PROJECTION_MATRIX);
-		this.shaderProgram.createUniform(GameRenderer.VIEW_MATRIX);
-		this.shaderProgram.createUniform(NEAR);
-		this.shaderProgram.createUniform(FAR);
 	}
 
 	public void drawGrid(Camera camera, Matrix4f viewMatrix) {

@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL30.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -14,10 +15,9 @@ import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
-import com.codeshaper.jello.engine.database.AssetDatabase;
-import com.codeshaper.jello.engine.rendering.ShaderData;
-import com.codeshaper.jello.engine.rendering.ShaderData.Property;
 import com.codeshaper.jello.engine.rendering.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.Uniform;
+import com.codeshaper.jello.engine.rendering.UniformType;
 
 @CreateAssetEntry(fileName = "material", location = "Material")
 public class Material extends SerializedJelloObject {
@@ -37,8 +37,8 @@ public class Material extends SerializedJelloObject {
 	@Override
 	public void onDeserialize() {
 		super.onDeserialize();
-		
-		if(this.shader != null) {
+
+		if (this.shader != null) {
 			this.setShader(this.shader);
 		}
 	}
@@ -49,17 +49,12 @@ public class Material extends SerializedJelloObject {
 	}
 
 	/**
-	 * Gets the Material's Shader. If no Shader is set, Jello's default shader is
-	 * returned.
+	 * Gets the Material's Shader. If no Shader is set, null is returned.
 	 * 
-	 * @return
+	 * @return the Material's Shader.
 	 */
 	public Shader getShader() {
-		if (this.shader == null) {
-			return (Shader) AssetDatabase.getInstance().getAsset("builtin/shaders/default.shader");
-		} else {
-			return this.shader;
-		}
+		return this.shader;
 	}
 
 	public void setShader(Shader newShader) {
@@ -75,59 +70,73 @@ public class Material extends SerializedJelloObject {
 
 		this.shader = newShader;
 
-		if (newShader != null) {
-			ShaderData data = this.shader.getData();
-			ShaderProgram program = this.shader.getProgram();
-			for (Property property : data.properties) {
-				String uniform = property.uniform;
-				if (program.doesUniformExist(uniform)) {
-					switch (property.type) {
-					case INT:
-						if(!this.ints.containsKey(uniform)) {
-							this.ints.put(uniform, property.getAsInt());
-						}
-						break;
-					case FLOAT:
-						if(!this.floats.containsKey(uniform)) {
-							this.floats.put(uniform, property.getAsFloat());
-						}
-						break;
-					case COLOR:
-						if(!this.vec4s.containsKey(uniform)) {
-							this.vec4s.put(uniform, property.getAsVec4f());
-						}
-						break;
-					case VEC_2:
-						if(!this.vec2s.containsKey(uniform)) {
-							this.vec2s.put(uniform, property.getAsVec2f());
-						}
-						break;
-					case VEC_3:
-						if(!this.vec3s.containsKey(uniform)) {
-							this.vec3s.put(uniform, property.getAsVec3f());
-						}
-						break;
-					case VEC_4:
-						if(!this.vec4s.containsKey(uniform)) {
-							this.vec4s.put(uniform, property.getAsVec4f());
-						}
-						break;
-					case TEXTURE:
-						if(!this.textures.containsKey(uniform)) {
-							this.textures.put(uniform, null);
-						}
-						break;
+		if (newShader != null && !newShader.isInvalid()) {
+			for (Uniform uniform : newShader.getProgram().getAllUniforms()) {
+				String uniformName = uniform.name;
+				switch (uniform.type) {
+				case int_:
+					if (!this.ints.containsKey(uniformName)) {
+						this.ints.put(uniformName, 0);
 					}
+					break;
+				case float_:
+					if (!this.floats.containsKey(uniformName)) {
+						this.floats.put(uniformName, 0f);
+					}
+					break;
+				case vec2:
+					if (!this.vec2s.containsKey(uniformName)) {
+						this.vec2s.put(uniformName, new Vector2f());
+					}
+					break;
+				case vec3:
+					if (!this.vec3s.containsKey(uniformName)) {
+						this.vec3s.put(uniformName, new Vector3f());
+					}
+					break;
+				case vec4:
+					if (!this.vec4s.containsKey(uniformName)) {
+						Vector4f vec;
+						if (this.shouldTreatUniformAsColor(uniform)) {
+							vec = new Vector4f(1f, 1f, 1f, 1f);
+						} else {
+							vec = new Vector4f(0f, 0f, 0f, 0f);
+						}
+						this.vec4s.put(uniformName, vec);
+					}
+					break;
+				case sampler2D:
+					if (!this.textures.containsKey(uniformName)) {
+						this.textures.put(uniformName, null);
+					}
+					break;
+				default:
+					break;
 				}
 			}
 		}
 	}
 
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type int.
+	 * 
+	 * @param uniform the uniform name.
+	 * @return the value of the uniform.
+	 */
 	public int getInt(String uniform) {
 		Integer i = this.ints.get(uniform);
 		return i == null ? 0 : i;
 	}
 
+	/**
+	 * Sets the value of an int uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 */
 	public void setInt(String uniform, int value) {
 		if (!this.doesUniformExist(uniform)) {
 			return;
@@ -135,11 +144,26 @@ public class Material extends SerializedJelloObject {
 		this.ints.put(uniform, value);
 	}
 
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type float.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return the value of the uniform.
+	 */
 	public float getFloat(String uniform) {
 		Float f = this.floats.get(uniform);
 		return f == null ? 0 : f;
 	}
 
+	/**
+	 * Sets the value of a float uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 */
 	public void setFloat(String uniform, float value) {
 		if (!this.doesUniformExist(uniform)) {
 			return;
@@ -147,20 +171,52 @@ public class Material extends SerializedJelloObject {
 		this.floats.put(uniform, value);
 	}
 
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type vec4.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return the value of the uniform.
+	 */
 	public Color getColor(String uniform) {
-		return new Color(this.getVector4f(uniform));
+		return new Color(this.getVec4(uniform));
 	}
 
+	/**
+	 * Sets the value of a vec4 uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 * @throws IllegalArgumentException if {@code value} is null.
+	 */
 	public void setColor(String uniform, Color value) {
-		this.setVector4f(uniform, value.toVector4f());
+		this.setVec4(uniform, value.toVector4f());
 	}
 
-	public Vector2f getVector2f(String uniform) {
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type vec2.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return the value of the uniform.
+	 */
+	public Vector2f getVec2(String uniform) {
 		Vector2f vec = this.vec2s.get(uniform);
 		return vec == null ? new Vector2f(0, 0) : vec;
 	}
 
-	public void setVector2f(String uniform, Vector2f value) {
+	/**
+	 * Sets the value of a vec2 uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 * @throws IllegalArgumentException if {@code value} is null.
+	 */
+	public void setVec2(String uniform, Vector2f value) {
 		if (value == null) {
 			throw new IllegalArgumentException("value may not be null");
 		}
@@ -170,12 +226,28 @@ public class Material extends SerializedJelloObject {
 		this.vec2s.put(uniform, value);
 	}
 
-	public Vector3f getVector3f(String uniform) {
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type vec3.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return the value of the uniform.
+	 */
+	public Vector3f getVec3(String uniform) {
 		Vector3f vec = this.vec3s.get(uniform);
 		return vec == null ? new Vector3f(0, 0, 0) : vec;
 	}
 
-	public void setVector3f(String uniform, Vector3f value) {
+	/**
+	 * Sets the value of a vec3 uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 * @throws IllegalArgumentException if {@code value} is null.
+	 */
+	public void setVec3(String uniform, Vector3f value) {
 		if (value == null) {
 			throw new IllegalArgumentException("value may not be null");
 		}
@@ -185,12 +257,28 @@ public class Material extends SerializedJelloObject {
 		this.vec3s.put(uniform, value);
 	}
 
-	public Vector4f getVector4f(String uniform) {
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type vec4.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return the value of the uniform.
+	 */
+	public Vector4f getVec4(String uniform) {
 		Vector4f vec = this.vec4s.get(uniform);
 		return vec == null ? new Vector4f(0, 0, 0, 0) : vec;
 	}
 
-	public void setVector4f(String uniform, Vector4f value) {
+	/**
+	 * Sets the value of a vec4 uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 * @throws IllegalArgumentException if {@code value} is null.
+	 */
+	public void setVec4(String uniform, Vector4f value) {
 		if (value == null) {
 			throw new IllegalArgumentException("value may not be null");
 		}
@@ -200,10 +288,26 @@ public class Material extends SerializedJelloObject {
 		this.vec4s.put(uniform, value);
 	}
 
+	/**
+	 * Gets the value of a uniform. 0 is returned on error. An error is caused if no
+	 * shader is set, the shader does not have a uniform with the passed name, or
+	 * the uniform is not of type sampler2D.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return the value of the uniform.
+	 */
 	public Texture getTexture(String uniform) {
 		return this.textures.get(uniform);
 	}
 
+	/**
+	 * Sets the value of a sampler2d uniform. If the uniform does not exist, nothing
+	 * happens.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @param value   the new value.
+	 * @throws IllegalArgumentException if {@code value} is null.
+	 */
 	public void setTexture(String uniform, Texture value) {
 		if (!this.doesUniformExist(uniform)) {
 			return;
@@ -211,6 +315,12 @@ public class Material extends SerializedJelloObject {
 		this.textures.put(uniform, value);
 	}
 
+	/**
+	 * Checks if a uniform exists.
+	 * 
+	 * @param uniform the name of the uniform.
+	 * @return {@code true} if the uniform exists,
+	 */
 	public boolean doesUniformExist(String uniform) {
 		if (this.shader == null) {
 			return false;
@@ -219,8 +329,12 @@ public class Material extends SerializedJelloObject {
 		}
 	}
 
+	/**
+	 * Sets the uniforms of this Material's Shader. If this Material has no Shader,
+	 * or the Shader is invalid, nothing happens.
+	 */
 	public void setUniforms() {
-		if (this.shader == null) {
+		if (this.shader == null || this.shader.isInvalid()) {
 			return;
 		}
 
@@ -243,13 +357,22 @@ public class Material extends SerializedJelloObject {
 
 		int counter = 0;
 		for (Entry<String, Texture> entry : this.textures.entrySet()) {
-			glActiveTexture(GL_TEXTURE0 + counter);
 			Texture texture = entry.getValue();
+			glActiveTexture(GL_TEXTURE0 + counter);
 			if (texture != null) {
 				texture.bind();
 			} else {
 				glBindTexture(GL_TEXTURE_2D, 0);
 			}
+			counter++;
+		}
+	}
+
+	private boolean shouldTreatUniformAsColor(Uniform uniform) {
+		if (uniform.type != UniformType.vec4) {
+			return false;
+		} else {
+			return StringUtils.containsIgnoreCase(uniform.name, "color");
 		}
 	}
 
@@ -260,61 +383,62 @@ public class Material extends SerializedJelloObject {
 		}
 
 		@Override
-		public void drawAsset(GuiLayoutBuilder builder) {			
+		public void drawAsset(GuiLayoutBuilder builder) {
 			builder.assetField("Shader: ", this.target.shader, Shader.class, (v) -> {
 				this.target.setShader(v);
 				// TODO redraw editor.
 			});
-			
+
 			builder.space();
 			builder.label("Uniforms:");
 
 			Shader shader = this.target.shader;
-			if (shader != null) {
-				ShaderData data = shader.getData();
-				for (Property property : data.properties) {
-					if (property.isValid()) {
-						String fieldLabel = property.getDisplayName();
-						String uniformName = property.uniform;
-						switch (property.type) {
-						case INT:
-							builder.intField(fieldLabel, this.target.getInt(uniformName), (v) -> {
-								this.target.setInt(uniformName, v);
-							});
-							break;
-						case FLOAT:
-							builder.floatField(fieldLabel, this.target.getFloat(uniformName), (v) -> {
-								this.target.setFloat(uniformName, v);
-							});
-							break;
-						case COLOR:
+			if (shader != null && !shader.isInvalid()) {
+				for (Uniform uniform : shader.getProgram().getAllUniforms()) {
+					String uniformName = uniform.name;
+					
+					String[] words = StringUtils.splitByCharacterTypeCamelCase(uniform.name);
+					String fieldLabel = StringUtils.capitalize(String.join(" ", words));
+					
+					switch (uniform.type) {
+					case int_:
+						builder.intField(fieldLabel, this.target.getInt(uniformName), (v) -> {
+							this.target.setInt(uniformName, v);
+						});
+						break;
+					case float_:
+						builder.floatField(fieldLabel, this.target.getFloat(uniformName), (v) -> {
+							this.target.setFloat(uniformName, v);
+						});
+						break;
+					case vec2:
+						builder.vector2fField(fieldLabel, this.target.getVec2(uniformName), (v) -> {
+							this.target.setVec2(uniformName, v);
+						});
+						break;
+					case vec3:
+						builder.vector3fField(fieldLabel, this.target.getVec3(uniformName), (v) -> {
+							this.target.setVec3(uniformName, v);
+						});
+						break;
+					case vec4:
+						if(shouldTreatUniformAsColor(uniform) ) {
 							builder.colorField(fieldLabel, this.target.getColor(uniformName), (v) -> {
 								this.target.setColor(uniformName, v);
 							});
-							break;
-						case VEC_2:
-							builder.vector2fField(fieldLabel, this.target.getVector2f(uniformName), (v) -> {
-								this.target.setVector2f(uniformName, v);
+						} else {
+							builder.vector4fField(fieldLabel, this.target.getVec4(uniformName), (v) -> {
+								this.target.setVec4(uniformName, v);
 							});
-							break;
-						case VEC_3:
-							builder.vector3fField(fieldLabel, this.target.getVector3f(uniformName), (v) -> {
-								this.target.setVector3f(uniformName, v);
-							});
-							break;
-						case VEC_4:
-							builder.vector4fField(fieldLabel, this.target.getVector4f(uniformName), (v) -> {
-								this.target.setVector4f(uniformName, v);
-							});
-							break;
-						case TEXTURE:
-							builder.assetField(fieldLabel, this.target.getTexture(uniformName), Texture.class, (v) -> {
-								this.target.setTexture(uniformName, v);
-							});
-							break;
-						default:
-							break;
 						}
+						break;
+					case sampler2D:
+						builder.assetField(fieldLabel, this.target.getTexture(uniformName), Texture.class, (v) -> {
+							this.target.setTexture(uniformName, v);
+						});
+						break;
+					default:
+						break;
 					}
 				}
 			}
