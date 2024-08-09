@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.joml.Math;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
@@ -37,13 +39,26 @@ public class GameRenderer {
         this.instructions = new HashMap<Material, List<Renderer>>(256);
    	}
 	
-	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int w, int h) {
-		camera.refreshProjectionMatrix(w, h);
+	double normalize(double val, double valmin, double valmax, double min, double max) 
+	{
+	    return (((val - valmin) / (valmax - valmin)) * (max - min)) + min;
+	}
+	
+	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int windowWidth, int windowHeight) {
+		Vector2f viewportPos = camera.viewportPosition;
+		Vector2f viewportSize = camera.viewportSize;
+		float viewportWidth =windowWidth * viewportSize.x;
+		float viewportHeight = windowHeight * viewportSize.y;
+		glViewport(
+				Math.round(viewportPos.x * windowWidth),
+				Math.round(viewportPos.y * windowHeight),
+				Math.round(viewportWidth),
+				Math.round(viewportHeight));
+		camera.refreshProjectionMatrix(viewportWidth, viewportHeight);
 		
         Color clearColor = camera.backgroundColor;
         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);        
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, w, h);
 		
 		this.instructions.clear();
 		
@@ -59,7 +74,7 @@ public class GameRenderer {
 			if(shader == null || shader.isInvalid()) {
 				shader = this.errorShader;
 			}
-						
+									
 			ShaderData data = shader.getData();
 			
 			if(data.depth_test) {

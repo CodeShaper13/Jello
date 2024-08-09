@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.joml.Math;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
@@ -63,7 +64,10 @@ public class Camera extends JelloComponent {
 	@ExposeField
 	@MinValue(0)
 	private float farPlane = 1000f;
-	
+
+	public Vector2f viewportPosition = new Vector2f(0, 0);
+	public Vector2f viewportSize = new Vector2f(1, 1);
+
 	@Space
 
 	/**
@@ -135,22 +139,26 @@ public class Camera extends JelloComponent {
 	public float getNearPlane() {
 		return this.nearPlane;
 	}
-	
+
 	public void setNearPlane(float distance) {
 		this.nearPlane = Math.max(0, distance);
 	}
-	
+
 	public float getFarPlane() {
 		return this.farPlane;
 	}
-	
+
 	public void setFarPlane(float distance) {
 		this.farPlane = Math.max(0, distance);
 	}
-	
-	public void refreshProjectionMatrix(int width, int height) {
+
+	/**
+	 * @param width  the width in pixels.
+	 * @param height the heght in pixels.
+	 */
+	public void refreshProjectionMatrix(float width, float height) {
 		if (this.perspective == Perspective.PERSPECTVE) {
-			this.projectionMatrix.setPerspective(Math.toRadians(this.fov), (float) width / height, this.nearPlane,
+			this.projectionMatrix.setPerspective(Math.toRadians(this.fov), width / height, this.nearPlane,
 					this.farPlane);
 		} else {
 			this.projectionMatrix.setOrtho(-this.zoom, this.zoom, -this.zoom, this.zoom, this.nearPlane, this.farPlane);
