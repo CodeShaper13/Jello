@@ -63,7 +63,7 @@ public class Camera extends JelloComponent {
 	@ExposeField
 	@MinValue(0)
 	private float farPlane = 1000f;
-
+	
 	@Space
 
 	/**

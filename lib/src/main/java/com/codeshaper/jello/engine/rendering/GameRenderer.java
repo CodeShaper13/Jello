@@ -18,6 +18,7 @@ import com.codeshaper.jello.engine.component.Camera;
 import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.component.Renderer;
 import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.rendering.ShaderData.CullMode;
 
 public class GameRenderer {
 		
@@ -43,7 +44,6 @@ public class GameRenderer {
         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);        
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport(0, 0, w, h);
-        glEnable(GL_DEPTH_TEST);
 		
 		this.instructions.clear();
 		
@@ -59,6 +59,27 @@ public class GameRenderer {
 			if(shader == null || shader.isInvalid()) {
 				shader = this.errorShader;
 			}
+						
+			ShaderData data = shader.getData();
+			
+			if(data.depth_test) {
+				glEnable(GL_DEPTH_TEST);
+			} else {
+				glDisable(GL_DEPTH_TEST);
+			}
+			
+			if(data.culling == CullMode.OFF) {
+				glDisable(GL_CULL_FACE);
+			} else {
+				glEnable(GL_CULL_FACE);
+				if(data.culling == null || data.culling == CullMode.BACK) {
+					glCullFace(GL_BACK);
+				} else if(data.culling == CullMode.FRONT) {
+					glCullFace(GL_FRONT);
+				} else {
+					glCullFace(GL_FRONT_AND_BACK);
+				}
+			}	
 			
 			ShaderProgram program = shader.getProgram();
 			program.bind();
