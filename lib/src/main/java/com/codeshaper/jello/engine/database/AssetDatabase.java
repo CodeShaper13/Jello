@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,7 +17,9 @@ import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
@@ -49,28 +53,6 @@ import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
  * {@code assetDatabase.getAsset("builtin/textures/placeholderTexture.png"); }
  */
 public class AssetDatabase {
-
-	private final String[] builtinAsset = new String[] {
-			// Audio Clips
-			"builtin/beep.ogg",
-			// Font
-			"builtin/arial.ttf",
-			// Meshes
-			"builtin/meshes/cone.blend",
-			"builtin/meshes/cube.blend",
-			"builtin/meshes/cylinder.blend",
-			"builtin/meshes/quad.blend",
-			"builtin/meshes/sphere.blend",
-			"builtin/meshes/torus.blend",
-			// Shader Source Files
-			"builtin/shaders/scene.vert",
-			"builtin/shaders/scene.frag",
-			// Shaders
-			"builtin/shaders/error.shader",
-			"builtin/shaders/unlitTexture.shader",
-			"builtin/shaders/standard.shader",
-			// Textures
-			"builtin/textures/placeholderTexture.png", };
 
 	private static AssetDatabase instance;
 
@@ -118,19 +100,10 @@ public class AssetDatabase {
 		this.assets.clear();
 
 		// Add the builtin Assets to the list.
-		for (String stringPath : this.builtinAsset) {
+		for (String stringPath : this.getBuiltinAssetPaths()) {
 			Path path = Path.of(stringPath);
 			this.tryAddAsset(path);
 		}
-
-		/*
-		// Add all Assets in the /assets directory to the list.
-		Iterator<File> iter = FileUtils.iterateFiles(this.assetsFolder.toFile(), null, true);
-		while (iter.hasNext()) {
-			Path path = iter.next().toPath();
-			this.tryAddAsset(this.toRelativePath(path));
-		}
-		*/
 	}
 
 	public Iterable<Class<JelloComponent>> getallComponents() {
@@ -221,7 +194,7 @@ public class AssetDatabase {
 	public void unload(Path assetFile) {
 		this.unload(this.getCachedAsset(assetFile));
 	}
-	
+
 	protected void unload(CachedAsset asset) {
 		if (asset.isLoaded()) {
 			asset.instance.cleanup();
@@ -440,6 +413,28 @@ public class AssetDatabase {
 		}
 	}
 
+	/**
+	 * Gets a list of the paths to the builtin assets. On error, an empty list is
+	 * returned.
+	 * 
+	 * @return a list of paths to the builtin assets.
+	 */
+	private List<String> getBuiltinAssetPaths() {
+		try (InputStream stream = AssetDatabase.class.getResourceAsStream("/builtinAssets.txt")) {
+			List<String> lines = IOUtils.readLines(stream, StandardCharsets.UTF_8);
+			for (int i = lines.size() - 1; i >= 0; --i) {
+				String line = lines.get(i);
+				if (line.isBlank() || line.trim().startsWith("#")) {
+					lines.remove(i);
+				}
+			}
+			return lines;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<String>();
+		}
+	}
+	
 	protected class CachedAsset {
 
 		protected final AssetLocation location;
@@ -466,6 +461,7 @@ public class AssetDatabase {
 
 		/**
 		 * Gets the full path to the Asset.
+		 * 
 		 * @return
 		 */
 		public Path getFullPath() {
