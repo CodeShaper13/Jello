@@ -18,9 +18,8 @@ import org.lwjgl.opengl.WGL;
 import org.lwjgl.system.windows.User32;
 
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.engine.component.Camera;
-import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.rendering.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.google.gson.Gson;
 

@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.lighting;
 
 import org.joml.Math;
 
@@ -16,7 +16,7 @@ import com.codeshaper.jello.engine.GameObject;
  * like light bulbs, fire and explosions.
  */
 @ComponentIcon("/editor/componentIcons/light.png")
-public class PointLight extends AbstractLight {
+public final class PointLight extends AbstractLight {
 
 	@ExposeField
 	@MinValue(0)

@@ -12,7 +12,6 @@ import org.joml.Vector3f;
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.asset.Asset;
-import com.codeshaper.jello.engine.component.JelloComponent;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.logging.LogEntry;
 import com.codeshaper.jello.engine.logging.LogType;

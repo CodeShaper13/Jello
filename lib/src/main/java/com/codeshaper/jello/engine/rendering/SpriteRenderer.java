@@ -1,10 +1,11 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.rendering;
 
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Texture;
 
-public class SpriteRenderer extends JelloComponent {
+public final class SpriteRenderer extends JelloComponent {
 
 	public Texture sprite;
 	public Color color = Color.white;

@@ -1,12 +1,10 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine;
 
 import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.inspector.ComponentDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
-import com.codeshaper.jello.engine.Color;
-import com.codeshaper.jello.engine.GameObject;
 
 public class JelloComponent {
 

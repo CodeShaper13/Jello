@@ -18,9 +18,9 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.swing.AWTGLCanvasContextControl;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.Scene;
-import com.codeshaper.jello.engine.component.Camera;
-import com.codeshaper.jello.engine.component.JelloComponent;
+import com.codeshaper.jello.engine.rendering.Camera;
 
 public class SceneViewPanel extends JPanel {
 

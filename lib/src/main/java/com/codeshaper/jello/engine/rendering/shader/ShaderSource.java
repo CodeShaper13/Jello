@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.rendering;
+package com.codeshaper.jello.engine.rendering.shader;
 
 import java.io.IOException;
 import java.io.InputStream;

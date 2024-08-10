@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.rendering;
+package com.codeshaper.jello.engine.rendering.shader;
 
 import static org.lwjgl.opengl.GL43.*;
 

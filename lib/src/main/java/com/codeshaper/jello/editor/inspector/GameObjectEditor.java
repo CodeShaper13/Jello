@@ -23,7 +23,7 @@ import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.engine.GameObject;
-import com.codeshaper.jello.engine.component.JelloComponent;
+import com.codeshaper.jello.engine.JelloComponent;
 
 public class GameObjectEditor extends Editor<GameObject> {
 

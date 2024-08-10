@@ -4,7 +4,7 @@ import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
-import com.codeshaper.jello.engine.Perspective;
+import com.codeshaper.jello.engine.rendering.Perspective;
 
 public class SceneViewToolbar extends JToolBar {
 

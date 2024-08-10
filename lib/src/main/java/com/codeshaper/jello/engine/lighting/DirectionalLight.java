@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.lighting;
 
 import org.joml.Vector3f;
 
@@ -15,7 +15,7 @@ import com.codeshaper.jello.engine.GameObject;
  * moon.
  */
 @ComponentIcon("/editor/componentIcons/light.png")
-public class DirectionalLight extends AbstractLight {
+public final class DirectionalLight extends AbstractLight {
 
 	public DirectionalLight(GameObject owner) {
 		super(owner);

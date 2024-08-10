@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine;
+package com.codeshaper.jello.engine.rendering;
 
 public enum Perspective {
 

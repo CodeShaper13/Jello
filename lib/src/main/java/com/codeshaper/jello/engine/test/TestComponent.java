@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.test;
 
 import org.joml.Vector3f;
 
@@ -13,9 +13,10 @@ import com.codeshaper.jello.editor.property.modifier.ReadOnly;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Mesh;
 
-public class Test extends JelloComponent {
+public class TestComponent extends JelloComponent {
 		
 	public int[] intArray = new int[] { 1, 2, 3 };
 	public String text = "Hello World";
@@ -45,7 +46,7 @@ public class Test extends JelloComponent {
 	@DontExposeField
 	public int hidden;
 
-	public Test(GameObject owner) {
+	public TestComponent(GameObject owner) {
 		super(owner);
 	}
 	

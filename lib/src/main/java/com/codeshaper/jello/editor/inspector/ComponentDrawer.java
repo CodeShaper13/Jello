@@ -24,7 +24,7 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.component.JelloComponent;
+import com.codeshaper.jello.engine.JelloComponent;
 
 public class ComponentDrawer<T extends JelloComponent> {
 

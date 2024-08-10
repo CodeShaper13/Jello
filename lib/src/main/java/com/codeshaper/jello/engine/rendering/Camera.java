@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.rendering;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.GameObject;
-import com.codeshaper.jello.engine.Perspective;
+import com.codeshaper.jello.engine.JelloComponent;
 
 /**
  * The Camera component is responsible for rendering your scene to the display.
@@ -24,7 +24,7 @@ import com.codeshaper.jello.engine.Perspective;
  * camera are rendered is controlled by the {@link Camera#depth} field.
  */
 @ComponentIcon("/editor/componentIcons/camera.png")
-public class Camera extends JelloComponent {
+public final class Camera extends JelloComponent {
 
 	private static List<Camera> cameras = new ArrayList<Camera>();
 

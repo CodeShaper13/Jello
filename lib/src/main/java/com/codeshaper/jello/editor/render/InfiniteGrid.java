@@ -4,11 +4,11 @@ import static org.lwjgl.opengl.GL20.*;
 
 import org.joml.Matrix4f;
 
-import com.codeshaper.jello.engine.component.Camera;
+import com.codeshaper.jello.engine.rendering.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
-import com.codeshaper.jello.engine.rendering.ShaderProgram;
-import com.codeshaper.jello.engine.rendering.ShaderSource;
-import com.codeshaper.jello.engine.rendering.ShaderType;
+import com.codeshaper.jello.engine.rendering.shader.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.shader.ShaderSource;
+import com.codeshaper.jello.engine.rendering.shader.ShaderType;
 
 public class InfiniteGrid {
 

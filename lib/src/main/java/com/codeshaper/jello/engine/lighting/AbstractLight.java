@@ -1,8 +1,9 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.lighting;
 
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 
 public abstract class AbstractLight extends JelloComponent {
 

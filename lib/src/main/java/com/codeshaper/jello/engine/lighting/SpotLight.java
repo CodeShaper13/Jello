@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.lighting;
 
 import org.joml.Math;
 import org.joml.Quaternionf;
@@ -20,7 +20,7 @@ import com.codeshaper.jello.engine.GameObject;
  * like a flashlight or car head light.
  */
 @ComponentIcon("/editor/componentIcons/light.png")
-public class SpotLight extends AbstractLight {
+public final class SpotLight extends AbstractLight {
 
 	@ExposeField
 	@MinValue(0)

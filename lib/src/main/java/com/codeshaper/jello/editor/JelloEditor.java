@@ -26,9 +26,11 @@ import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
-import com.codeshaper.jello.engine.component.*;
+import com.codeshaper.jello.engine.lighting.DirectionalLight;
 import com.codeshaper.jello.engine.logging.ILogHandler;
+import com.codeshaper.jello.engine.rendering.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
+import com.codeshaper.jello.engine.rendering.MeshRenderer;
 
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;

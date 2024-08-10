@@ -12,15 +12,15 @@ import org.joml.Vector2f;
 
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
 import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.Shader;
-import com.codeshaper.jello.engine.component.Camera;
-import com.codeshaper.jello.engine.component.JelloComponent;
-import com.codeshaper.jello.engine.component.Renderer;
 import com.codeshaper.jello.engine.database.AssetDatabase;
-import com.codeshaper.jello.engine.rendering.ShaderData.CullMode;
+import com.codeshaper.jello.engine.rendering.shader.ShaderData;
+import com.codeshaper.jello.engine.rendering.shader.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.shader.ShaderData.CullMode;
 
 public class GameRenderer {
 		

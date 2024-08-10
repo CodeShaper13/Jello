@@ -1,6 +1,7 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.rendering;
 
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Material;
 
 /**

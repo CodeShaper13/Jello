@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.rendering;
 
 import static org.lwjgl.opengl.GL30.*;
 
@@ -11,7 +11,7 @@ import com.codeshaper.jello.engine.asset.Mesh;
  * MeshRenderer components render meshes to the display.
  */
 @ComponentIcon("/editor/componentIcons/meshRenderer.png")
-public class MeshRenderer extends Renderer {
+public final class MeshRenderer extends Renderer {
 
 	public Mesh mesh;
 	public Material material;

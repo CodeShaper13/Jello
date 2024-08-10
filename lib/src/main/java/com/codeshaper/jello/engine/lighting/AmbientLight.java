@@ -1,4 +1,4 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.lighting;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.engine.ComponentIcon;
@@ -13,7 +13,7 @@ import com.codeshaper.jello.engine.GameObject;
  * light if your scene takes place at sunset.
  */
 @ComponentIcon("/editor/componentIcons/light.png")
-public class AmbientLight extends AbstractLight {
+public final class AmbientLight extends AbstractLight {
 
 	public AmbientLight(GameObject owner) {
 		super(owner);

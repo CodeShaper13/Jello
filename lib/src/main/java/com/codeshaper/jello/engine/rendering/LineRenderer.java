@@ -1,12 +1,13 @@
-package com.codeshaper.jello.engine.component;
+package com.codeshaper.jello.engine.rendering;
 
 import org.joml.Vector3d;
 
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Material;
 
-public class LineRenderer extends JelloComponent {
+public final class LineRenderer extends JelloComponent {
 
 	public Vector3d[] points;
 	public Material material;

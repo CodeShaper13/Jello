@@ -12,9 +12,8 @@ import org.joml.Vector3f;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.GameObjectEditor;
 import com.codeshaper.jello.editor.inspector.IInspectable;
-import com.codeshaper.jello.engine.component.JelloComponent;
 
-public class GameObject implements IInspectable {
+public final class GameObject implements IInspectable {
 
 	private String name;
 	private boolean isEnabled;

@@ -9,7 +9,7 @@ import java.util.Set;
 import org.reflections.Reflections;
 
 import com.codeshaper.jello.editor.ScriptCompiler;
-import com.codeshaper.jello.engine.component.JelloComponent;
+import com.codeshaper.jello.engine.JelloComponent;
 
 /**
  * Provides a list of all Components that exists in the project. This list

@@ -23,10 +23,10 @@ import org.apache.commons.io.IOUtils;
 
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
-import com.codeshaper.jello.engine.component.JelloComponent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;

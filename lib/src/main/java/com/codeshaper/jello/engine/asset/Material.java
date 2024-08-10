@@ -15,9 +15,9 @@ import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
-import com.codeshaper.jello.engine.rendering.ShaderProgram;
-import com.codeshaper.jello.engine.rendering.Uniform;
-import com.codeshaper.jello.engine.rendering.UniformType;
+import com.codeshaper.jello.engine.rendering.shader.ShaderProgram;
+import com.codeshaper.jello.engine.rendering.shader.Uniform;
+import com.codeshaper.jello.engine.rendering.shader.UniformType;
 
 @CreateAssetEntry(fileName = "material", location = "Material")
 public class Material extends SerializedJelloObject {
