@@ -83,7 +83,6 @@ public class JelloEditor {
 	public final Path rootProjectFolder;
 	public final Path assetsFolder;
 	public final EditorAssetDatabase assetDatabase;
-	public final ComponentList componentList;
 	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
@@ -119,7 +118,6 @@ public class JelloEditor {
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
-		this.componentList = new ComponentList();
 		this.filedDrawers = new FieldDrawerRegistry(this);
 
 		this.sceneManager = new EditorSceneManager(this);
