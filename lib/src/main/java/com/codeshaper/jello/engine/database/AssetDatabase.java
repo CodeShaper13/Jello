@@ -80,7 +80,7 @@ public class AssetDatabase {
 	public final Path assetsFolder;
 
 	protected final List<CachedAsset> assets;
-	protected final ExtentionMapping extentionMapping;
+	protected final ExtensionMapping extentionMapping;
 	protected final ComponentList componentList;
 
 	protected AssetTypeAdapterFactory assetAdapterFactory;
@@ -100,7 +100,7 @@ public class AssetDatabase {
 		this.assetsFolder = projectFolder;
 		this.assets = new ArrayList<CachedAsset>();
 
-		this.extentionMapping = new ExtentionMapping();
+		this.extentionMapping = new ExtensionMapping();
 		this.componentList = new ComponentList();
 
 		this.assetAdapterFactory = new AssetTypeAdapterFactory();

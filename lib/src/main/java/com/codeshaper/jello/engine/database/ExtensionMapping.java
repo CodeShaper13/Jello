@@ -19,16 +19,16 @@ import com.codeshaper.jello.engine.asset.GenericAsset;
  * Provides a mapping between file extensions and the {@link Assets} that
  * represents them.
  */
-public class ExtentionMapping {
+public class ExtensionMapping {
 
 	// Separate lists, only the later has to rebuilt while the application is
 	// running.
-	private final HashMap<String, Class<Asset>> extenstionToBuiltinAsset;
-	private final HashMap<String, Class<Asset>> extenstionTo3rdPartyAsset;
+	private final HashMap<String, Class<Asset>> extensionToBuiltinAsset;
+	private final HashMap<String, Class<Asset>> extensionTo3rdPartyAsset;
 
-	public ExtentionMapping() {
-		this.extenstionToBuiltinAsset = new HashMap<String, Class<Asset>>();
-		this.extenstionTo3rdPartyAsset = new HashMap<String, Class<Asset>>();
+	public ExtensionMapping() {
+		this.extensionToBuiltinAsset = new HashMap<String, Class<Asset>>();
+		this.extensionTo3rdPartyAsset = new HashMap<String, Class<Asset>>();
 		
 		this.compileBuiltinMappings();
 	}
@@ -41,12 +41,12 @@ public class ExtentionMapping {
 	 * @return An Asset class providing the implementation of a file.
 	 */
 	public Class<? extends Asset> getAssetClass(String extension) {
-		Class<Asset> clazz = this.extenstionTo3rdPartyAsset.get(extension);
+		Class<Asset> clazz = this.extensionTo3rdPartyAsset.get(extension);
 		if (clazz != null) {
 			return clazz;
 		} else {
 			// To user defined asset, check if there is a builtin provider class.
-			clazz = this.extenstionToBuiltinAsset.get(extension);
+			clazz = this.extensionToBuiltinAsset.get(extension);
 			if (clazz == null) {
 				// Unknown extension.
 				return GenericAsset.class;
@@ -64,7 +64,7 @@ public class ExtentionMapping {
 		Reflections scan = new Reflections("com.codeshaper.jello.engine");
 
 		Set<Class<?>> assetTypes = scan.get(TypesAnnotated.of(AssetFileExtension.class, AssetFileExtension.Internal.class).asClass());
-		this.populateMapping(assetTypes, this.extenstionToBuiltinAsset);
+		this.populateMapping(assetTypes, this.extensionToBuiltinAsset);
 	}
 	
 	private void populateMapping(Set<Class<?>> classes, HashMap<String, Class<Asset>> mapping) {

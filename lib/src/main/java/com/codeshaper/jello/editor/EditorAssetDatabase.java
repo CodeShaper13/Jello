@@ -41,7 +41,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * <li>Assets file that no longer exist in the project will have their
 	 * corresponding {@link Asset} instance removed from the database.
 	 * <li>All {@link Script}s will be compiled.
-	 * <li>{@link ExtentionMapping} will update it's File Extension to
+	 * <li>{@link ExtensionMapping} will update it's File Extension to
 	 * {@link Class}<{@link Asset}> mapping.
 	 * <li>{@link ComponentList} will update it's list of components.
 	 * <li>New Files in the /assets folder will have their corresponding
