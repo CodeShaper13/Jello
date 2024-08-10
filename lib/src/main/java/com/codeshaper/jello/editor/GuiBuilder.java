@@ -64,6 +64,12 @@ import com.codeshaper.jello.engine.database.AssetDatabase;
  * This is a lower level alternative to using {@link GuiLayoutBuilder}.
  */
 public class GuiBuilder {
+	
+	private static FieldDrawerRegistry fieldDrawerRegistry;
+	
+	static void init(JelloEditor editor) {
+		fieldDrawerRegistry = new FieldDrawerRegistry(editor);
+	}
 
 	/**
 	 * Combines 2 or more components into the same horizontal space. All components
@@ -485,8 +491,11 @@ public class GuiBuilder {
 	}
 	
 	public static JComponent field(IExposedField field) {
-		FieldDrawerRegistry drawerRegistry = JelloEditor.instance.filedDrawers;
-
+		if(fieldDrawerRegistry == null) {
+			System.out.println("GuiBuilder#init() must be called before using GuiBuilder#field()");
+			return GuiBuilder.label("ERROR"); // PRevent possible Null Pointer Exception.
+		}
+		
 		if (field.getType().isArray()) {
 			JPanel arrayPanel = GuiBuilder.verticalArea();
 
@@ -509,7 +518,7 @@ public class GuiBuilder {
 					GuiBuilder.combine(GuiBuilder.label("Length"), lengthField)));
 
 			if (arrayInstance != null) {
-				FieldDrawer drawer = drawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
+				FieldDrawer drawer = fieldDrawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
 				if (drawer != null) {
 					for (int i = 0; i < arrayLength; i++) {
 						JPanel fieldPanel = drawer.draw(new ExposedArrayField(((ExposedField)field).backingField, arrayInstance, i));
@@ -520,7 +529,7 @@ public class GuiBuilder {
 
 			return arrayPanel;
 		} else {
-			FieldDrawer drawer = drawerRegistry.getDrawer(field.getType());
+			FieldDrawer drawer = fieldDrawerRegistry.getDrawer(field.getType());
 			if (drawer != null) {
 				return drawer.draw(field);
 			} else {

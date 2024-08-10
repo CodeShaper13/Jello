@@ -83,7 +83,6 @@ public class JelloEditor {
 	public final Path rootProjectFolder;
 	public final Path assetsFolder;
 	public final EditorAssetDatabase assetDatabase;
-	public final FieldDrawerRegistry filedDrawers;
 	public final EditorMainFrame window;
 	public final ILogHandler logHandler;
 	public final GameRenderer renderer;
@@ -99,6 +98,8 @@ public class JelloEditor {
 	private JelloEditor(Path projectFolder) {
 		JelloEditor.instance = this;
 
+		GLFWErrorCallback.createPrint().set();
+		
 		boolean isInitialLoad = false;
 
 		this.rootProjectFolder = projectFolder;
@@ -118,21 +119,19 @@ public class JelloEditor {
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
-		this.filedDrawers = new FieldDrawerRegistry(this);
+		GuiBuilder.init(this);
 
 		this.sceneManager = new EditorSceneManager(this);
 
 		this.reloadProject();
-
+		
 		this.window = new EditorMainFrame(this);
-		this.window.sceneView.createContext();
-
 		this.logHandler = this.window.console;
+
+		this.window.sceneView.createContext();
 
 		this.renderer = new GameRenderer();
 		
-		GLFWErrorCallback.createPrint().set();
-
 		if (isInitialLoad) {
 			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
 			if (!this.assetDatabase.exists(path)) {
