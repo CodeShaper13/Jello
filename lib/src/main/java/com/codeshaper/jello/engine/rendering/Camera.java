@@ -15,6 +15,7 @@ import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.ComponentIcon;
+import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 
@@ -23,6 +24,7 @@ import com.codeshaper.jello.engine.JelloComponent;
  * There can be an unlimited number of Camera's at any time. The order in which
  * camera are rendered is controlled by the {@link Camera#depth} field.
  */
+@ComponentName("Camera")
 @ComponentIcon("/editor/componentIcons/camera.png")
 public final class Camera extends JelloComponent {
 
@@ -76,11 +78,7 @@ public final class Camera extends JelloComponent {
 	 */
 	public int depth;
 
-	private transient Matrix4f projectionMatrix;
-
-	public Camera() {
-		this.projectionMatrix = new Matrix4f();
-	}
+	private transient Matrix4f projectionMatrix = new Matrix4f();
 
 	public Camera(GameObject owner) {
 		super(owner);
@@ -107,11 +105,12 @@ public final class Camera extends JelloComponent {
 		super.onDrawGizmos(gizmos, isSelected);
 
 		float aspect = 1f;
+		GameObject gameObject = this.getOwner();
 
 		gizmos.color(Color.white);
 		gizmos.drawFrustum(
-				this.gameObject.getPosition(),
-				this.gameObject.getRotation(),
+				gameObject.getPosition(),
+				gameObject.getRotation(),
 				this.fov,
 				this.nearPlane,
 				this.farPlane,

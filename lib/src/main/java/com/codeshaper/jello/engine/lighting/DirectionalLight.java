@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.engine.ComponentIcon;
+import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 
 /**
@@ -14,6 +15,7 @@ import com.codeshaper.jello.engine.GameObject;
  * Directional Lights work well for far away light sources, like the sun or
  * moon.
  */
+@ComponentName("Light/Directional Light")
 @ComponentIcon("/editor/componentIcons/light.png")
 public final class DirectionalLight extends AbstractLight {
 
@@ -27,8 +29,9 @@ public final class DirectionalLight extends AbstractLight {
 		
 		if(isSelected) {
 			gizmos.color(AbstractLight.gizmoColor);
-			Vector3f pos = this.gameObject.getPosition();
-			gizmos.drawLine(pos, this.gameObject.getForward().mul(3).add(pos));
+			GameObject gameObject = this.getOwner();
+			Vector3f pos = gameObject.getPosition();
+			gizmos.drawLine(pos, gameObject.getForward().mul(3).add(pos));
 		}
 	}
 }

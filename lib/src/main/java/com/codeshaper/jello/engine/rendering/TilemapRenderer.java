@@ -5,10 +5,12 @@ import java.util.HashMap;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
 
+import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Tile;
 
+@ComponentName("Tilemap Renderer")
 public final class TilemapRenderer extends JelloComponent {
 
 	public Vector2i cellSize = new Vector2i(1, 1);

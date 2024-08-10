@@ -120,7 +120,7 @@ public class ComponentDrawer<T extends JelloComponent> {
 			});
 
 			this.addButton(removeIcon, "Remove Component", e -> {
-				component.gameObject.removeComponent(component);
+				component.getOwner().removeComponent(component);
 				JelloEditor.getWindow(InspectorWindow.class).refresh();
 			});
 		}

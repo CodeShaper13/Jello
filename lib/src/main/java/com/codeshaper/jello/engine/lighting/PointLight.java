@@ -6,6 +6,7 @@ import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.engine.ComponentIcon;
+import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 
 /**
@@ -15,6 +16,7 @@ import com.codeshaper.jello.engine.GameObject;
  * Point Lights work well for anything that sends light out in all directions,
  * like light bulbs, fire and explosions.
  */
+@ComponentName("Light/Point Light")
 @ComponentIcon("/editor/componentIcons/light.png")
 public final class PointLight extends AbstractLight {
 
@@ -32,7 +34,7 @@ public final class PointLight extends AbstractLight {
 		
 		if(isSelected) {
 			gizmos.color(AbstractLight.gizmoColor);
-			gizmos.drawWireSphere(this.gameObject.getPosition(), this.range);
+			gizmos.drawWireSphere(this.getOwner().getPosition(), this.range);
 		}
 	}
 	

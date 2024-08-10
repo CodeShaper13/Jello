@@ -16,7 +16,7 @@ import com.codeshaper.jello.editor.inspector.IInspectable;
 public final class GameObject implements IInspectable {
 
 	private String name;
-	private boolean isEnabled;
+	private boolean isActive;
 	private List<JelloComponent> components;
 	private List<GameObject> children;
 	private Vector3f localPosition;
@@ -25,7 +25,7 @@ public final class GameObject implements IInspectable {
 	private transient Matrix4f localMatrix;
 	transient Scene scene;
 	transient GameObject parent;
-	
+
 	private transient boolean isTransformDirty = true;
 
 	/**
@@ -37,7 +37,7 @@ public final class GameObject implements IInspectable {
 	 */
 	public GameObject(String name, Scene scene) {
 		this();
-		
+
 		this.setName(name);
 
 		if (scene == null) {
@@ -70,7 +70,7 @@ public final class GameObject implements IInspectable {
 	}
 
 	private GameObject() {
-		this.isEnabled = true;
+		this.isActive = true;
 		this.children = new ArrayList<GameObject>();
 		this.components = new ArrayList<JelloComponent>();
 
@@ -119,7 +119,7 @@ public final class GameObject implements IInspectable {
 	public Vector3f getPosition() {
 		return this.getPosition(new Vector3f());
 	}
-	
+
 	public Vector3f getPosition(Vector3f vector) {
 		return this.getWorldMatrix().getTranslation(vector);
 	}
@@ -127,7 +127,7 @@ public final class GameObject implements IInspectable {
 	public Vector3f getLocalPosition() {
 		return new Vector3f(this.localPosition);
 	}
-	
+
 	public Vector3f getLocalPosition(Vector3f vector) {
 		return vector.set(this.localPosition);
 	}
@@ -145,7 +145,7 @@ public final class GameObject implements IInspectable {
 	public Quaternionf getRotation() {
 		return this.getRotation(new Quaternionf());
 	}
-	
+
 	public Quaternionf getRotation(Quaternionf quaternion) {
 		return this.getWorldMatrix().getNormalizedRotation(quaternion);
 	}
@@ -153,7 +153,7 @@ public final class GameObject implements IInspectable {
 	public Quaternionf getLocalRotation() {
 		return new Quaternionf(this.localRotation);
 	}
-	
+
 	public Quaternionf getLocalRotation(Quaternionf quaternion) {
 		return quaternion.set(this.localRotation);
 	}
@@ -184,7 +184,7 @@ public final class GameObject implements IInspectable {
 	public Vector3f getScale() {
 		return this.getScale(new Vector3f());
 	}
-	
+
 	public Vector3f getScale(Vector3f vector) {
 		return this.getWorldMatrix().getScale(vector);
 	}
@@ -192,7 +192,7 @@ public final class GameObject implements IInspectable {
 	public Vector3f getLocalScale() {
 		return new Vector3f(this.localScale);
 	}
-	
+
 	public Vector3f getLocalScale(Vector3f vector) {
 		return vector.set(this.localScale);
 	}
@@ -246,9 +246,9 @@ public final class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Gets a normalized vector pointing to the right (along the red axis) of this GameObject.
-	 * A new vector is returned so it is safe to modify. If you don't want to
-	 * allocate a new vector, use {@link GameObject#getRight(Vector3f)}.
+	 * Gets a normalized vector pointing to the right (along the red axis) of this
+	 * GameObject. A new vector is returned so it is safe to modify. If you don't
+	 * want to allocate a new vector, use {@link GameObject#getRight(Vector3f)}.
 	 * 
 	 * @return a vector pointing to the right.
 	 */
@@ -261,9 +261,9 @@ public final class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Gets a normalized vector pointing up (along the green axis) of this GameObject.
-	 * A new vector is returned so it is safe to modify. If you don't want to
-	 * allocate a new vector, use {@link GameObject#getUp(Vector3f)}.
+	 * Gets a normalized vector pointing up (along the green axis) of this
+	 * GameObject. A new vector is returned so it is safe to modify. If you don't
+	 * want to allocate a new vector, use {@link GameObject#getUp(Vector3f)}.
 	 * 
 	 * @return a vector pointing up.
 	 */
@@ -276,9 +276,9 @@ public final class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Gets a normalized vector pointing forward (along the blue axis) of this GameObject.
-	 * A new vector is returned so it is safe to modify. If you don't want to
-	 * allocate a new vector, use {@link GameObject#getForward(Vector3f)}.
+	 * Gets a normalized vector pointing forward (along the blue axis) of this
+	 * GameObject. A new vector is returned so it is safe to modify. If you don't
+	 * want to allocate a new vector, use {@link GameObject#getForward(Vector3f)}.
 	 * 
 	 * @return a vector pointing forward.
 	 */
@@ -293,9 +293,9 @@ public final class GameObject implements IInspectable {
 	public Matrix4f getLocalMatrix() {
 		return this.getLocalMatrix(new Matrix4f());
 	}
-	
+
 	public Matrix4f getLocalMatrix(Matrix4f matrix) {
-		if(this.isTransformDirty) {
+		if (this.isTransformDirty) {
 			this.localMatrix.translationRotateScale(this.localPosition, this.localRotation, this.localScale);
 			this.isTransformDirty = false;
 		}
@@ -305,7 +305,7 @@ public final class GameObject implements IInspectable {
 	public Matrix4f getWorldMatrix() {
 		return this.getWorldMatrix(new Matrix4f());
 	}
-	
+
 	public Matrix4f getWorldMatrix(Matrix4f matrix) {
 		Matrix4f localMatrix = this.getLocalMatrix(matrix);
 		this.func(localMatrix);
@@ -315,7 +315,7 @@ public final class GameObject implements IInspectable {
 	public boolean isDirty() {
 		return this.isTransformDirty;
 	}
-	
+
 	private void func(Matrix4f m) {
 		if (this.parent == null) {
 			return;
@@ -651,29 +651,46 @@ public final class GameObject implements IInspectable {
 	}
 
 	/**
-	 * Checks if the GameObject is enabled.
+	 * Checks if the GameObject is active. Even if this GameObject is active, it's
+	 * Component's may not receive callbacks if this GameObject is not active within the Scene.
 	 * 
-	 * @return {@code true} if the GameObject is enabled.
+	 * @return {@code true} if the GameObject is active.
+	 * @see GameObject#isActiveInScene()
 	 */
-	public boolean isEnabled() {
-		return this.isEnabled;
+	public boolean isActive() {
+		return this.isActive;
 	}
 
 	/**
-	 * Enables or disables the GameObject.
+	 * Checks if the GameObject is active in it's Scene. For a GameObject to be
+	 * active in it's Scene, it must be active itself and all of it's ancestors must
+	 * be active as well.
 	 * 
-	 * @param enabled should the GameObject enabled
+	 * @return {@code true} if the GameObject is active in it's Scene.
 	 */
-	public void setEnabled(boolean enabled) {
-		if (this.isEnabled == enabled) {
+	public boolean isActiveInScene() {
+		if (this.parent != null) {
+			return this.parent.isActiveInScene();
+		} else {
+			return this.isActive;
+		}
+	}
+
+	/**
+	 * Activates or deactivates the GameObject.
+	 * 
+	 * @param active should the GameObject active.
+	 */
+	public void setActive(boolean active) {
+		if (this.isActive == active) {
 			return; // Nothing changed.
 		}
 
-		this.isEnabled = enabled;
+		this.isActive = active;
 
 		for (int i = this.components.size() - 1; i >= 0; i--) {
 			JelloComponent component = this.components.get(i);
-			if (enabled) {
+			if (active) {
 				component.onEnable();
 			} else {
 				component.onDisable();

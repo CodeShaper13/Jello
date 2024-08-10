@@ -236,7 +236,7 @@ public class Application {
 					for (GameObject obj : scene.getRootGameObjects()) {
 						Camera camera = obj.getComponent(Camera.class);
 						if (camera != null) {
-							Matrix4f m = camera.gameObject.getLocalMatrix();
+							Matrix4f m = camera.getOwner().getLocalMatrix();
 							Vector3f v = new Vector3f();
 							m.getTranslation(v);
 							v.mul(-1f);

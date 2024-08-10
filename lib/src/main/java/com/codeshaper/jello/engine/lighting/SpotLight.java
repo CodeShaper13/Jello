@@ -9,6 +9,7 @@ import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.engine.ComponentIcon;
+import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 
 /**
@@ -19,6 +20,7 @@ import com.codeshaper.jello.engine.GameObject;
  * Spot lights work well for anything that emits light in a single direction,
  * like a flashlight or car head light.
  */
+@ComponentName("Light/Spot Light")
 @ComponentIcon("/editor/componentIcons/light.png")
 public final class SpotLight extends AbstractLight {
 
@@ -40,22 +42,24 @@ public final class SpotLight extends AbstractLight {
 		
 		if(isSelected) {
 			gizmos.color(AbstractLight.gizmoColor);
+			
+			GameObject gameObject = this.getOwner();
 
 			Vector3f alloc0 = new Vector3f();
 			Vector3f alloc1 = new Vector3f();
-			Vector3f circleCenter = this.gameObject.getPosition().add(this.gameObject.getForward(alloc1).mul(this.range));
-			Quaternionf circleRot = this.gameObject.getRotation().rotateX(Math.toRadians(90));
+			Vector3f circleCenter = gameObject.getPosition().add(gameObject.getForward(alloc1).mul(this.range));
+			Quaternionf circleRot = gameObject.getRotation().rotateX(Math.toRadians(90));
 			
 			float c = this.range / Math.cos(Math.toRadians(this.angle / 2));
 			float radius = Math.sqrt((c * c) - (this.range * this.range));
 						
 			gizmos.drawWireCircle(circleCenter, circleRot, radius);
 					
-			Vector3f pos = this.gameObject.getPosition();
-			gizmos.drawLine(pos, alloc0.set(circleCenter).add(this.gameObject.getUp(alloc1).mul(radius)));
-			gizmos.drawLine(pos, alloc0.set(circleCenter).add(this.gameObject.getUp(alloc1).mul(-radius)));
-			gizmos.drawLine(pos, alloc0.set(circleCenter).add(this.gameObject.getRight(alloc1).mul(radius)));
-			gizmos.drawLine(pos, alloc0.set(circleCenter).add(this.gameObject.getRight(alloc1).mul(-radius)));
+			Vector3f pos = gameObject.getPosition();
+			gizmos.drawLine(pos, alloc0.set(circleCenter).add(gameObject.getUp(alloc1).mul(radius)));
+			gizmos.drawLine(pos, alloc0.set(circleCenter).add(gameObject.getUp(alloc1).mul(-radius)));
+			gizmos.drawLine(pos, alloc0.set(circleCenter).add(gameObject.getRight(alloc1).mul(radius)));
+			gizmos.drawLine(pos, alloc0.set(circleCenter).add(gameObject.getRight(alloc1).mul(-radius)));
 		}
 	}
 

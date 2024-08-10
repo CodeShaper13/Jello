@@ -101,8 +101,7 @@ public class GameRenderer {
 	        
 	        List<Renderer> renderers = this.instructions.get(material);
 	        for(Renderer renderer : renderers) {
-	        	GameObject obj = renderer.gameObject;	        	
-	        	program.setUniform(GAME_OBJECT_MATRIX, obj.getWorldMatrix());
+	        	program.setUniform(GAME_OBJECT_MATRIX, renderer.getOwner().getWorldMatrix());
                 
                 renderer.onRender();
 	        }
@@ -114,7 +113,7 @@ public class GameRenderer {
 	}
 	
 	private void createInstructionsRecursively(GameObject gameObject) {
-		if(!gameObject.isEnabled()) {
+		if(!gameObject.isActive()) {
 			return;
 		}
 		

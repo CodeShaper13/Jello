@@ -1,6 +1,7 @@
 package com.codeshaper.jello.editor.inspector;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
@@ -11,17 +12,22 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.property.ExposedField;
+import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 
@@ -61,26 +67,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 		this.addComponentButton = new JButton("Add Component");
 		this.addComponentButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		this.addComponentButton.addActionListener(e -> {
-			JDialog dialog = new JDialog(JelloEditor.instance.window, "Add Component");
-			DefaultListModel<Class<JelloComponent>> model = new DefaultListModel<Class<JelloComponent>>();
-			for (Class<JelloComponent> clazz : JelloEditor.instance.assetDatabase.getallComponents()) {
-				model.addElement(clazz);
-			}
-			JList<Class<JelloComponent>> list = new JList<Class<JelloComponent>>(model);
-			list.addListSelectionListener(new ListSelectionListener() {
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					target.addComponent(list.getSelectedValue());
-					dialog.dispose();
-
-					refresh();
-				}
-			});
-
-			JScrollPane scrollPane = new JScrollPane(list);
-
-			dialog.add(scrollPane);
-			dialog.setSize(400, 300);
+			JDialog dialog = new AddComponentDialog();
 			dialog.setVisible(true);
 
 		});
@@ -141,9 +128,9 @@ public class GameObjectEditor extends Editor<GameObject> {
 	private JPanel createHeaderPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 		this.enabledToggle = new JCheckBox();
-		this.enabledToggle.setSelected(this.target.isEnabled());
+		this.enabledToggle.setSelected(this.target.isActive());
 		this.enabledToggle.addActionListener(e -> {
-			this.target.setEnabled(this.enabledToggle.isSelected());
+			this.target.setActive(this.enabledToggle.isSelected());
 		});
 		panel.add(this.enabledToggle, BorderLayout.WEST);
 		this.objectName = new JTextField();
@@ -163,7 +150,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 		builder.vector3fField("Position", this.target.getLocalPosition(), (v) -> {
 			this.target.setLocalPosition(v);
 		});
-		builder.field(new ExposedField(this.target, "localRotation"));		
+		builder.field(new ExposedField(this.target, "localRotation"));
 		builder.vector3fField("Scale", this.target.getLocalScale(), (v) -> {
 			this.target.setLocalScale(v);
 		});
@@ -172,5 +159,48 @@ public class GameObjectEditor extends Editor<GameObject> {
 		panel.setBorder(BorderFactory.createTitledBorder("Transform"));
 
 		return panel;
+	}
+
+	private class AddComponentDialog extends JDialog {
+		
+		public AddComponentDialog() {
+			super(JelloEditor.instance.window, "Add Component");
+			
+			DefaultListModel<Class<JelloComponent>> model = new DefaultListModel<Class<JelloComponent>>();
+			for (Class<JelloComponent> clazz : JelloEditor.instance.assetDatabase.getallComponents()) {
+				model.addElement(clazz);
+			}
+			JList<Class<JelloComponent>> list = new JList<Class<JelloComponent>>(model);
+			list.addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					target.addComponent(list.getSelectedValue());
+					dispose();
+					refresh();
+				}
+			});
+			list.setCellRenderer(new CellRenderer());
+
+			JScrollPane scrollPane = new JScrollPane(list);
+			this.add(scrollPane);
+
+			this.setSize(400, 300);
+		}
+		
+		private class CellRenderer extends JLabel implements ListCellRenderer<Class<JelloComponent>> {
+
+			@Override
+			public Component getListCellRendererComponent(JList<? extends Class<JelloComponent>> list,
+					Class<JelloComponent> value, int index, boolean isSelected, boolean cellHasFocus) {
+				ComponentName annotation = value.getAnnotation(ComponentName.class);
+				if(annotation != null && !StringUtils.isWhitespace(annotation.value())) {
+					this.setText(annotation.value());
+				} else {
+					this.setText(value.getName());
+				}
+				
+				return this;
+			}			
+		}
 	}
 }

@@ -151,7 +151,7 @@ public class SceneViewPanel extends JPanel {
 		}
 
 		private void callOnDrawGizmosRecursivly(GameObject gameObject, GameObject selectedGameObject) {
-			if (!gameObject.isEnabled()) {
+			if (!gameObject.isActive()) {
 				return;
 			}
 
