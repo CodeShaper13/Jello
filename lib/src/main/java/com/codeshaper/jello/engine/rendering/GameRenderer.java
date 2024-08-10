@@ -39,11 +39,6 @@ public class GameRenderer {
         this.instructions = new HashMap<Material, List<Renderer>>(256);
    	}
 	
-	double normalize(double val, double valmin, double valmax, double min, double max) 
-	{
-	    return (((val - valmin) / (valmax - valmin)) * (max - min)) + min;
-	}
-	
 	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int windowWidth, int windowHeight) {
 		Vector2f viewportPos = camera.viewportPosition;
 		Vector2f viewportSize = camera.viewportSize;
