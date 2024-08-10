@@ -7,12 +7,14 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Script;
@@ -50,20 +52,19 @@ public class ScriptCompiler {
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		int errorCount = 0;
 
-		// Compile all classes
-		List<Path> paths = this.database.getAllAssetsOfType(Script.class, true);
-		for (Path path : paths) {
-			Script script = (Script) this.database.getAsset(path);
-
-			boolean success = this.compile(script, compiler);
+		// Compile all classes.
+		
+		Collection<File> allFiles = FileUtils.listFiles(this.database.assetsFolder.toFile(), new String[] {"java" }, true);
+		for (File sourceFile : allFiles) {
+			boolean success = this.compile(sourceFile, compiler);
 			if (!success) {
-				Debug.logError("Error compiling %s", script.location.getFullPath() + ".java");
+				Debug.logError("Error compiling %s", sourceFile.toString());
 			} else {
 				try {
-					String className = script.getAssetName();
+					String className = FilenameUtils.removeExtension(sourceFile.getName());
 					String fullName;
 					
-					Path p = script.location.getPath().getParent();
+					Path p = this.database.assetsFolder.relativize(sourceFile.toPath()).getParent();
 					if(p != null) {
 						// Script is not in the default package.
 						fullName = p.toString().replace(File.separatorChar, '.') + '.' + className;
@@ -72,6 +73,7 @@ public class ScriptCompiler {
 					}
 					
 					Class<?> cls = Class.forName(fullName, false, this.classLoader);
+					System.out.println("adding " + cls);
 					this.allCompiledClasses.add(cls);
 				} catch (LinkageError e) {
 					e.printStackTrace();
@@ -115,13 +117,13 @@ public class ScriptCompiler {
 	 * @return {@link true} if the compilation was successful, false if there was an
 	 *         error.
 	 */
-	private boolean compile(Script script, JavaCompiler compiler) {		
+	private boolean compile(File sourceFile, JavaCompiler compiler) {		
 		// Compile source file.
 		int status = compiler.run(
 				null, null, null,
 				"-d",
 				this.compiledClassDirectory.toString(),
-				script.location.getFullPath().toString());
+				sourceFile.toString());
 		return status == 0;
 	}
 
