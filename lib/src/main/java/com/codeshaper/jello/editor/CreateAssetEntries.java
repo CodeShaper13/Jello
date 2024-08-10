@@ -51,7 +51,7 @@ public class CreateAssetEntries implements Iterable<CreateAssetEntries.MenuEntry
 
 	@Override
 	public void onProjectReload(Phase phase) {
-		if(phase == Phase.REBUILD) {
+		if(phase == Phase.POST_REBUILD) {
 			this.createAssetEntries.clear();
 
 			// Scan for and add project Assets.

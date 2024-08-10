@@ -10,15 +10,12 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.reflections.Reflections;
 
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
@@ -57,7 +54,7 @@ public class AssetDatabase {
 			// Audio Clips
 			"builtin/beep.ogg",
 			// Font
-			"arial.ttf",
+			"builtin/arial.ttf",
 			// Meshes
 			"builtin/meshes/cone.blend",
 			"builtin/meshes/cube.blend",
@@ -76,44 +73,39 @@ public class AssetDatabase {
 			"builtin/textures/placeholderTexture.png", };
 
 	private static AssetDatabase instance;
-	
+
 	/**
 	 * The /assets folder located in the root of the project folder.
 	 */
 	public final Path assetsFolder;
-	
+
 	protected final List<CachedAsset> assets;
 	protected final ExtentionMapping extentionMapping;
 	protected final ComponentList componentList;
-	
+
 	protected AssetTypeAdapterFactory assetAdapterFactory;
 	protected SerializedJelloObjectInstanceCreator serializedJelloObjectInstanceCreator;
-	
+
 	public static AssetDatabase getInstance() {
 		return instance;
 	}
-	
+
 	public AssetDatabase(Path projectFolder) {
-		if(instance != null) {
+		if (instance != null) {
 			Debug.logError("An AssetDatabase has already been created!");
 		} else {
 			instance = this;
 		}
-		
+
 		this.assetsFolder = projectFolder;
 		this.assets = new ArrayList<CachedAsset>();
 
-		Reflections scan = new Reflections("com.codeshaper.jello.engine");
-
 		this.extentionMapping = new ExtentionMapping();
-		this.extentionMapping.compileBuiltinMappings(scan);
-		this.extentionMapping.compileThirdPartyMappings();
-		
 		this.componentList = new ComponentList();
 
 		this.assetAdapterFactory = new AssetTypeAdapterFactory();
 		this.serializedJelloObjectInstanceCreator = new SerializedJelloObjectInstanceCreator(null, null);
-		
+
 		this.buildDatabase();
 	}
 
@@ -131,33 +123,20 @@ public class AssetDatabase {
 			this.tryAddAsset(path);
 		}
 
+		/*
 		// Add all Assets in the /assets directory to the list.
 		Iterator<File> iter = FileUtils.iterateFiles(this.assetsFolder.toFile(), null, true);
 		while (iter.hasNext()) {
 			Path path = iter.next().toPath();
 			this.tryAddAsset(this.toRelativePath(path));
 		}
-		
-		this.compileThirdPartyExtensionMappings();
-	}
-	
-	protected void compileThirdPartyExtensionMappings() {
-		this.extentionMapping.compileThirdPartyMappings();
-	}
-
-	/**
-	 * Refreshes the Asset Database. Any Assets that no longer exist in the project
-	 * will be removed, and new ones will be added.
-	 */
-	public void refreshDatabase() {
-		// TODO less destructive rebuild.
-		this.buildDatabase();
+		*/
 	}
 
 	public Iterable<Class<JelloComponent>> getallComponents() {
 		return this.componentList;
 	}
-	
+
 	/**
 	 * Checks if an Asset exists.
 	 * 
@@ -240,7 +219,10 @@ public class AssetDatabase {
 	 * @param assetFile
 	 */
 	public void unload(Path assetFile) {
-		CachedAsset asset = this.getCachedAsset(assetFile);
+		this.unload(this.getCachedAsset(assetFile));
+	}
+	
+	protected void unload(CachedAsset asset) {
 		if (asset.isLoaded()) {
 			asset.instance.cleanup();
 			asset.instance = null;
@@ -312,7 +294,7 @@ public class AssetDatabase {
 		return this.assetsFolder.relativize(fullPath);
 	}
 
-	protected CachedAsset tryAddAsset(Path relativePath) {		
+	protected CachedAsset tryAddAsset(Path relativePath) {
 		Class<? extends Asset> clazz = this.getProvidingClass(relativePath);
 		if (clazz == null) {
 			Debug.log("ERROR!"); // TODO
@@ -346,13 +328,14 @@ public class AssetDatabase {
 
 		builder.setPrettyPrinting();
 		builder.serializeNulls();
-		
-		RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+
+		RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory = RuntimeTypeAdapterFactory
+				.of(JelloComponent.class);
 		for (Class<JelloComponent> component : this.componentList) {
 			componentAdapterFactory.registerSubtype(component, component.getName());
-		}		
+		}
 		builder.registerTypeAdapterFactory(componentAdapterFactory);
-		
+
 		this.assetAdapterFactory.wroteRoot = true;
 		builder.registerTypeAdapterFactory(this.assetAdapterFactory);
 
@@ -408,7 +391,7 @@ public class AssetDatabase {
 					builder.registerTypeAdapter(providingClass,
 							new SerializedJelloObjectInstanceCreator(providingClass, location));
 					Gson gson = builder.create();
-					
+
 					newInstance = (Asset) gson.fromJson(br, providingClass);
 					((SerializedJelloObject) newInstance).onDeserialize();
 				} catch (IOException e) {
@@ -481,6 +464,14 @@ public class AssetDatabase {
 			return this.location.getPath();
 		}
 
+		/**
+		 * Gets the full path to the Asset.
+		 * @return
+		 */
+		public Path getFullPath() {
+			return this.location.getFullPath();
+		}
+
 		// This is only used when renaming an asset.
 		public void setPath(Path path) {
 			this.location.updateLocation(path);
@@ -498,12 +489,21 @@ public class AssetDatabase {
 		}
 
 		/**
-		 * Checks if the Asset has been loaded.
+		 * Checks if the Asset is loaded.
 		 * 
-		 * @return
+		 * @return {@code true} if the Asset is loaded.
 		 */
 		public boolean isLoaded() {
 			return this.instance != null;
+		}
+
+		/**
+		 * Checks if this is a builtin Asset.
+		 * 
+		 * @return {@link true} if this is a builtin Asset.
+		 */
+		public boolean isBuiltin() {
+			return this.location.pointsToBuiltin();
 		}
 	}
 
@@ -542,7 +542,7 @@ public class AssetDatabase {
 						delegate.write(out, value);
 					} else {
 						Asset asset = (Asset) value;
-						if(asset == null) {
+						if (asset == null) {
 							out.nullValue();
 						} else {
 							if (asset.isRuntimeAsset()) {
@@ -562,7 +562,7 @@ public class AssetDatabase {
 						String relativePath = in.nextString();
 						Asset asset = getAsset(relativePath);
 						return (T) asset;
-					} else if(token == JsonToken.NULL) {
+					} else if (token == JsonToken.NULL) {
 						in.nextNull();
 						return null;
 					} else {

@@ -226,7 +226,7 @@ public class EditorMenuBar extends JMenuBar {
 			});
 			this.add(reload);
 
-			JMenuItem autoReload = new JCheckBoxMenuItem("Auto-Reload");
+			JCheckBoxMenuItem autoReload = new JCheckBoxMenuItem("Auto-Reload");
 			autoReload.setToolTipText("If enabled, the project is reloaded whenever the application regains focus.");
 			this.add(autoReload);
 
@@ -238,12 +238,6 @@ public class EditorMenuBar extends JMenuBar {
 					}
 				}
 			});
-			
-			JMenuItem compile = new JMenuItem("Compile");
-			compile.addActionListener((e) -> {
-				JelloEditor.instance.assetDatabase.compiler.compileProject();
-			});
-			this.add(compile);
 		}
 	}
 }

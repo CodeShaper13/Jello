@@ -8,7 +8,6 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
 /**

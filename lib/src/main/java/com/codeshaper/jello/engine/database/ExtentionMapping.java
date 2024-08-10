@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 
+import com.codeshaper.jello.editor.ScriptCompiler;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
@@ -16,9 +17,9 @@ import com.codeshaper.jello.engine.asset.GenericAsset;
 
 /**
  * Provides a mapping between file extensions and the {@link Assets} that
- * provide them.
+ * represents them.
  */
-class ExtentionMapping {
+public class ExtentionMapping {
 
 	// Separate lists, only the later has to rebuilt while the application is
 	// running.
@@ -28,18 +29,8 @@ class ExtentionMapping {
 	public ExtentionMapping() {
 		this.extenstionToBuiltinAsset = new HashMap<String, Class<Asset>>();
 		this.extenstionTo3rdPartyAsset = new HashMap<String, Class<Asset>>();
-	}
-
-	/**
-	 * @param scan A scan of com.codeshaper.jello.engine.assets package.
-	 */
-	public void compileBuiltinMappings(Reflections scan) {
-		Set<Class<?>> assetTypes = scan.get(TypesAnnotated.of(AssetFileExtension.class, AssetFileExtension.Internal.class).asClass());
-		this.populateMapping(assetTypes, this.extenstionToBuiltinAsset);
-	}
-
-	public void compileThirdPartyMappings() {
-		// TODO not yet implemented or called.
+		
+		this.compileBuiltinMappings();
 	}
 
 	/**
@@ -65,10 +56,26 @@ class ExtentionMapping {
 		}
 	}
 	
+	public void compileProjectMappings(ScriptCompiler compiler) {
+		// TODO
+	}
+	
+	private void compileBuiltinMappings() {
+		Reflections scan = new Reflections("com.codeshaper.jello.engine");
+
+		Set<Class<?>> assetTypes = scan.get(TypesAnnotated.of(AssetFileExtension.class, AssetFileExtension.Internal.class).asClass());
+		this.populateMapping(assetTypes, this.extenstionToBuiltinAsset);
+	}
+	
 	private void populateMapping(Set<Class<?>> classes, HashMap<String, Class<Asset>> mapping) {
-		for (Class<?> clazz : classes) {
-			for (AssetFileExtension assetType : clazz.getAnnotationsByType(AssetFileExtension.class)) {
-				int modifiers = clazz.getModifiers();
+		for (Class<?> cls : classes) {
+			for (AssetFileExtension assetType : cls.getAnnotationsByType(AssetFileExtension.class)) {
+				if (!Asset.class.isAssignableFrom(cls)) {
+					Debug.logError("AssetFileExtention annotations are only allowed on subclasses of Asset");
+					break;
+				}
+				
+				int modifiers = cls.getModifiers();
 				if (Modifier.isAbstract(modifiers)) {
 					Debug.logError("AssetFileExtention annotations are not allowed on abstract classes.");
 					break;
@@ -81,13 +88,13 @@ class ExtentionMapping {
 					Debug.logError("AssetFileExtention annotations are not allowed on public classse");
 					break;
 				}
-				if (!Asset.class.isAssignableFrom(clazz)) {
-					Debug.logError("AssetFileExtention annotations are only allowed on subclasses of Asset");
-					break;
-				}
 
 				String extention = StringUtils.stripStart(assetType.value(), ".");
-				mapping.put(extention, (Class<Asset>) clazz);
+				
+				@SuppressWarnings("unchecked")
+				Class<Asset> castClass = (Class<Asset>) cls;
+				
+				mapping.put(extention, castClass);
 			}
 		}
 	}

@@ -8,11 +8,14 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.ScriptCompiler;
-import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.engine.component.JelloComponent;
 
+/**
+ * Provides a list of all Components that exists in the project. This list
+ * contains both the builtin components and the components defined in the
+ * project.
+ */
 public class ComponentList implements Iterable<Class<JelloComponent>> {
 
 	// Separate lists, only the later has to rebuilt while the application is
@@ -23,34 +26,35 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 	public ComponentList() {
 		this.builtinComponents = this.getBuiltinComponents();
 		this.projectComponents = new ArrayList<Class<JelloComponent>>();
+	}
+	
+	public void compileProjectComponents(ScriptCompiler compiler) {
+		this.projectComponents.clear();
 
-		JelloEditor.instance.addProjectReloadListener(new ProjectReloadListener() {
-
-			@Override
-			public void onProjectReload(Phase phase) {
-				if (phase == Phase.POST_REBUILD) {
-					projectComponents.clear();
-
-					ScriptCompiler compiler = JelloEditor.instance.assetDatabase.compiler;
-					List<Class<JelloComponent>> classes = compiler.getAllScriptsOfType(JelloComponent.class);
-					for (Class<JelloComponent> cls : classes) {
-						if(isValidComponentClass(cls)) {
-							projectComponents.add(cls);
-						}
-					}
-				}
+		List<Class<JelloComponent>> classes = compiler.getAllScriptsOfType(JelloComponent.class);
+		for (Class<JelloComponent> cls : classes) {
+			if (isValidComponentClass(cls)) {
+				this.projectComponents.add(cls);
 			}
-		});
+		}
 	}
 
+	/**
+	 * Gets an iterator that goes through all of the components.
+	 */
 	public Iterator<Class<JelloComponent>> iterator() {
 		return new ComponentIterator();
 	}
 
+	/**
+	 * Gets a list of all of the builtin components.
+	 * 
+	 * @return a list of the builtin components.
+	 */
 	private List<Class<JelloComponent>> getBuiltinComponents() {
 		List<Class<JelloComponent>> components = new ArrayList<Class<JelloComponent>>();
 		Reflections scan = new Reflections("com.codeshaper.jello.engine");
-		
+
 		Set<Class<? extends JelloComponent>> classes = scan.getSubTypesOf(JelloComponent.class);
 		for (var clazz : classes) {
 			if (this.isValidComponentClass(clazz)) {
@@ -59,10 +63,10 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 				components.add(c);
 			}
 		}
-		
+
 		return components;
 	}
-	
+
 	/**
 	 * Checks if {@code cls} is a valid Component class. For a class to be a valid
 	 * component, it must be a public, not an interface, not abstract, and not a

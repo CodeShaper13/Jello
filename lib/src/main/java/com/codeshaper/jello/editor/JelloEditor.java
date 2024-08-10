@@ -19,17 +19,14 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import com.codeshaper.jello.editor.event.PlayModeListener;
 import com.codeshaper.jello.editor.event.PlayModeListener.State;
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
-import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
 import com.codeshaper.jello.editor.event.ProjectSaveListener;
 import com.codeshaper.jello.editor.event.SceneChangeListener;
-import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.component.*;
-import com.codeshaper.jello.engine.database.ComponentList;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 
@@ -123,7 +120,7 @@ public class JelloEditor {
 
 		this.sceneManager = new EditorSceneManager(this);
 
-		this.reloadProject();
+		this.assetDatabase.rebuild();
 		
 		this.window = new EditorMainFrame(this);
 		this.logHandler = this.window.console;
@@ -172,14 +169,7 @@ public class JelloEditor {
 	}
 
 	public void reloadProject() {
-		System.out.println("rebuilding");
-		Debug.log("[Editor]: Reloading project.");
-
-		for (Phase p : Phase.values()) {
-			this.raiseEvent(ProjectReloadListener.class, (listener) -> {
-				listener.onProjectReload(p);
-			});
-		}
+		this.assetDatabase.rebuild();
 	}
 
 	/**

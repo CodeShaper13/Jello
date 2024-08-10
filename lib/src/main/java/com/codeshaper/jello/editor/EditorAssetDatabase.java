@@ -6,36 +6,100 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
+import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.asset.Asset;
+import com.codeshaper.jello.engine.asset.Script;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.database.ComponentList;
 import com.google.gson.Gson;
 
-public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadListener {
+public class EditorAssetDatabase extends AssetDatabase {
 
-	public ScriptCompiler compiler;
+	private final ScriptCompiler compiler;
 	
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
-		
+
 		this.compiler = new ScriptCompiler(JelloEditor.instance.rootProjectFolder.toFile(), this);
-		
-		JelloEditor.instance.addProjectReloadListener(this);
 	}
-	
-	@Override
-	public void onProjectReload(Phase phase) {
-		if (phase == Phase.REBUILD) {
-			this.refreshDatabase();
-			this.compileThirdPartyExtensionMappings();
+
+	/**
+	 * Rebuilds the Asset Database. A rebuild consists of:
+	 * <li>{@link ProjectReloadListener} with the {@link Phase#PRE_REBUILD} phase is
+	 * fired.
+	 * <li>Assets file that no longer exist in the project will have their
+	 * corresponding {@link Asset} instance removed from the database.
+	 * <li>All {@link Script}s will be compiled.
+	 * <li>{@link ExtentionMapping} will update it's File Extension to
+	 * {@link Class}<{@link Asset}> mapping.
+	 * <li>{@link ComponentList} will update it's list of components.
+	 * <li>New Files in the /assets folder will have their corresponding
+	 * {@link Asset} instance created.
+	 * <li>Assets that have had their providing file changed since they were last
+	 * imported will be re-imported.
+	 * <li>{@link ProjectReloadListener} with the {@link Phase#POST_REBUILD} phase
+	 * is fired.
+	 */
+	public void rebuild() {
+		boolean verboseMode = true;
+		
+		Debug.log("[Editor] Building Database...");
+		
+		this.invokeEvent(Phase.PRE_REBUILD);
+				
+		// Check all the Assets and if the file that provides them no longer exists,
+		// remove the Asset from the Database.
+		for (int i = this.assets.size() - 1; i >= 0; --i) {
+			CachedAsset asset = this.assets.get(i);
+			if (asset.isBuiltin()) {
+				continue; // builtin assets are never removed.
+			}
+			Path path = asset.getFullPath();
+			if (!Files.exists(path)) {
+				if(verboseMode) {
+					Debug.log("Removing %s from Database.  It's backing file is missing.", asset.getPath());
+				}
+				this.remove(asset);
+			}
 		}
+
+		this.compiler.compileProject();
+		this.extentionMapping.compileProjectMappings(this.compiler);
+		this.componentList.compileProjectComponents(this.compiler);
+		
+		Collection<File> allFiles = FileUtils.listFiles(this.assetsFolder.toFile(), null, true);
+		
+		// Create new Assets.
+		for(File file : allFiles) {
+			Path path = this.assetsFolder.relativize(file.toPath());
+			if(!this.exists(path)) {
+				if(verboseMode) {
+					Debug.log("Adding %s to Database.", path);
+				}
+				this.tryAddAsset(path);
+			}
+		}
+		
+		// Re-import Assets.
+		for(File file : allFiles) {
+			// TODO
+		}
+		
+		this.invokeEvent(Phase.REBUILD);
+		this.invokeEvent(Phase.POST_REBUILD);
+		
+		Debug.log("[Editor] Database rebuilt!");
 	}
 
 	/**
@@ -52,9 +116,7 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 			return false;
 		}
 
-		if (asset.isLoaded()) {
-			asset.instance.cleanup();
-		}
+		this.remove(asset);
 
 		boolean error;
 		try {
@@ -67,7 +129,6 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 			Debug.logError("[Asset Database]: Unabled to delete Asset \"%s\"");
 			return false;
 		} else {
-			this.assets.remove(asset);
 			return true; // Success!
 		}
 	}
@@ -111,7 +172,7 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 	public boolean addAsset(Path path) {
 		return this.tryAddAsset(path) != null;
 	}
-	
+
 	/**
 	 * Saves a {@link SerializedJelloObject} Asset to disk.
 	 * 
@@ -190,5 +251,18 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 		}
 
 		throw new NotImplementedException(); // TODO implement
+	}
+
+	protected void remove(CachedAsset asset) {
+		if (asset.isLoaded()) {
+			this.unload(asset);
+		}
+		this.assets.remove(asset);
+	}
+	
+	private void invokeEvent(Phase phase) {
+		JelloEditor.instance.raiseEvent(ProjectReloadListener.class, (listener) -> {
+			listener.onProjectReload(phase);
+		});
 	}
 }

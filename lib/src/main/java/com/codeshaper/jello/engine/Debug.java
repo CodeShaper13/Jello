@@ -1,8 +1,10 @@
 package com.codeshaper.jello.engine;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -159,6 +161,28 @@ public class Debug {
 	}
 
 	private static ILogHandler getLogHandler() {
-		return Debug.isInEditor() ? JelloEditor.instance.logHandler : null;
+		if(Debug.isInEditor()) {
+			ILogHandler editorLogHandler = JelloEditor.instance.logHandler;
+			if(editorLogHandler == null) {
+				return new StandardLog();
+			} else {
+				return editorLogHandler;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	private static class StandardLog implements ILogHandler {
+		
+		@Override
+		public void log(LogEntry entry) {
+			PrintStream printStream = entry.logType == LogType.ERROR ? System.err : System.out;
+			
+			String contextArg = entry.context != null ? entry.context.toString() : StringUtils.EMPTY;
+			String line = String.format("[Jello.Debug]:%s %s", contextArg, entry.text);
+			printStream.println(line);
+		}
+		
 	}
 }

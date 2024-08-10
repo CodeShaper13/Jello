@@ -47,7 +47,7 @@ public class FieldDrawerRegistry {
 	}
 
 	private void onProjectReload(Phase phase) {
-		if (phase == Phase.REBUILD) {
+		if (phase == Phase.POST_REBUILD) {
 			// TODO
 		}
 	}

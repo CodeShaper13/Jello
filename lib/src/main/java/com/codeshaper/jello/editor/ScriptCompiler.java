@@ -14,7 +14,6 @@ import javax.tools.ToolProvider;
 
 import org.apache.commons.io.FileUtils;
 
-import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Script;
 
@@ -35,16 +34,6 @@ public class ScriptCompiler {
 		this.allCompiledClasses = new ArrayList<Class<?>>();
 
 		this.classLoader = this.createClassLoader();
-
-		JelloEditor.instance.addProjectReloadListener(new ProjectReloadListener() {
-
-			@Override
-			public void onProjectReload(Phase phase) {
-				if (phase == Phase.REBUILD) {
-					compileProject();
-				}
-			}
-		});
 	}
 
 	/**
