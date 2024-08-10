@@ -32,6 +32,8 @@ public class InfiniteGrid {
 		this.shaderProgram.setUniform(NEAR, camera.getNearPlane());
 		this.shaderProgram.setUniform(FAR, camera.getFarPlane());
 
+		glDisable(GL_CULL_FACE);
+		
 		glBegin(GL_QUADS);
 		glVertex2f(-1f, -1f);
 		glVertex2f(-1f, 1f);
