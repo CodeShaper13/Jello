@@ -175,6 +175,7 @@ public class JelloEditor {
 	}
 
 	public void reloadProject() {
+		System.out.println("rebuilding");
 		Debug.log("[Editor]: Reloading project.");
 
 		for (Phase p : Phase.values()) {

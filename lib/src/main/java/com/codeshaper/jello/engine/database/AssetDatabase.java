@@ -86,7 +86,6 @@ public class AssetDatabase {
 	protected final ExtentionMapping extentionMapping;
 	protected final ComponentList componentList;
 	
-	protected RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory;
 	protected AssetTypeAdapterFactory assetAdapterFactory;
 	protected SerializedJelloObjectInstanceCreator serializedJelloObjectInstanceCreator;
 	
@@ -140,18 +139,10 @@ public class AssetDatabase {
 		}
 		
 		this.compileThirdPartyExtensionMappings();
-		this.func();
 	}
 	
 	protected void compileThirdPartyExtensionMappings() {
 		this.extentionMapping.compileThirdPartyMappings();
-	}
-	
-	protected void func() {
-		this.componentAdapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
-		for (Class<JelloComponent> component : this.componentList) {
-			this.componentAdapterFactory.registerSubtype(component, component.getName());
-		}
 	}
 
 	/**
@@ -355,7 +346,13 @@ public class AssetDatabase {
 
 		builder.setPrettyPrinting();
 		builder.serializeNulls();
-		builder.registerTypeAdapterFactory(this.componentAdapterFactory);
+		
+		RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory = RuntimeTypeAdapterFactory.of(JelloComponent.class);
+		for (Class<JelloComponent> component : this.componentList) {
+			componentAdapterFactory.registerSubtype(component, component.getName());
+		}		
+		builder.registerTypeAdapterFactory(componentAdapterFactory);
+		
 		this.assetAdapterFactory.wroteRoot = true;
 		builder.registerTypeAdapterFactory(this.assetAdapterFactory);
 

@@ -20,8 +20,12 @@ import com.google.gson.Gson;
 
 public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadListener {
 
+	public ScriptCompiler compiler;
+	
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
+		
+		this.compiler = new ScriptCompiler(JelloEditor.instance.rootProjectFolder.toFile(), this);
 		
 		JelloEditor.instance.addProjectReloadListener(this);
 	}
@@ -31,8 +35,6 @@ public class EditorAssetDatabase extends AssetDatabase implements ProjectReloadL
 		if (phase == Phase.REBUILD) {
 			this.refreshDatabase();
 			this.compileThirdPartyExtensionMappings();
-		} else if (phase == Phase.POST_REBUILD) {
-			this.func();
 		}
 	}
 

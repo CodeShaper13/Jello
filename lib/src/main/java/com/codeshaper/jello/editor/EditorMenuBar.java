@@ -238,6 +238,12 @@ public class EditorMenuBar extends JMenuBar {
 					}
 				}
 			});
+			
+			JMenuItem compile = new JMenuItem("Compile");
+			compile.addActionListener((e) -> {
+				JelloEditor.instance.assetDatabase.compiler.compileProject();
+			});
+			this.add(compile);
 		}
 	}
 }
