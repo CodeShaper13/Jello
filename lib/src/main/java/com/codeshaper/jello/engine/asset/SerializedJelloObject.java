@@ -40,35 +40,55 @@ public class SerializedJelloObject extends Asset {
 		return new SerializedJelloObjectEditor<SerializedJelloObject>(this, panel);
 	}
 
-	public class SerializedJelloObjectEditor<T extends Asset> extends AssetEditor<T> {
+	public class SerializedJelloObjectEditor<T extends SerializedJelloObject> extends AssetEditor<T> {
+
+		private final String KEY = "auto_save_serialized_jello_object";
+		
+		private JButton saveBtn;
+		private JCheckBox autoSaveToggle;
 
 		public SerializedJelloObjectEditor(T target, JPanel panel) {
 			super(target, panel);
+
+			this.saveBtn = new JButton("Save");
+			this.saveBtn.addActionListener(e -> {
+				this.saveAsset();
+			});
+			
+			this.autoSaveToggle = new JCheckBox("Auto-Save");
+			this.autoSaveToggle.setSelected(JelloEditor.instance.properties.getBoolean(KEY, true));
+			this.autoSaveToggle.addActionListener(e -> {
+				boolean isOn = this.autoSaveToggle.isSelected();
+				saveBtn.setEnabled(!isOn);
+				JelloEditor.instance.properties.setBoolean(KEY, isOn);
+			});
+			
+			JPanel header = this.header;
+			header.add(Box.createHorizontalGlue());
+			header.add(this.autoSaveToggle);
+			header.add(this.saveBtn);
+		}
+
+		@Override
+		public void onCleanup() {
+			super.onCleanup();
+
+			if(this.autoSaveToggle.isSelected()) {
+				this.saveAsset();
+			}
 		}
 
 		@Override
 		public void drawAsset(GuiLayoutBuilder drawer) {
 			super.drawAsset(drawer);
 		}
+		
+		/**
+		 * Saves the SerializedJelloObject to disk.
+		 */
+		protected void saveAsset() {
+			JelloEditor.instance.assetDatabase.saveAsset(target);
 
-		@Override
-		protected void drawHeader(JPanel headerPanel) {
-			super.drawHeader(headerPanel);
-
-			headerPanel.add(Box.createHorizontalGlue());
-
-			JButton saveBtn = new JButton("Save");
-			saveBtn.addActionListener(e -> {
-				JelloEditor.instance.assetDatabase.saveAsset((SerializedJelloObject) target);
-			});
-
-			JCheckBox autoSave = new JCheckBox("Auto-Save");
-			autoSave.addActionListener(e -> {
-				saveBtn.setEnabled(!autoSave.isSelected());
-			});
-
-			headerPanel.add(autoSave);
-			headerPanel.add(saveBtn);
 		}
 	}
 }

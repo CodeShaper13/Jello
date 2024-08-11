@@ -15,9 +15,35 @@ import com.codeshaper.jello.engine.asset.Asset;
 
 public class AssetEditor<T extends Asset> extends Editor<T> {
 
+	protected Header header;
+	
+	private JPanel gridBagPanel;
+	private GridBagConstraints constraints;
+	
 	public AssetEditor(T target, JPanel panel) {
 		super(target, panel);
+		
+		this.panel.setLayout(new BorderLayout());
+		
+		this.panel.add(this.header = new Header(), BorderLayout.NORTH);
 				
+		this.gridBagPanel = new JPanel(new GridBagLayout());
+		
+		this.constraints = new GridBagConstraints();
+		this.constraints.anchor = GridBagConstraints.FIRST_LINE_START;
+		this.constraints.fill = GridBagConstraints.HORIZONTAL;
+		this.constraints.weightx = 1.0f;
+		this.constraints.weighty = 1.0f;
+		
+		JScrollPane scrollPane = new JScrollPane(
+				this.gridBagPanel,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createTitledBorder(""), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+		
+		this.panel.add(scrollPane, BorderLayout.CENTER);
+		
 		this.func();
 	}
 	
@@ -25,7 +51,7 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 	public void onRefresh() {
 		super.onRefresh();
 		
-		this.panel.removeAll();
+		this.gridBagPanel.removeAll();
 		this.func();
 		
 		this.panel.revalidate();
@@ -35,39 +61,22 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 		drawer.addAll(this.target);
 	}
 	
-	protected void drawHeader(JPanel headerPanel) {
-		JLabel label = new JLabel(this.target.getAssetName());
-		headerPanel.add(label);
+	private void func() {		
+		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
+		this.drawAsset(drawer);		
+		this.gridBagPanel.add(drawer.getPanel(), this.constraints);		
 	}
 	
-	private void func() {
-		this.panel.setLayout(new BorderLayout());
-
-		// Header.
-		JPanel headerPanel = new JPanel();
-		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
-		headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
-		this.drawHeader(headerPanel);
-		this.panel.add(headerPanel, BorderLayout.NORTH);		
+	private class Header extends JPanel {
 		
-		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
-		this.drawAsset(drawer);
+		public JLabel label;
 		
-		JPanel gridBagPanel = new JPanel(new GridBagLayout());
-		GridBagConstraints constraint = new GridBagConstraints();
-		constraint.anchor = GridBagConstraints.FIRST_LINE_START;
-		constraint.fill = GridBagConstraints.HORIZONTAL;
-		constraint.weightx = 1.0f;
-		constraint.weighty = 1.0f;
-		gridBagPanel.add(drawer.getPanel(), constraint);		
-		
-		JScrollPane scrollPane = new JScrollPane(
-				gridBagPanel,
-				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createTitledBorder(""), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-		
-		this.panel.add(scrollPane, BorderLayout.CENTER);
+		public Header() {
+			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			this.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+			
+			this.label = new JLabel(target.getAssetName());
+			this.add(label);
+		}
 	}
 }
