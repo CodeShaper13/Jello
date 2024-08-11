@@ -3,6 +3,8 @@ package com.codeshaper.jello.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JPanel;
+
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
@@ -30,8 +32,8 @@ public class Scene extends SerializedJelloObject {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new CustomEditor(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new CustomEditor(this, panel);
 	}
 
 	/**
@@ -102,8 +104,8 @@ public class Scene extends SerializedJelloObject {
 
 	private class CustomEditor extends SerializedJelloObjectEditor<Scene> {
 
-		public CustomEditor(Scene target) {
-			super(target);
+		public CustomEditor(Scene target, JPanel panel) {
+			super(target, panel);
 		}
 
 		@Override

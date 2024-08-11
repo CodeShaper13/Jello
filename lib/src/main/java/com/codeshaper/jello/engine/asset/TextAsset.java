@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JPanel;
+
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
@@ -33,8 +35,8 @@ public class TextAsset extends Asset {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new TextAssetEditor(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new TextAssetEditor(this, panel);
 	}
 
 	/**
@@ -68,8 +70,8 @@ public class TextAsset extends Asset {
 
 	private class TextAssetEditor extends AssetEditor<TextAsset> {
 
-		public TextAssetEditor(TextAsset target) {
-			super(target);
+		public TextAssetEditor(TextAsset target, JPanel panel) {
+			super(target, panel);
 		}
 
 		@Override

@@ -5,6 +5,8 @@ import static org.lwjgl.opengl.GL30.*;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import javax.swing.JPanel;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -44,8 +46,8 @@ public class Material extends SerializedJelloObject {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new MaterialEditor(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new MaterialEditor(this, panel);
 	}
 
 	/**
@@ -378,15 +380,15 @@ public class Material extends SerializedJelloObject {
 
 	public class MaterialEditor extends SerializedJelloObjectEditor<Material> {
 
-		public MaterialEditor(Material target) {
-			super(target);
+		public MaterialEditor(Material target, JPanel panel) {
+			super(target, panel);
 		}
 
 		@Override
 		public void drawAsset(GuiLayoutBuilder builder) {
 			builder.assetField("Shader: ", this.target.shader, Shader.class, (v) -> {
 				this.target.setShader(v);
-				// TODO redraw editor.
+				this.onRefresh();
 			});
 
 			builder.space();

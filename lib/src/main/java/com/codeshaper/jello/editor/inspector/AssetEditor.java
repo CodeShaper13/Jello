@@ -15,22 +15,40 @@ import com.codeshaper.jello.engine.asset.Asset;
 
 public class AssetEditor<T extends Asset> extends Editor<T> {
 
-	public AssetEditor(T target) {
-		super(target);
+	public AssetEditor(T target, JPanel panel) {
+		super(target, panel);
+				
+		this.func();
 	}
 	
 	@Override
-	public void drawInInsepctor(JPanel panel) {
-		super.drawInInsepctor(panel);
+	public void onRefresh() {
+		super.onRefresh();
 		
-		panel.setLayout(new BorderLayout());
+		this.panel.removeAll();
+		this.func();
 		
+		this.panel.revalidate();
+	}
+	
+	protected void drawAsset(GuiLayoutBuilder drawer) {
+		drawer.addAll(this.target);
+	}
+	
+	protected void drawHeader(JPanel headerPanel) {
+		JLabel label = new JLabel(this.target.getAssetName());
+		headerPanel.add(label);
+	}
+	
+	private void func() {
+		this.panel.setLayout(new BorderLayout());
+
 		// Header.
 		JPanel headerPanel = new JPanel();
 		headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
 		headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 		this.drawHeader(headerPanel);
-		panel.add(headerPanel, BorderLayout.NORTH);		
+		this.panel.add(headerPanel, BorderLayout.NORTH);		
 		
 		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawAsset(drawer);
@@ -49,17 +67,7 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createTitledBorder(""), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
 		
-		panel.add(scrollPane, BorderLayout.CENTER);
-	}
-	
-	protected void drawAsset(GuiLayoutBuilder drawer) {
-		drawer.addAll(this.target);
-	}
-	
-	protected void drawHeader(JPanel headerPanel) {
-		JLabel label = new JLabel(this.target.getAssetName());
-		headerPanel.add(label);
+		this.panel.add(scrollPane, BorderLayout.CENTER);
 	}
 }

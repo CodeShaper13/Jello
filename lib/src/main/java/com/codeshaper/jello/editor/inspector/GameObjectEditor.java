@@ -39,13 +39,8 @@ public class GameObjectEditor extends Editor<GameObject> {
 	private JPanel componentListPanel;
 	private JScrollPane componentScrollPane;
 
-	public GameObjectEditor(GameObject target) {
-		super(target);
-	}
-
-	@Override
-	public void drawInInsepctor(JPanel panel) {
-		super.drawInInsepctor(panel);
+	public GameObjectEditor(GameObject target, JPanel panel) {
+		super(target, panel);
 
 		panel.setLayout(new BorderLayout());
 
@@ -85,13 +80,20 @@ public class GameObjectEditor extends Editor<GameObject> {
 		panel.add(this.componentScrollPane, BorderLayout.CENTER);
 		panel.add(this.addComponentButton, BorderLayout.SOUTH);
 
-		this.refresh();
+		this.createComponentListPanel();
 	}
 
 	@Override
-	public void refresh() {
-		super.refresh();
-
+	public void onRefresh() {
+		super.onRefresh();
+		
+		this.enabledToggle.setSelected(this.target.isActive());
+		this.objectName.setText(this.target.getName());
+		
+		this.createComponentListPanel();
+	}
+	
+	private void createComponentListPanel() {
 		this.componentListPanel.removeAll();
 
 		GridBagConstraints constraint = new GridBagConstraints();
@@ -176,7 +178,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 				public void valueChanged(ListSelectionEvent e) {
 					target.addComponent(list.getSelectedValue());
 					dispose();
-					refresh();
+					createComponentListPanel();
 				}
 			});
 			list.setCellRenderer(new CellRenderer());

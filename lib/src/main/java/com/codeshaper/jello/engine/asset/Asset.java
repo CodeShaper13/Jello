@@ -1,5 +1,7 @@
 package com.codeshaper.jello.engine.asset;
 
+import javax.swing.JPanel;
+
 import org.apache.commons.io.FilenameUtils;
 
 import com.codeshaper.jello.editor.inspector.AssetEditor;
@@ -48,7 +50,7 @@ public abstract class Asset implements IInspectable {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new AssetEditor<Asset>(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new AssetEditor<Asset>(this, panel);
 	}
 }

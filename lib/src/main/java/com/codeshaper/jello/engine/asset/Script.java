@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import javax.swing.JPanel;
+
 import org.apache.commons.io.IOUtils;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
@@ -28,14 +30,14 @@ public final class Script extends Asset {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new ScriptEditor(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new ScriptEditor(this, panel);
 	}
 
 	private class ScriptEditor extends AssetEditor<Script> {
 
-		public ScriptEditor(Script target) {
-			super(target);
+		public ScriptEditor(Script target, JPanel panel) {
+			super(target, panel);
 		}
 
 		@Override

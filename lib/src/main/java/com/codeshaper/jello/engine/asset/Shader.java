@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import javax.swing.JPanel;
+
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
@@ -61,8 +63,8 @@ public class Shader extends Asset {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new ShaderEditor(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new ShaderEditor(this, panel);
 	}
 
 	/**
@@ -122,8 +124,8 @@ public class Shader extends Asset {
 
 	private class ShaderEditor extends AssetEditor<Shader> {
 
-		public ShaderEditor(Shader target) {
-			super(target);
+		public ShaderEditor(Shader target, JPanel panel) {
+			super(target, panel);
 		}
 
 		@Override

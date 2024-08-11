@@ -36,14 +36,14 @@ public class SerializedJelloObject extends Asset {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new SerializedJelloObjectEditor<SerializedJelloObject>(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new SerializedJelloObjectEditor<SerializedJelloObject>(this, panel);
 	}
 
 	public class SerializedJelloObjectEditor<T extends Asset> extends AssetEditor<T> {
 
-		public SerializedJelloObjectEditor(T target) {
-			super(target);
+		public SerializedJelloObjectEditor(T target, JPanel panel) {
+			super(target, panel);
 		}
 
 		@Override

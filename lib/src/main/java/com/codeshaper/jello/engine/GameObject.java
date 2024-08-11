@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JPanel;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -103,8 +105,8 @@ public final class GameObject implements IInspectable {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer() {
-		return new GameObjectEditor(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new GameObjectEditor(this, panel);
 	}
 
 	/**
