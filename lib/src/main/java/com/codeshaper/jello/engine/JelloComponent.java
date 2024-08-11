@@ -30,14 +30,9 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  */
 public abstract class JelloComponent {
 
-	private boolean isEnabled;
+	boolean isEnabled;
 
 	transient GameObject gameObject;
-
-	public JelloComponent(GameObject owner) {
-		this.gameObject = owner;
-		this.isEnabled = true;
-	}
 
 	/**
 	 * Gets the {@link GameObject} that owns this Component. The owning GameObject

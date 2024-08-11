@@ -1,6 +1,5 @@
 package com.codeshaper.jello.engine.rendering;
 
-import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Material;
 
@@ -8,10 +7,6 @@ import com.codeshaper.jello.engine.asset.Material;
  * An abstract base class that lets a component render itself to the display.
  */
 public abstract class Renderer extends JelloComponent {
-
-	public Renderer(GameObject owner) {
-		super(owner);
-	}
 
 	/**
 	 * Gets the {@link Material} to render this object with. If no material is returned,

@@ -38,7 +38,7 @@ public class SceneViewPanel extends JPanel {
 	public SceneViewPanel() {
 		this.setLayout(new BorderLayout());
 
-		this.sceneCamera = new Camera(null);
+		this.sceneCamera = new Camera();
 		this.sceneCamera.setFarPlane(10_000f);
 
 		this.canvas = new SceneAWTGLCanvas();

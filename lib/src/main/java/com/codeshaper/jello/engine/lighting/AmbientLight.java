@@ -3,7 +3,6 @@ package com.codeshaper.jello.engine.lighting;
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.ComponentName;
-import com.codeshaper.jello.engine.GameObject;
 
 /**
  * The Ambient Light Component provides light to every object in the scene from
@@ -16,10 +15,6 @@ import com.codeshaper.jello.engine.GameObject;
 @ComponentName("Light/Ambient Light")
 @ComponentIcon("/editor/componentIcons/light.png")
 public final class AmbientLight extends AbstractLight {
-
-	public AmbientLight(GameObject owner) {
-		super(owner);
-	}
 
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {

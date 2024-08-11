@@ -7,7 +7,6 @@ import com.codeshaper.jello.editor.property.modifier.ExposeField;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.ComponentName;
-import com.codeshaper.jello.engine.GameObject;
 
 /**
  * The Point Light component provides light in all directions from a single
@@ -23,10 +22,6 @@ public final class PointLight extends AbstractLight {
 	@ExposeField
 	@MinValue(0)
 	private float range = 10f;
-
-	public PointLight(GameObject owner) {
-		super(owner);
-	}
 
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {

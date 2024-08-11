@@ -32,10 +32,6 @@ public final class SpotLight extends AbstractLight {
 	@MaxValue(360)
 	private float angle = 45f;
 
-	public SpotLight(GameObject owner) {
-		super(owner);
-	}
-
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
 		super.onDrawGizmos(gizmos, isSelected);

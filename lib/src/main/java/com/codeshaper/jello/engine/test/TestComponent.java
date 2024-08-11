@@ -12,7 +12,6 @@ import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.ReadOnly;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.Space;
-import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Mesh;
 
@@ -45,10 +44,6 @@ public class TestComponent extends JelloComponent {
 	private int exposed;
 	@DontExposeField
 	public int hidden;
-
-	public TestComponent(GameObject owner) {
-		super(owner);
-	}
 	
 	/*
 	@Override

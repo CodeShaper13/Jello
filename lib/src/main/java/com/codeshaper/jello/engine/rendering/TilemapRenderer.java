@@ -6,7 +6,6 @@ import org.joml.Vector2i;
 import org.joml.Vector3i;
 
 import com.codeshaper.jello.engine.ComponentName;
-import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Tile;
 
@@ -17,10 +16,6 @@ public final class TilemapRenderer extends JelloComponent {
 	public EnumCellShape cellShape = EnumCellShape.SQUARE;
 	
 	private HashMap<Vector3i, Tile> tiles = new HashMap<Vector3i, Tile>();
-
-	public TilemapRenderer(GameObject owner) {
-		super(owner);
-	}
 	
 	public void setTile(Tile tile, int x, int y) {
 		this.setTile(tile, x, y, 0);

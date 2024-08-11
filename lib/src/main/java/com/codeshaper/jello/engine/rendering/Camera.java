@@ -80,12 +80,6 @@ public final class Camera extends JelloComponent {
 
 	private transient Matrix4f projectionMatrix = new Matrix4f();
 
-	public Camera(GameObject owner) {
-		super(owner);
-
-		this.projectionMatrix = new Matrix4f();
-	}
-
 	@Override
 	public void onStart() {
 		super.onStart();

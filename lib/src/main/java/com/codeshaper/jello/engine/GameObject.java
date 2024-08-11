@@ -512,7 +512,9 @@ public final class GameObject implements IInspectable {
 	public <T extends JelloComponent> T addComponent(Class<T> type) {
 		// TODO handle errors.
 		try {
-			T component = type.getDeclaredConstructor(GameObject.class).newInstance(this);
+			T component = type.getDeclaredConstructor().newInstance();
+			component.gameObject = this;
+			component.isEnabled = true;
 			this.components.add(component);
 			return component;
 		} catch (ExceptionInInitializerError e) {

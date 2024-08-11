@@ -19,10 +19,6 @@ import com.codeshaper.jello.engine.GameObject;
 @ComponentIcon("/editor/componentIcons/light.png")
 public final class DirectionalLight extends AbstractLight {
 
-	public DirectionalLight(GameObject owner) {
-		super(owner);
-	}
-
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
 		super.onDrawGizmos(gizmos, isSelected);

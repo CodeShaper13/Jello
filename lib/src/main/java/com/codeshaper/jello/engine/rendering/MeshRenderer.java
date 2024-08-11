@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL30.*;
 
 import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.ComponentName;
-import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.Mesh;
 
@@ -17,10 +16,6 @@ public final class MeshRenderer extends Renderer {
 
 	public Mesh mesh;
 	public Material material;
-
-	public MeshRenderer(GameObject owner) {
-		super(owner);
-	}
 
 	@Override
 	public Material getMaterial() {
