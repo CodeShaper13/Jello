@@ -43,10 +43,13 @@ public class ScriptCompiler {
 	 */
 	public boolean compileProject() {
 		this.allCompiledClasses.clear();
-		try {
-			FileUtils.cleanDirectory(this.compiledClassDirectory);
-		} catch (IOException e) {
-			e.printStackTrace();
+		
+		if(this.compiledClassDirectory.exists()) {
+			try {
+				FileUtils.cleanDirectory(this.compiledClassDirectory);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
