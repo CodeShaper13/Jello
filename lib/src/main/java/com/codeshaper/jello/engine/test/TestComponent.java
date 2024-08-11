@@ -12,12 +12,14 @@ import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.ReadOnly;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.Space;
+import com.codeshaper.jello.editor.property.modifier.ToolTip;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Mesh;
 
 public class TestComponent extends JelloComponent {
 		
 	public int[] intArray = new int[] { 1, 2, 3 };
+	@ToolTip("Tooltipppppp!")
 	public String text = "Hello World";
 	public byte byte1 = 3;
 	@MinValue(-2)

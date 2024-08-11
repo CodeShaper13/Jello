@@ -49,6 +49,7 @@ import com.codeshaper.jello.editor.property.modifier.DisplayAs;
 import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
+import com.codeshaper.jello.editor.property.modifier.ToolTip;
 import com.codeshaper.jello.editor.swing.JNumberField;
 import com.codeshaper.jello.editor.swing.JNumberField.EnumNumberType;
 import com.codeshaper.jello.editor.window.InspectorWindow;
@@ -128,8 +129,14 @@ public class GuiBuilder {
 	}
 
 	public static JLabel label(IExposedField field) {
-		DisplayAs dispalyAs = field.getAnnotation(DisplayAs.class);
-		return new JLabel(dispalyAs != null ? dispalyAs.value() : StringUtils.capitalize(field.getFieldName()));
+		DisplayAs displayAs = field.getAnnotation(DisplayAs.class);
+		ToolTip tooltip = field.getAnnotation(ToolTip.class);
+		
+		JLabel label = new JLabel(displayAs != null ? displayAs.value() : StringUtils.capitalize(field.getFieldName()));
+		if(tooltip != null) {
+			label.setToolTipText(tooltip.value());
+		}
+		return label;
 	}
 
 	public static JTextField textField(String text, OnSubmitListerer<String> listener) {
