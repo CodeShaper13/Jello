@@ -180,15 +180,6 @@ public class Application {
 		return JelloEditor.instance != null;
 	}
 
-	public float getVolume() {
-		return 0f; // TODO
-	}
-
-	public void setVolume(float volume) {
-		volume = Math.clamp(0f, 1f, volume);
-		// TODO
-	}
-
 	private void cleanup() {
 		this.window.cleanup();
 
