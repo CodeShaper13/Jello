@@ -30,9 +30,10 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  */
 public abstract class JelloComponent {
 
-	boolean isEnabled;
+	boolean enabled;
 
 	transient GameObject gameObject;
+	transient boolean hasOnStartBeenCalled;
 
 	/**
 	 * Gets the {@link GameObject} that owns this Component. The owning GameObject
@@ -45,15 +46,20 @@ public abstract class JelloComponent {
 	}
 
 	public final void setEnabled(boolean enabled) {
-		if (this.isEnabled == enabled) {
+		if (this.enabled == enabled) {
 			return; // Nothing changed.
 		}
 
-		this.isEnabled = enabled;
-		if (enabled) {
-			this.onEnable();
-		} else {
-			this.onDisable();
+		boolean wasEnabled = this.enabled;
+
+		this.enabled = enabled;
+
+		if (this.getOwner().isActiveInScene()) {
+			if (!wasEnabled && enabled) {
+				this.invokeOnEnable();
+			} else if (wasEnabled && !enabled) {
+				this.invokeOnDisable();
+			}
 		}
 	}
 
@@ -65,7 +71,7 @@ public abstract class JelloComponent {
 	 * @see GameObject#isActiveInScene()
 	 */
 	public final boolean isEnabled() {
-		return this.isEnabled;
+		return this.enabled;
 	}
 
 	/**
@@ -78,7 +84,7 @@ public abstract class JelloComponent {
 	 * @see GameObject#isActiveInScene()
 	 */
 	public final boolean isEnabledInScene() {
-		return this.isEnabled && this.gameObject.isActiveInScene();
+		return this.enabled && this.gameObject.isActiveInScene();
 	}
 
 	/**
@@ -90,7 +96,7 @@ public abstract class JelloComponent {
 	 * Execution of this method is wrapped in a try block, so if an exception is
 	 * thrown it will not compromise the state of the Application or Editor.
 	 */
-	public void onConstruct() {
+	protected void onConstruct() {
 
 	}
 
@@ -104,7 +110,7 @@ public abstract class JelloComponent {
 	 * 
 	 * @see JelloComponent#isEnabledInScene()
 	 */
-	public void onStart() {
+	protected void onStart() {
 
 	}
 
@@ -116,7 +122,7 @@ public abstract class JelloComponent {
 	 * 
 	 * @param deltaTime the amount of time since the last call to onUpdate.
 	 */
-	public void onUpdate(float deltaTime) {
+	protected void onUpdate(float deltaTime) {
 
 	}
 
@@ -129,7 +135,7 @@ public abstract class JelloComponent {
 	 * 
 	 * @see GameObject#isActiveInScene()
 	 */
-	public void onEnable() {
+	protected void onEnable() {
 
 	}
 
@@ -142,7 +148,7 @@ public abstract class JelloComponent {
 	 * Execution of this method is wrapped in a try block, so if an exception is
 	 * thrown it will not compromise the state of the Application or Editor.
 	 */
-	public void onDisable() {
+	protected void onDisable() {
 
 	}
 
@@ -153,7 +159,7 @@ public abstract class JelloComponent {
 	 * Execution of this method is wrapped in a try block, so if an exception is
 	 * thrown it will not compromise the state of the Application or Editor.
 	 */
-	public void onDestroy() {
+	protected void onDestroy() {
 
 	}
 
@@ -184,5 +190,57 @@ public abstract class JelloComponent {
 
 	public ComponentDrawer<?> getComponentDrawer() {
 		return new ComponentDrawer<JelloComponent>(this);
+	}
+
+	void invokeOnConstruct() {
+		// When Play Mode is exited and started again, this flag is never reset. Hacky
+		// temp fix right here...
+		this.hasOnStartBeenCalled = false;
+
+		try {
+			this.onConstruct();
+		} catch (Exception e) {
+			Debug.log(e, this);
+		}
+	}
+
+	void invokeOnStart() {
+		try {
+			this.onStart();
+		} catch (Exception e) {
+			Debug.log(e, this);
+		}
+	}
+
+	void invokeOnEnable() {
+		try {
+			this.onEnable();
+		} catch (Exception e) {
+			Debug.log(e, this);
+		}
+	}
+
+	void invokeOnUpdate(float deltaTime) {
+		try {
+			this.onUpdate(deltaTime);
+		} catch (Exception e) {
+			Debug.log(e, this);
+		}
+	}
+
+	void invokeOnDisable() {
+		try {
+			this.onDisable();
+		} catch (Exception e) {
+			Debug.log(e, this);
+		}
+	}
+
+	void invokeOnDestroy() {
+		try {
+			this.onDestroy();
+		} catch (Exception e) {
+			Debug.log(e, this);
+		}
 	}
 }

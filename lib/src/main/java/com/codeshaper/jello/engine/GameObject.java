@@ -47,6 +47,12 @@ public final class GameObject implements IInspectable {
 		}
 
 		scene.moveGameObjectTo(this);
+
+		if (Application.isPlaying()) {
+			for (int i = 0; i < this.components.size(); i++) {
+				this.components.get(i).invokeOnConstruct();
+			}
+		}
 	}
 
 	/**
@@ -69,6 +75,12 @@ public final class GameObject implements IInspectable {
 		this.scene = parentScene;
 		parentScene.moveGameObjectTo(this);
 		this.setParent(parent);
+
+		if (Application.isPlaying()) {
+			for (int i = 0; i < this.components.size(); i++) {
+				this.components.get(i).invokeOnConstruct();
+			}
+		}
 	}
 
 	private GameObject() {
@@ -331,6 +343,13 @@ public final class GameObject implements IInspectable {
 	 * Destroys the GameObject and all of it's children.
 	 */
 	public void destroy() {
+		if (Application.isPlaying()) {
+			this.invokeRecursively(this, (c) -> {
+				c.getOwner().removeComponent(c);
+
+			});
+		}
+
 		if (this.isRoot()) {
 			this.scene.remove(this);
 		} else {
@@ -338,7 +357,6 @@ public final class GameObject implements IInspectable {
 			this.parent.children.remove(index);
 		}
 
-		// TODO invoke destroy callbacks
 	}
 
 	/**
@@ -516,8 +534,13 @@ public final class GameObject implements IInspectable {
 		try {
 			T component = type.getDeclaredConstructor().newInstance();
 			component.gameObject = this;
-			component.isEnabled = true;
+			component.enabled = true;
 			this.components.add(component);
+
+			if (Application.isPlaying()) {
+				component.invokeOnConstruct();
+			}
+
 			return component;
 		} catch (ExceptionInInitializerError e) {
 			e.printStackTrace();
@@ -602,7 +625,11 @@ public final class GameObject implements IInspectable {
 		for (int i = 0; i < this.components.size(); i++) {
 			JelloComponent component = this.components.get(i);
 			if (type.isInstance(component)) {
-				component.onDestroy();
+				if (Application.isPlaying()) {
+					component.invokeOnDisable();
+					component.invokeOnDestroy();
+				}
+
 				this.components.remove(i);
 				return true;
 			}
@@ -624,8 +651,11 @@ public final class GameObject implements IInspectable {
 			return false;
 		}
 
-		component.onDisable();
-		component.onDestroy();
+		if (Application.isPlaying()) {
+			component.invokeOnDisable();
+			component.invokeOnDestroy();
+		}
+
 		this.components.remove(index);
 		return true;
 	}
@@ -656,7 +686,8 @@ public final class GameObject implements IInspectable {
 
 	/**
 	 * Checks if the GameObject is active. Even if this GameObject is active, it's
-	 * Component's may not receive callbacks if this GameObject is not active within the Scene.
+	 * Component's may not receive callbacks if this GameObject is not active within
+	 * the Scene.
 	 * 
 	 * @return {@code true} if the GameObject is active.
 	 * @see GameObject#isActiveInScene()
@@ -674,7 +705,7 @@ public final class GameObject implements IInspectable {
 	 */
 	public boolean isActiveInScene() {
 		if (this.parent != null) {
-			return this.parent.isActiveInScene();
+			return this.isActive && this.parent.isActiveInScene();
 		} else {
 			return this.isActive;
 		}
@@ -690,15 +721,47 @@ public final class GameObject implements IInspectable {
 			return; // Nothing changed.
 		}
 
-		this.isActive = active;
-
-		for (int i = this.components.size() - 1; i >= 0; i--) {
-			JelloComponent component = this.components.get(i);
+		if (Application.isPlaying()) {
 			if (active) {
-				component.onEnable();
+				this.isActive = true;
+				this.invokeRecursively(this, (c) -> {
+					GameObject obj = c.getOwner();
+					if (obj.isActive && c.isEnabled()) {
+						c.invokeOnEnable();
+					}
+				});
 			} else {
-				component.onDisable();
+				this.invokeRecursively(this, (c) -> {
+					GameObject obj = c.getOwner();
+					if (obj.isActive && c.isEnabled()) {
+						c.invokeOnDisable();
+					}
+				});
+				this.isActive = false;
+			}
+		} else {
+			this.isActive = active;
+		}
+	}
+
+	void invokeRecursively(GameObject obj, ILogic logic) {
+		if (obj.isActiveInScene()) {
+			for (int i = obj.getComponentCount() - 1; i >= 0; i--) {
+				JelloComponent component = obj.getComponentAtIndex(i);
+				logic.invoke(component);
+			}
+
+			for (int i = obj.getChildCount() - 1; i >= 0; i--) {
+				GameObject child = obj.getChild(i);
+				if (child.isActiveInScene()) {
+					this.invokeRecursively(child, logic);
+				}
 			}
 		}
+	}
+	
+	interface ILogic {
+
+		void invoke(JelloComponent component);
 	}
 }

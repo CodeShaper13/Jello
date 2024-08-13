@@ -30,7 +30,7 @@ public final class AudioListener extends JelloComponent {
 	private transient float[] data;
 	
 	@Override
-	public void onStart() {
+	protected void onStart() {
 		super.onStart();
 
 		audioListenerCount++;
@@ -43,7 +43,7 @@ public final class AudioListener extends JelloComponent {
 	}
 	
 	@Override
-	public void onUpdate(float deltaTime) {
+	protected void onUpdate(float deltaTime) {
 		super.onUpdate(deltaTime);
 		
 		if(audioListenerCount > 1) {
@@ -72,7 +72,7 @@ public final class AudioListener extends JelloComponent {
 	}
 	
 	@Override
-	public void onDestroy() {
+	protected void onDestroy() {
 		super.onDestroy();
 		
 		audioListenerCount--;

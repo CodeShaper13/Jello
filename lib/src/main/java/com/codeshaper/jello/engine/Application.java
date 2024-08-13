@@ -96,7 +96,7 @@ public class Application {
 			new AssetDatabase(projectFolder);
 		}
 
-		if(!SoundManager.isInitialized()) {
+		if (!SoundManager.isInitialized()) {
 			SoundManager.initialize();
 		}
 
@@ -119,6 +119,14 @@ public class Application {
 			}
 		} else {
 			this.sceneManager = sceneManager;
+			
+			for(int i = sceneManager.getLoadedSceneCount() - 1; i >= 0; i--) {
+				Scene scene = sceneManager.getLoadedScene(i);
+				for (int j = scene.getRootGameObjectCount() - 1; j >= 0; j--) {
+					sceneManager.recursiveCallOnConstruct(scene.getRootGameObject(j));
+				}
+			}
+			
 			/*
 			 * if (launchArgs.startingScenes.size() > 0) { for (Path path :
 			 * launchArgs.startingScenes) { Asset asset =
@@ -183,8 +191,8 @@ public class Application {
 
 	private void cleanup() {
 		this.window.cleanup();
-		
-		if(!isEditor() && SoundManager.isInitialized()) {
+
+		if (!isEditor() && SoundManager.isInitialized()) {
 			SoundManager.shutdown();
 		}
 
@@ -241,11 +249,28 @@ public class Application {
 
 			if (deltaUpdate >= 1) {
 				long diffTimeMillis = now - updateTime;
+
+				// Call onStart on every component this is enabled in the scene that hasn't
+				// gotten onStart called on them yet.
 				for (Scene scene : sceneManager.getScenes()) {
-					for (GameObject obj : scene.getRootGameObjects()) {
-						for (JelloComponent component : obj.getAllComponents()) {
-							component.onUpdate(diffTimeMillis);
-						}
+					for (GameObject rootObject : scene.getRootGameObjects()) {
+						rootObject.invokeRecursively(rootObject, (c) -> {
+							if (c.isEnabledInScene() && !c.hasOnStartBeenCalled) {
+								c.hasOnStartBeenCalled = true;
+								c.invokeOnStart();
+							}
+						});
+					}
+				}
+
+				// Call onUpdate on every component that is enabled in the scene.
+				for (Scene scene : sceneManager.getScenes()) {
+					for (GameObject rootObject : scene.getRootGameObjects()) {
+						rootObject.invokeRecursively(rootObject, (c) -> {
+							if (c.isEnabledInScene()) {
+								c.onUpdate(diffTimeMillis);
+							}
+						});
 					}
 				}
 				updateTime = now;
@@ -253,25 +278,20 @@ public class Application {
 			}
 
 			if (appSettings.targetFps <= 0 || deltaFps >= 1) {
-				for (Scene scene : sceneManager.getScenes()) {
-					for (GameObject obj : scene.getRootGameObjects()) {
-						Camera camera = obj.getComponent(Camera.class);
-						if (camera != null) {
-							Matrix4f m = camera.getOwner().getLocalMatrix();
-							Vector3f v = new Vector3f();
-							m.getTranslation(v);
-							v.mul(-1f);
-							m.setTranslation(v);
-							renderer.render(sceneManager, camera, m, window.getWidth(),
-									window.getHeight());
-						}
-					}
-				}
-
 				for (Camera camera : Camera.getAllCameras()) {
 					// TODO sort with Camera#depth
 					if (camera.isEnabled()) {
-						renderer.render(sceneManager, camera, new Matrix4f(), window.getWidth(), window.getHeight());
+						Matrix4f m = camera.getOwner().getLocalMatrix();
+						Vector3f v = new Vector3f();
+						m.getTranslation(v);
+						v.mul(-1f);
+						m.setTranslation(v);
+						renderer.render(
+								sceneManager,
+								camera,
+								m,
+								window.getWidth(),
+								window.getHeight());
 					}
 				}
 

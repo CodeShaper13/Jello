@@ -22,6 +22,13 @@ public class SceneManager {
 		}
 
 		this.loadedScenes.add(scene);
+		
+		if(Application.isPlaying()) {
+			for (int i = scene.getRootGameObjectCount() - 1; i >= 0; i--) {
+				this.recursiveCallOnConstruct(scene.getRootGameObject(i));
+			}
+		}
+
 		return true;
 	}
 
@@ -34,6 +41,13 @@ public class SceneManager {
 	public boolean unloadScene(Scene scene) {
 		if (!this.isSceneLoaded(scene)) {
 			return false;
+		}
+		
+		if(Application.isPlaying()) {
+			// Destroy all GameObjects in the Scene.
+			for (int i = scene.getRootGameObjectCount() - 1; i >= 0; i--) {
+				scene.getRootGameObject(i).destroy();
+			}
 		}
 
 		this.loadedScenes.remove(scene);
@@ -80,5 +94,15 @@ public class SceneManager {
 
 	public Iterable<Scene> getScenes() {
 		return this.loadedScenes;
+	}
+
+	void recursiveCallOnConstruct(GameObject parent) {
+		for (int i = parent.getComponentCount() - 1; i >= 0; i--) {
+			parent.getComponentAtIndex(i).invokeOnConstruct();
+		}
+		
+		for (int i = parent.getChildCount() - 1; i >= 0; i--) {
+			this.recursiveCallOnConstruct(parent.getChild(i));
+		}
 	}
 }

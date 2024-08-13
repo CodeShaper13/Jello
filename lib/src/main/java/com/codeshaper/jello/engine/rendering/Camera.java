@@ -81,14 +81,14 @@ public final class Camera extends JelloComponent {
 	private transient Matrix4f projectionMatrix = new Matrix4f();
 
 	@Override
-	public void onStart() {
+	protected void onStart() {
 		super.onStart();
 
 		Camera.cameras.add(this);
 	}
 
 	@Override
-	public void onDestroy() {
+	protected void onDestroy() {
 		super.onDestroy();
 
 		Camera.cameras.remove(this);

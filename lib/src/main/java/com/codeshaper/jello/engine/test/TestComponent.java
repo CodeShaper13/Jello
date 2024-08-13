@@ -1,7 +1,9 @@
 package com.codeshaper.jello.engine.test;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
@@ -13,11 +15,18 @@ import com.codeshaper.jello.editor.property.modifier.ReadOnly;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.editor.property.modifier.ToolTip;
+import com.codeshaper.jello.engine.Color;
+import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.JelloComponent;
+import com.codeshaper.jello.engine.Vector;
 import com.codeshaper.jello.engine.asset.Mesh;
 
 public class TestComponent extends JelloComponent {
-		
+
+	public boolean printCallbackTraces = true;
+
+	@Space
+
 	public int[] intArray = new int[] { 1, 2, 3 };
 	@ToolTip("Tooltipppppp!")
 	public String text = "Hello World";
@@ -46,70 +55,63 @@ public class TestComponent extends JelloComponent {
 	private int exposed;
 	@DontExposeField
 	public int hidden;
-	
-	/*
+
 	@Override
-	public void onRender() {		
-		float size = 0.1f;
-
-    	glBegin(GL_QUADS);
-    	
-    	// Top (+y).
-    	glColor3f(0,  1,  0);
-    	glVertex3f(-size, size, -size);
-    	glVertex3f(-size, size, size);
-    	glVertex3f(size, size, size);
-    	glVertex3f(size, size, -size);
-
-    	// Bottom (+y).
-    	glColor3f(0,  1,  0);
-    	glVertex3f(size, -size, -size);
-    	glVertex3f(size, -size, size);
-    	glVertex3f(-size, -size, size);
-    	glVertex3f(-size, -size, -size);
-    	
-    	// Front (+z).
-    	glColor3f(0,  0,  1);
-    	glVertex3f(size, -size, size);
-    	glVertex3f(size, size, size);
-    	glVertex3f(-size, size, size);
-    	glVertex3f(-size, -size, size);
-    	
-    	// Back (+z).
-    	glColor3f(0,  0,  1);
-    	glVertex3f(-size, -size, -size);
-    	glVertex3f(-size, size, -size);
-    	glVertex3f(size, size, -size);
-    	glVertex3f(size, -size, -size);
-    	
-    	// (+x).
-    	glColor3f(1f, 0f, 0f);
-    	glVertex3f(size, size, -size);
-    	glVertex3f(size, size, size);
-    	glVertex3f(size, -size, size);
-    	glVertex3f(size, -size, -size);
-    	
-    	// (-x).
-    	glColor3f(1f, 0f, 0f);
-    	glVertex3f(-size, -size, -size);
-    	glVertex3f(-size,-size, size);
-    	glVertex3f(-size,size, size);
-    	glVertex3f(-size,size, -size);
-    	
-    	glEnd();
-   	}
-   	*/
+	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
+		gizmos.color(Color.white.setA(0.5f));
+		gizmos.drawCube(this.getOwner().getPosition(), new Quaternionf(), Vector.vector3Zero());
+	}
 	
+	@Override
+	public void onConstruct() {
+		if (this.printCallbackTraces) {
+			Debug.log("TestComponent#onConstruct()");
+		}
+	}
+
+	@Override
+	public void onStart() {
+		if (this.printCallbackTraces) {
+			Debug.log("TestComponent#onStart()");
+		}
+	}
+
+	@Override
+	public void onEnable() {
+		Debug.log("TestComponent#onEnable()");
+	}
+
+	@Override
+	public void onUpdate(float deltaTime) {
+		if (this.printCallbackTraces) {
+			Debug.log("TestComponent#onUpdate(%s)", deltaTime);
+		}
+	}
+
+	@Override
+	public void onDisable() {
+		if (this.printCallbackTraces) {
+			Debug.log("TestComponent#onDisable()");
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		if (this.printCallbackTraces) {
+			Debug.log("TestComponent#onDestroy()");
+		}
+	}
+
 	@Button
 	private void Function1() {
 		System.out.println("1");
 	}
-	
+
 	@Button("Function 2")
 	public void Func2() {
 		System.out.println("2");
 	}
-	
+
 	@SuppressWarnings("unused")
 	private boolean hideIfFunc() {
 		return true;
@@ -119,7 +121,7 @@ public class TestComponent extends JelloComponent {
 	private boolean disableIfFunc() {
 		return true;
 	}
-	
+
 	public enum EnumTest {
 		APPLE,
 		BANANA,

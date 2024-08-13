@@ -31,7 +31,7 @@ public final class AudioSource extends JelloComponent {
 	private transient int sourceId;
 
 	@Override
-	public void onConstruct() {
+	protected void onConstruct() {
 		this.sourceId = alGenSources();
 
 		this.setPitch(this.pitch);
@@ -41,7 +41,7 @@ public final class AudioSource extends JelloComponent {
 	}
 
 	@Override
-	public void onStart() {
+	protected void onStart() {
 		super.onStart();
 
 		this.setAudioClip(this.audioClip);
@@ -52,14 +52,14 @@ public final class AudioSource extends JelloComponent {
 	}
 
 	@Override
-	public void onUpdate(float deltaTime) {
+	protected void onUpdate(float deltaTime) {
 		super.onUpdate(deltaTime);
 
 		// alSource3f(sourceId, AL_POSITION, position.x, position.y, position.z);
 	}
 
 	@Override
-	public void onDestroy() {
+	protected void onDestroy() {
 		super.onDestroy();
 
 		this.stop();
