@@ -23,8 +23,9 @@ public final class AssetLocation {
 	}
 
 	/**
-	 * Gets an {@link InputStream} to the Asset. If this location does not point to
-	 * an Asset, null is returned.
+	 * Gets an {@link InputStream} to the Asset. The returned Input Stream must be
+	 * closed by the caller. If this location does not point to an Asset, null is
+	 * returned.
 	 * 
 	 * @return
 	 * @see AssetLocation#isValid()

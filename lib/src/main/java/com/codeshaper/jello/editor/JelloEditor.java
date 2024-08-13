@@ -26,6 +26,8 @@ import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
+import com.codeshaper.jello.engine.audio.AudioListener;
+import com.codeshaper.jello.engine.audio.SoundManager;
 import com.codeshaper.jello.engine.lighting.DirectionalLight;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.rendering.Camera;
@@ -115,6 +117,8 @@ public class JelloEditor {
 		}
 		this.writeEditorVersionFile();
 
+		SoundManager.initialize();
+		
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
@@ -282,18 +286,19 @@ public class JelloEditor {
 				assetName);
 
 		GameObject cameraObj = new GameObject("Main Camera", scene);
-		cameraObj.addComponent(Camera.class);
 		cameraObj.setLocalPosition(0, 5, -10);
 		cameraObj.setLocalEulerAngles(20, 0, 0);
-
+		cameraObj.addComponent(Camera.class);
+		cameraObj.addComponent(AudioListener.class);
+		
 		GameObject meshObj = new GameObject("Cube", scene);
 		meshObj.addComponent(MeshRenderer.class);
 
 		GameObject lightObj = new GameObject("Light", scene);
-		lightObj.addComponent(DirectionalLight.class);
 		lightObj.setLocalPosition(0, 0, -2);
 		lightObj.setLocalEulerAngles(20, 45, 0);
-
+		lightObj.addComponent(DirectionalLight.class);
+		
 		this.assetDatabase.saveAsset(scene);
 
 		return scene;

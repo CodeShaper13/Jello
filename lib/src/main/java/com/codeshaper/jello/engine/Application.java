@@ -18,18 +18,19 @@ import org.lwjgl.opengl.WGL;
 import org.lwjgl.system.windows.User32;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.engine.audio.SoundManager;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.rendering.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.google.gson.Gson;
 
 public class Application {
-	
+
 	private static Application instance;
-	
+
 	public final Window window;
 	public final SceneManager sceneManager;
-	
+
 	private ApplicationSettings appSettings;
 	private GameRenderer renderer;
 	private boolean running;
@@ -41,35 +42,62 @@ public class Application {
 	private Runnable onClose;
 
 	public static void main(String[] args) {
-		new Application().start();
+		new Application(null, null).start();
 	}
 
+	/**
+	 * Gets the instance of the Application. In builds, this will never return
+	 * {@code null}. In the Editor, it will be {@code null} unless the Editor is in
+	 * Play Mode.
+	 * 
+	 * @return the instance of the running Application.
+	 */
 	public static Application getInstance() {
 		return Application.instance;
 	}
-	
-	// Called from builds.
-	private Application() {
-		this(null, null);
+
+	/**
+	 * Checks if the Application is running. In builds this will always return
+	 * {@code true}, and in the Editor it will return {@code true} only if the
+	 * Editor is in Play Mode.
+	 * 
+	 * @return
+	 */
+	public static boolean isPlaying() {
+		return Application.instance != null;
 	}
-	
+
+	/**
+	 * Checks if the Editor is running.
+	 * 
+	 * @return {@code true} if the Editor is running.
+	 */
+	public static boolean isInEditor() {
+		return JelloEditor.instance != null;
+	}
+
 	// Called from Editor.
 	public Application(SceneManager sceneManager, Runnable onClose) {
-		if(Application.instance != null) {
+		if (Application.instance != null) {
 			throw new Error("Multiple Application instances can not be created!");
 		}
-		
+
 		Application.instance = this;
 		this.onClose = onClose;
-		
+
 		this.appSettings = new ApplicationSettings(); // this.loadAppSettings();
 
 		this.window = new Window(this.appSettings);
 
 		if (AssetDatabase.getInstance() == null) { // null in builds.
-			Path projectFolder = Path.of("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets"); // TODO what should this be in a
-																					 // build?
+			Path projectFolder = Path.of("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets"); // TODO what should this
+																								// be in a
+			// build?
 			new AssetDatabase(projectFolder);
+		}
+
+		if(!SoundManager.isInitialized()) {
+			SoundManager.initialize();
 		}
 
 		this.renderer = new GameRenderer();
@@ -92,27 +120,16 @@ public class Application {
 		} else {
 			this.sceneManager = sceneManager;
 			/*
-			if (launchArgs.startingScenes.size() > 0) {
-				for (Path path : launchArgs.startingScenes) {
-					Asset asset = AssetDatabase.getInstance().getAsset(path);
-					if (asset instanceof Scene) {
-						this.sceneManager.loadScene((Scene) asset);
-					}
-				}
-			} else {
-				Scene startingScene = this.appSettings.startingScene;
-				if (startingScene != null) {
-					this.sceneManager.loadScene(startingScene);
-				} else {
-					// No starting scene set.
-					AssetDatabase database = AssetDatabase.getInstance();
-					List<Path> paths = database.getAllAssetsOfType(Scene.class, true);
-					if (paths.size() >= 1) {
-						this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
-					}
-				}
-			}
-			*/
+			 * if (launchArgs.startingScenes.size() > 0) { for (Path path :
+			 * launchArgs.startingScenes) { Asset asset =
+			 * AssetDatabase.getInstance().getAsset(path); if (asset instanceof Scene) {
+			 * this.sceneManager.loadScene((Scene) asset); } } } else { Scene startingScene
+			 * = this.appSettings.startingScene; if (startingScene != null) {
+			 * this.sceneManager.loadScene(startingScene); } else { // No starting scene
+			 * set. AssetDatabase database = AssetDatabase.getInstance(); List<Path> paths =
+			 * database.getAllAssetsOfType(Scene.class, true); if (paths.size() >= 1) {
+			 * this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0))); } } }
+			 */
 		}
 
 		Input.initialize(this.window.windowHandle);
@@ -166,11 +183,15 @@ public class Application {
 
 	private void cleanup() {
 		this.window.cleanup();
+		
+		if(!isEditor() && SoundManager.isInitialized()) {
+			SoundManager.shutdown();
+		}
 
 		if (this.onClose != null) {
 			this.onClose.run();
 		}
-		
+
 		Application.instance = null;
 	}
 
@@ -207,7 +228,7 @@ public class Application {
 			this.updateTime = initialTime;
 		}
 
-		public void preformLoopIteration() {			
+		public void preformLoopIteration() {
 			glfwPollEvents();
 
 			long now = System.currentTimeMillis();
@@ -272,7 +293,7 @@ public class Application {
 				cleanup();
 				return;
 			}
-			
+
 			long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.windowHandle);
 			long hdc = User32.GetDC(hwnd);
 			WGL.wglMakeCurrent(hdc, JelloEditor.instance.window.sceneView.getContext());

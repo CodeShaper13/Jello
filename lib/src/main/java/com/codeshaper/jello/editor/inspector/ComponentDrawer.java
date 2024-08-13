@@ -59,8 +59,8 @@ public class ComponentDrawer<T extends JelloComponent> {
 	 * 
 	 * @param builder
 	 */
-	protected void drawComponent(GuiLayoutBuilder drawer) {
-		drawer.addAll(this.component);
+	protected void drawComponent(GuiLayoutBuilder builder) {
+		builder.addAll(this.component);
 	}
 
 	/**
