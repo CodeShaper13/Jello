@@ -15,7 +15,7 @@ public class BooleanDrawer extends FieldDrawer {
 		JCheckBox checkbox = GuiBuilder.checkBox((boolean) field.get(), (v) -> {
 			field.set(v);
 		});
-		checkbox.setEnabled(field.isReadOnly());
+		checkbox.setEnabled(!field.isReadOnly());
 
 		return GuiBuilder.combine(GuiBuilder.label(field), checkbox);
 	}
