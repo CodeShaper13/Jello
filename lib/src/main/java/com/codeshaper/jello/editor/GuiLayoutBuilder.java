@@ -208,23 +208,23 @@ public class GuiLayoutBuilder {
 	public void vector2iField(String label, Vector2i value, OnSubmitListerer<Vector2i> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2iField(value, listener)));
 	}
-	
+
 	public void vector2fField(String label, Vector2f value, OnSubmitListerer<Vector2f> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector2fField(value, listener)));
 	}
-	
+
 	public void vector3iField(String label, Vector3i value, OnSubmitListerer<Vector3i> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3iField(value, listener)));
 	}
-	
+
 	public void vector3fField(String label, Vector3f value, OnSubmitListerer<Vector3f> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector3fField(value, listener)));
 	}
-	
+
 	public void vector4iField(String label, Vector4i value, OnSubmitListerer<Vector4i> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector4iField(value, listener)));
 	}
-	
+
 	public void vector4fField(String label, Vector4f value, OnSubmitListerer<Vector4f> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector4fField(value, listener)));
 	}
@@ -232,24 +232,36 @@ public class GuiLayoutBuilder {
 	public void colorField(String label, Color color, OnSubmitListerer<Color> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.colorField(color, listener)));
 	}
+
+	public void sliderField(String label, int min, int max, int value, OnSubmitListerer<Integer> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.intSlider(min, max, value, listener)));
+	}
+
+	public void sliderField(String label, float min, float max, float value, OnSubmitListerer<Float> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.floatSlider(min, max, value, listener)));
+	}
+	
+	public void sliderField(String label, double min, double max, double value, OnSubmitListerer<Double> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.doubleSlider(min, max, value, listener)));
+	}
 	
 	public <T extends Asset> void assetField(String label, T value, Class<T> clazz, OnSubmitListerer<T> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.assetField(value, clazz, listener)));
 	}
-	
+
 	public void field(ExposedField exposedField) {
 		JComponent fieldComponent = GuiBuilder.field(exposedField);
-		if(fieldComponent != null) {
-			
+		if (fieldComponent != null) {
+
 			Space space = exposedField.getAnnotation(Space.class);
 			if (space != null) {
 				this.panel.add(Box.createVerticalStrut(space.value()));
 			}
-			
+
 			if (exposedField.getAnnotation(Separator.class) != null) {
 				this.panel.add(new JSeparator());
 			}
-			
+
 			this.panel.add(fieldComponent);
 		}
 	}
@@ -299,7 +311,7 @@ public class GuiLayoutBuilder {
 		if (this.isHorizontal()) {
 			this.horizontalPanel.add(component);
 		} else {
-			if(this.panel.getComponentCount() != 0) {
+			if (this.panel.getComponentCount() != 0) {
 				this.panel.add(Box.createVerticalStrut(4));
 			}
 			this.panel.add(component);
@@ -313,7 +325,7 @@ public class GuiLayoutBuilder {
 			return component;
 		}
 	}
-	
+
 	public interface OnSubmitListerer<T> {
 
 		void onSubmit(T value);

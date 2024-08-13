@@ -25,6 +25,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -65,9 +66,10 @@ import com.codeshaper.jello.engine.database.AssetDatabase;
  * This is a lower level alternative to using {@link GuiLayoutBuilder}.
  */
 public class GuiBuilder {
-	
+
+	private static final int SLIDER_DECIMAL_PLACES = 1000;
 	private static FieldDrawerRegistry fieldDrawerRegistry;
-	
+
 	static void init(JelloEditor editor) {
 		fieldDrawerRegistry = new FieldDrawerRegistry(editor);
 	}
@@ -131,9 +133,9 @@ public class GuiBuilder {
 	public static JLabel label(IExposedField field) {
 		DisplayAs displayAs = field.getAnnotation(DisplayAs.class);
 		ToolTip tooltip = field.getAnnotation(ToolTip.class);
-		
+
 		JLabel label = new JLabel(displayAs != null ? displayAs.value() : StringUtils.capitalize(field.getFieldName()));
-		if(tooltip != null) {
+		if (tooltip != null) {
 			label.setToolTipText(tooltip.value());
 		}
 		return label;
@@ -245,40 +247,114 @@ public class GuiBuilder {
 		return numberField;
 	}
 
-	public static JNumberField numberField(IExposedField field) {
-		Range annotaiton = field.getAnnotation(Range.class);
-		if (annotaiton == null) {
-			// TODO
+	public static JComponent numberField(IExposedField field) {
+		EnumNumberType numberType = EnumNumberType.func(field.getType());
+
+		Range range = field.getAnnotation(Range.class);
+		if (range != null) {
+			Object obj = field.get();
+			if (numberType == EnumNumberType.INT) {
+				return intSlider((int) range.min(), (int) range.max(), obj == null ? 0 : (int) obj, (v) -> {
+					field.set(v);
+				});
+			} else if (numberType == EnumNumberType.FLOAT) {
+				return floatSlider((float) range.min(), (float) range.max(), obj == null ? 0 : (float) obj, (v) -> {
+					field.set(v);
+				});
+			} else if (numberType == EnumNumberType.DOUBLE) {
+				return doubleSlider(range.min(), range.max(), obj == null ? 0 : (double) obj, (v) -> {
+					field.set(v);
+				});
+			} else {
+				Debug.logWarning("Range annotation can only be on fields of type int, float, double and their wrapper classes.");
+				return null;
+			}
 		} else {
-			// TODO
+			JNumberField numberField = new JNumberField(numberType);
+
+			MinValue min = field.getAnnotation(MinValue.class);
+			if (min != null) {
+				numberField.setMin(min.value());
+			}
+
+			MaxValue max = field.getAnnotation(MaxValue.class);
+			if (max != null) {
+				numberField.setMax(max.value());
+			}
+
+			numberField.setEnabled(!field.isReadOnly());
+			numberField.setValue(field.get());
+			numberField.addActionListener(e -> {
+				field.set(numberField.getValue());
+			});
+			numberField.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							field.set(numberField.getValue());
+						}
+					});
+				}
+			});
+			return numberField;
+		}
+	}
+
+	public static JPanel intSlider(int min, int max, int value, OnSubmitListerer<Integer> listener) {
+		JSlider slider = new JSlider(min, max, value);
+		JNumberField field = intField(value, (v) -> {
+			listener.onSubmit(v);
+			slider.setValue(v);
+		});
+
+		if (listener != null) {
+			slider.addChangeListener((e) -> {
+				int i = slider.getValue();
+				listener.onSubmit(i);
+				field.setValue(i);
+			});
+			addFocusLostListener(slider, () -> {
+				int i = slider.getValue();
+				listener.onSubmit(i);
+				field.setValue(i);
+			});
 		}
 
-		JNumberField numberField = new JNumberField(EnumNumberType.func(field.getType()));
-		MinValue min = field.getAnnotation(MinValue.class);
-		if (min != null) {
-			numberField.setMin(min.value());
-		}
-		MaxValue max = field.getAnnotation(MaxValue.class);
-		if (max != null) {
-			numberField.setMax(max.value());
-		}
-		numberField.setEnabled(!field.isReadOnly());
-		numberField.setValue(field.get());
-		numberField.addActionListener(e -> {
-			field.set(numberField.getValue());
+		return combine(slider, field);
+	}
+
+	public static JPanel floatSlider(float min, float max, float value, OnSubmitListerer<Float> listener) {
+		return doubleSlider(min, max, value, (v) -> {
+			listener.onSubmit(v.floatValue());
 		});
-		numberField.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusLost(FocusEvent e) {
-				EventQueue.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						field.set(numberField.getValue());
-					}
-				});
-			}
+	}
+
+	public static JPanel doubleSlider(double min, double max, double value, OnSubmitListerer<Double> listener) {
+		JSlider slider = new JSlider(
+				(int) Math.round(min * SLIDER_DECIMAL_PLACES),
+				(int) Math.round(max * SLIDER_DECIMAL_PLACES),
+				(int) Math.round(value * SLIDER_DECIMAL_PLACES));
+		JNumberField field = doubleField(value, (v) -> {
+			listener.onSubmit(v);
+			slider.setValue((int) Math.round(v * SLIDER_DECIMAL_PLACES));
 		});
-		return numberField;
+
+		if (listener != null) {
+			slider.addChangeListener((e) -> {
+				double d = (double) slider.getValue() / SLIDER_DECIMAL_PLACES;
+				listener.onSubmit(d);
+				field.setValue(d);
+			});
+			addFocusLostListener(slider, () -> {
+				double d = (double) slider.getValue() / SLIDER_DECIMAL_PLACES;
+				listener.onSubmit(d);
+				field.setValue(d);
+			});
+		}
+
+		return combine(slider, field);
 	}
 
 	public static JPanel vector2iField(Vector2i value, OnSubmitListerer<Vector2i> listener) {
@@ -385,7 +461,7 @@ public class GuiBuilder {
 			value.setComponent(2, v);
 			listener.onSubmit(value);
 		}));
-		
+
 		panel.add(new JLabel("W"));
 		panel.add(GuiBuilder.intField(value.w, (v) -> {
 			value.setComponent(3, v);
@@ -415,7 +491,7 @@ public class GuiBuilder {
 			value.setComponent(2, v);
 			listener.onSubmit(value);
 		}));
-		
+
 		panel.add(new JLabel("W"));
 		panel.add(GuiBuilder.floatField(value.w, (v) -> {
 			value.setComponent(3, v);
@@ -428,13 +504,13 @@ public class GuiBuilder {
 	public static JPanel quaternionField(Quaternionf quaternion, OnSubmitListerer<Quaternionf> listener) {
 		return null;
 	}
-	
+
 	public static JButton colorField(Color color, OnSubmitListerer<Color> listener) {
 		JButton btn = new JButton();
-		btn.setBackground(color.toAwtColor());		
+		btn.setBackground(color.toAwtColor());
 		btn.addActionListener(e -> {
 			java.awt.Color newColor = JColorChooser.showDialog(btn, "Choose Color", btn.getBackground());
-			if(newColor != null) {
+			if (newColor != null) {
 				btn.setBackground(newColor);
 				listener.onSubmit(new Color(newColor));
 			}
@@ -442,7 +518,7 @@ public class GuiBuilder {
 
 		return btn;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T extends Asset> JComboBox<Path> assetField(T value, Class<T> clazz, OnSubmitListerer<T> listener) {
 		AssetDatabase database = AssetDatabase.getInstance();
@@ -451,23 +527,24 @@ public class GuiBuilder {
 
 		JComboBox<Path> comboBox = new JComboBox<Path>();
 		comboBox.setRenderer(new DefaultListCellRenderer() {
-			public Component getListCellRendererComponent(JList<?> list, Object v, int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<?> list, Object v, int index, boolean isSelected,
+					boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, v, index, isSelected, cellHasFocus);
-				
-				if(v == null && index == -1) {
-					if(value != null && value.isRuntimeAsset()) {
+
+				if (v == null && index == -1) {
+					if (value != null && value.isRuntimeAsset()) {
 						this.setText("(Runtime Instance)");
 					} else {
 						this.setText("(Missing)");
 					}
-				} else if(v != null) {
+				} else if (v != null) {
 					this.setText(FilenameUtils.removeExtension(v.toString()));;
 				}
-				
+
 				return this;
 			}
 		});
-		
+
 		comboBox.addItem(Path.of("None"));
 		for (Path path : paths) {
 			comboBox.addItem(path);
@@ -476,7 +553,7 @@ public class GuiBuilder {
 		if (value == null) {
 			comboBox.setSelectedIndex(0); // Have None selected.
 		} else {
-			AssetLocation location = ((Asset)value).location;
+			AssetLocation location = ((Asset) value).location;
 			if (location != null && paths.contains(location.getPath())) {
 				comboBox.setSelectedItem(location.getPath());
 			} else {
@@ -496,13 +573,13 @@ public class GuiBuilder {
 
 		return comboBox;
 	}
-	
+
 	public static JComponent field(IExposedField field) {
-		if(fieldDrawerRegistry == null) {
+		if (fieldDrawerRegistry == null) {
 			System.out.println("GuiBuilder#init() must be called before using GuiBuilder#field()");
 			return GuiBuilder.label("ERROR"); // PRevent possible Null Pointer Exception.
 		}
-		
+
 		if (field.getType().isArray()) {
 			JPanel arrayPanel = GuiBuilder.verticalArea();
 
@@ -528,7 +605,8 @@ public class GuiBuilder {
 				FieldDrawer drawer = fieldDrawerRegistry.getDrawer(arrayInstance.getClass().getComponentType());
 				if (drawer != null) {
 					for (int i = 0; i < arrayLength; i++) {
-						JPanel fieldPanel = drawer.draw(new ExposedArrayField(((ExposedField)field).backingField, arrayInstance, i));
+						JPanel fieldPanel = drawer
+								.draw(new ExposedArrayField(((ExposedField) field).backingField, arrayInstance, i));
 						arrayPanel.add(fieldPanel);
 					}
 				}
