@@ -49,7 +49,7 @@ public final class Vector {
 		return new Vector3f(1, 0, 0);
 	}
 
-	public static Vector3f vector3fLeft() {
+	public static Vector3f vector3Left() {
 		return new Vector3f(-1, 0, 0);
 	}
 
