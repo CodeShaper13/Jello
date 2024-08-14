@@ -189,6 +189,10 @@ public class JelloEditor {
 			return false;
 		}
 
+		this.raiseEvent(PlayModeListener.class, (listener) -> {
+			listener.onPlaymodeChange(State.STARTED);
+		});
+		
 		this.application = new Application(this.sceneManager, () -> {
 			this.application = null;
 
@@ -198,9 +202,6 @@ public class JelloEditor {
 		});
 		this.application.start(); // TODO start in the correct scene.
 
-		this.raiseEvent(PlayModeListener.class, (listener) -> {
-			listener.onPlaymodeChange(State.STARTED);
-		});
 		return true;
 	}
 
