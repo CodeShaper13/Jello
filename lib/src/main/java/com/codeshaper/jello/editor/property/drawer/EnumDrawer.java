@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 
+@FieldDrawerType(Enum.class)
 public class EnumDrawer extends FieldDrawer {
 
 	@Override
