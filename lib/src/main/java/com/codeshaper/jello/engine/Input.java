@@ -50,8 +50,8 @@ public class Input {
 
 		this.keyStates = new ButtonPressState[this.keyCodeValues.length];
 		this.mouseBtnStates = new ButtonPressState[MOUSE_BUTTON_COUNT];
-		Arrays.fill(instance.keyStates, ButtonPressState.NEITHER);
-		Arrays.fill(instance.mouseBtnStates, ButtonPressState.NEITHER);
+		Arrays.fill(this.keyStates, ButtonPressState.NEITHER);
+		Arrays.fill(this.mouseBtnStates, ButtonPressState.NEITHER);
 
 		glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
 			int index = -1;
