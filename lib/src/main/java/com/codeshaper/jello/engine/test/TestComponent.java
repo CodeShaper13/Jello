@@ -1,60 +1,72 @@
 package com.codeshaper.jello.engine.test;
 
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
-import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
 import com.codeshaper.jello.editor.property.modifier.DontExposeField;
 import com.codeshaper.jello.editor.property.modifier.ExposeField;
-import com.codeshaper.jello.editor.property.modifier.HideIf;
+import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
+import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.ReadOnly;
 import com.codeshaper.jello.editor.property.modifier.Separator;
 import com.codeshaper.jello.editor.property.modifier.Space;
+import com.codeshaper.jello.editor.property.modifier.TextBox;
 import com.codeshaper.jello.editor.property.modifier.ToolTip;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.EnumKeys;
+import com.codeshaper.jello.engine.Input;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.Vector;
-import com.codeshaper.jello.engine.asset.Mesh;
+import com.codeshaper.jello.engine.asset.Texture;
 
 public class TestComponent extends JelloComponent {
 
 	public boolean printCallbackTraces = true;
 
 	@Space
-
-	public int[] intArray = new int[] { 1, 2, 3 };
-	@ToolTip("Tooltipppppp!")
-	public String text = "Hello World";
-	public byte byte1 = 3;
-	@MinValue(-2)
-	public int integer = 14;
-	@HideIf("hideIfFunc")
-	public int hiddenInt = 999;
-	@DisableIf("disableIfFunc")
-	public int disabledInt = 999;
-	public Integer integerWrapper = 10;
-	@Space(14)
-	public short short1;
-	public long long1 = -12345;
-	@ReadOnly
-	public float float1 = 0.5f;
-	public double double1 = 123.456789;
-	@DisplayAs("My Boolean")
-	public boolean bool = true;
-	public EnumTest testEnum = EnumTest.BANANA;
-	@ReadOnly
-	public Vector3f vector = new Vector3f(1.05f, 2.1f, 3.2f);
-	@Separator
-	public Mesh mesh = null;
-	@ExposeField
-	private int exposed;
+	
+	public byte myByte = 1;
+	public int myInt = 2;
+	public short myShort = 3;
+	public long myLong = 4;
+	public float myFloat = 5.6f;
+	public double myDouble = 7.8;
+	public boolean myBool = true;
+	public Integer myIntegerWrapper = 9;
+	public String myString = "Hello World";
+	public EnumTest myEnum = EnumTest.BANANA;
+	public int[] myArray = new int[] { 1, 2, 3 };
+	public Color myColor = Color.red;
+	public Texture myAssetReference = null;
+	
+	@Space
+	
+	@DisplayAs("Custom Name!")
+	public int customName = 1;
 	@DontExposeField
 	public int hidden;
+	@ExposeField
+	private int myPrivateField;
+	@MaxValue(10)
+	public int maxValue10 = 5;
+	@MinValue(10)
+	public int minValue0 = 5;
+	@Range(min = 0, max = 10)
+	public int range = 1;
+	@ReadOnly
+	public int readonly = 1;
+	@Separator
+	public int seperatorAbove = 1;
+	@TextBox
+	public String textbox = "Textbox";
+	@ToolTip("An example of a tooltip")
+	public int tooltip = 1;
+	
+	// TODO @EnableIf, @DisableIf, @ShowIf, @HideIf
 
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
@@ -86,6 +98,10 @@ public class TestComponent extends JelloComponent {
 		if (this.printCallbackTraces) {
 			Debug.log("TestComponent#onUpdate(%s)", deltaTime);
 		}
+		
+		if(Input.isKeyPressed(EnumKeys.SPACE.code)) {
+			Debug.log("Space Bar Pressed!");
+		}
 	}
 
 	@Override
@@ -103,23 +119,13 @@ public class TestComponent extends JelloComponent {
 	}
 
 	@Button
-	private void Function1() {
+	private void buttonFunction1() {
 		System.out.println("1");
 	}
 
-	@Button("Function 2")
-	public void Func2() {
+	@Button("Button Function 2")
+	public void btnFunc() {
 		System.out.println("2");
-	}
-
-	@SuppressWarnings("unused")
-	private boolean hideIfFunc() {
-		return true;
-	}
-
-	@SuppressWarnings("unused")
-	private boolean disableIfFunc() {
-		return true;
 	}
 
 	public enum EnumTest {
