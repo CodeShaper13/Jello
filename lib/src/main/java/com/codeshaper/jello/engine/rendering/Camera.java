@@ -77,6 +77,12 @@ public final class Camera extends JelloComponent {
 	 * depths will be rendered on top of Cameras with lower depths.
 	 */
 	public int depth;
+	
+	@Space
+	
+	public Color fogColor = Color.gray;
+	@MinValue(0)
+	public float fogDensity = 0;
 
 	private transient Matrix4f projectionMatrix = new Matrix4f();
 

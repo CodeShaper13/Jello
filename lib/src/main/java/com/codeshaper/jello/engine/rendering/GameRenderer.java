@@ -23,26 +23,31 @@ import com.codeshaper.jello.engine.rendering.shader.ShaderProgram;
 import com.codeshaper.jello.engine.rendering.shader.ShaderData.CullMode;
 
 public class GameRenderer {
-		
+
 	public static final String PROJECTION_MATRIX = "projectionMatrix";
 	public static final String VIEW_MATRIX = "viewMatrix";
 	public static final String GAME_OBJECT_MATRIX = "modelMatrix";
-    
+	public static final String _FOG_COLOR = "_fog.color";
+	public static final String _FOG_DENSITY = "_fog.density";
+
+	
 	private final Shader errorShader;
 	private final HashMap<Material, List<Renderer>> instructions;
-        
+
 	public GameRenderer() {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        
-        this.errorShader = (Shader) AssetDatabase.getInstance().getAsset("builtin/shaders/error.shader");
-        this.instructions = new HashMap<Material, List<Renderer>>(256);
-   	}
-	
-	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int windowWidth, int windowHeight) {
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		this.errorShader = (Shader) AssetDatabase.getInstance().getAsset("builtin/shaders/error.shader");
+		this.instructions = new HashMap<Material, List<Renderer>>(256);
+	}
+
+	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int windowWidth,
+			int windowHeight) {
 		Vector2f viewportPos = camera.viewportPosition;
 		Vector2f viewportSize = camera.viewportSize;
-		float viewportWidth =windowWidth * viewportSize.x;
+		float viewportWidth = windowWidth * viewportSize.x;
 		float viewportHeight = windowHeight * viewportSize.y;
 		glViewport(
 				Math.round(viewportPos.x * windowWidth),
@@ -50,92 +55,94 @@ public class GameRenderer {
 				Math.round(viewportWidth),
 				Math.round(viewportHeight));
 		camera.refreshProjectionMatrix(viewportWidth, viewportHeight);
-		
-        Color clearColor = camera.backgroundColor;
-        glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);        
+
+		Color clearColor = camera.backgroundColor;
+		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		this.instructions.clear();
-		
-		for(Scene scene : sceneManager.getScenes()) {
-    		for(GameObject obj : scene.getRootGameObjects()) {
-    			this.createInstructionsRecursively(obj);
-        	}        
-    	}	
-		
-		for(Material material : this.instructions.keySet()) {
+
+		for (Scene scene : sceneManager.getScenes()) {
+			for (GameObject obj : scene.getRootGameObjects()) {
+				this.createInstructionsRecursively(obj);
+			}
+		}
+
+		for (Material material : this.instructions.keySet()) {
 			Shader shader = material.getShader();
-			
-			if(shader == null || shader.isInvalid()) {
+
+			if (shader == null || shader.isInvalid()) {
 				shader = this.errorShader;
 			}
-									
+
 			ShaderData data = shader.getData();
-			
-			if(data.depth_test) {
+
+			if (data.depth_test) {
 				glEnable(GL_DEPTH_TEST);
 			} else {
 				glDisable(GL_DEPTH_TEST);
 			}
-			
-			if(data.culling == CullMode.OFF) {
+
+			if (data.culling == CullMode.OFF) {
 				glDisable(GL_CULL_FACE);
 			} else {
 				glEnable(GL_CULL_FACE);
-				if(data.culling == null || data.culling == CullMode.BACK) {
+				if (data.culling == null || data.culling == CullMode.BACK) {
 					glCullFace(GL_BACK);
-				} else if(data.culling == CullMode.FRONT) {
+				} else if (data.culling == CullMode.FRONT) {
 					glCullFace(GL_FRONT);
 				} else {
 					glCullFace(GL_FRONT_AND_BACK);
 				}
-			}	
-			
+			}
+
 			ShaderProgram program = shader.getProgram();
 			program.bind();
-			
-			program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());   
-	        program.setUniform(VIEW_MATRIX, viewMatrix);
+
+			program.setUniform(PROJECTION_MATRIX, camera.getProjectionMatrix());
+			program.setUniform(VIEW_MATRIX, viewMatrix);
+			program.setUniform(_FOG_COLOR, camera.fogColor.toVector3f());
+	        program.setUniform(_FOG_DENSITY, camera.fogDensity);
 	        
-	        material.setUniforms();
-	        
-	        List<Renderer> renderers = this.instructions.get(material);
-	        for(Renderer renderer : renderers) {
-	        	program.setUniform(GAME_OBJECT_MATRIX, renderer.getOwner().getWorldMatrix());
-                
-                renderer.onRender();
-	        }
-	        
+			material.setUniforms();
+
+			List<Renderer> renderers = this.instructions.get(material);
+			for (Renderer renderer : renderers) {
+				program.setUniform(GAME_OBJECT_MATRIX, renderer.getOwner().getWorldMatrix());
+
+				renderer.onRender();
+			}
+
 			program.unbind();
 		}
-		
+
 		glBindVertexArray(0);
 	}
-	
+
 	private void createInstructionsRecursively(GameObject gameObject) {
-		if(!gameObject.isActive()) {
+		if (!gameObject.isActive()) {
 			return;
 		}
-		
-		for(JelloComponent component : gameObject.getAllComponents()) {
-			if(component.isEnabled()) {
-				if(component instanceof Renderer) {
-					Renderer renderer = (Renderer)component;
+
+		for (JelloComponent component : gameObject.getAllComponents()) {
+			if (component.isEnabled()) {
+				if (component instanceof Renderer) {
+					Renderer renderer = (Renderer) component;
 					Material material = renderer.getMaterial();
-					if(material != null) {
-    					this.addInstruction(material, renderer);
-    				}	
+					if (material != null) {
+						this.addInstruction(material, renderer);
+					}
 				}
 			}
 		}
-		
-		for(GameObject child : gameObject.getChildren()) {
+
+		for (GameObject child : gameObject.getChildren()) {
 			this.createInstructionsRecursively(child);
 		}
 	}
-		
+
 	private void addInstruction(Material material, Renderer renderer) {
-		if(this.instructions.containsKey(material)) {
+		if (this.instructions.containsKey(material)) {
 			this.instructions.get(material).add(renderer);
 		} else {
 			List<Renderer> list = new ArrayList<Renderer>();

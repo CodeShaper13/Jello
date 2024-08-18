@@ -75,6 +75,10 @@ public class Material extends SerializedJelloObject {
 
 		if (newShader != null && !newShader.isInvalid()) {
 			for (Uniform uniform : newShader.getProgram().getAllUniforms()) {
+				if(uniform.name.startsWith("_")) {
+					continue;
+				}
+				
 				String uniformName = uniform.name;
 				switch (uniform.type) {
 				case int_:
@@ -346,6 +350,7 @@ public class Material extends SerializedJelloObject {
 			program.setUniform(entry.getKey(), entry.getValue());
 		}
 		for (Entry<String, Float> entry : this.floats.entrySet()) {
+			System.out.println("setting float");
 			program.setUniform(entry.getKey(), entry.getValue());
 		}
 		for (Entry<String, Vector2f> entry : this.vec2s.entrySet()) {
@@ -399,6 +404,9 @@ public class Material extends SerializedJelloObject {
 			if (shader != null && !shader.isInvalid()) {
 				for (Uniform uniform : shader.getProgram().getAllUniforms()) {
 					String uniformName = uniform.name;
+					if(uniformName.startsWith("_")) {
+						continue;
+					}
 					
 					String fieldLabel = EditorUtils.formatName(uniformName);
 					

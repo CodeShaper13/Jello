@@ -3,6 +3,7 @@ package com.codeshaper.jello.engine;
 import java.util.Objects;
 
 import org.joml.Math;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class Color {
@@ -87,6 +88,10 @@ public class Color {
 
 	public java.awt.Color toAwtColor() {
 		return new java.awt.Color(this.r, this.g, this.b, this.a);
+	}
+
+	public Vector3f toVector3f() {
+		return new Vector3f(this.r, this.g, this.b);
 	}
 
 	public Vector4f toVector4f() {

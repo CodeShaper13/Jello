@@ -507,7 +507,7 @@ public class GuiBuilder {
 
 	public static JButton colorField(Color color, OnSubmitListerer<Color> listener) {
 		JButton btn = new JButton();
-		btn.setBackground(color.toAwtColor());
+		btn.setBackground(color != null ? color.toAwtColor() : java.awt.Color.black);
 		btn.addActionListener(e -> {
 			java.awt.Color newColor = JColorChooser.showDialog(btn, "Choose Color", btn.getBackground());
 			if (newColor != null) {
