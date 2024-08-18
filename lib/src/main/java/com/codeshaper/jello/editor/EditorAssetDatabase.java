@@ -2,7 +2,6 @@ package com.codeshaper.jello.editor;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -184,26 +183,14 @@ public class EditorAssetDatabase extends AssetDatabase {
 		if (asset == null) {
 			throw new IllegalArgumentException("asset may not be null");
 		}
-
-		File file = asset.location.getFullPath().toFile();
-		try (FileWriter writer = new FileWriter(file)) {
-			// Write the class name as the first line.
-			String fullClassName = asset.getClass().getName();
-			writer.write(fullClassName + "\n");
-
-			Gson gson = this.createGsonBuilder().create();
-
-			this.assetAdapterFactory.wroteRoot = false;
-			asset.onSerialize();
-
-			gson.toJson(asset, writer);
-
-			return true;
+		
+		boolean success = false;
+		try {
+			success = this.serializer.serializeSJO(asset);
 		} catch (IOException e) {
-			e.printStackTrace();
-
-			return false;
+			Debug.log(e);
 		}
+		return success;
 	}
 
 	/**

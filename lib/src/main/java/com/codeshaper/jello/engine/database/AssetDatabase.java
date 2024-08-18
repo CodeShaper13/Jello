@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +16,6 @@ import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -27,16 +25,6 @@ import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
-import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 
 /**
  * An AssetDatabase is responsible for providing a way to access all assets. If
@@ -65,9 +53,8 @@ public class AssetDatabase {
 	protected final ExtensionMapping extentionMapping;
 	protected final ComponentList componentList;
 
-	protected AssetTypeAdapterFactory assetAdapterFactory;
-	protected SerializedJelloObjectInstanceCreator serializedJelloObjectInstanceCreator;
-
+	public Serializer serializer;
+	
 	public static AssetDatabase getInstance() {
 		return instance;
 	}
@@ -85,9 +72,8 @@ public class AssetDatabase {
 		this.extentionMapping = new ExtensionMapping();
 		this.componentList = new ComponentList();
 
-		this.assetAdapterFactory = new AssetTypeAdapterFactory();
-		this.serializedJelloObjectInstanceCreator = new SerializedJelloObjectInstanceCreator(null, null);
-
+		this.serializer = new Serializer(this);
+		
 		this.buildDatabase();
 	}
 
@@ -296,25 +282,6 @@ public class AssetDatabase {
 		return null;
 	}
 
-	public GsonBuilder createGsonBuilder() {
-		GsonBuilder builder = new GsonBuilder();
-
-		builder.setPrettyPrinting();
-		builder.serializeNulls();
-
-		RuntimeTypeAdapterFactory<JelloComponent> componentAdapterFactory = RuntimeTypeAdapterFactory
-				.of(JelloComponent.class);
-		for (Class<JelloComponent> component : this.componentList) {
-			componentAdapterFactory.registerSubtype(component, component.getName());
-		}
-		builder.registerTypeAdapterFactory(componentAdapterFactory);
-
-		this.assetAdapterFactory.wroteRoot = true;
-		builder.registerTypeAdapterFactory(this.assetAdapterFactory);
-
-		return builder;
-	}
-
 	/**
 	 * 
 	 * @param path the path to the Asset.
@@ -351,24 +318,16 @@ public class AssetDatabase {
 			return cachedAsset.instance;
 		} else {
 			// Asset has not been loaded, instantiate the asset.
-			Path fullAssetPath = toFullPath(assetPath);
 			AssetLocation location = new AssetLocation(assetPath);
 			Asset newInstance;
 			Class<? extends Asset> providingClass = cachedAsset.getProvidingClass();
 			if (SerializedJelloObject.class.isAssignableFrom(providingClass)) {
-				// Special construction case.
-				try (BufferedReader br = new BufferedReader(new FileReader(fullAssetPath.toFile()))) {
-					br.readLine(); // Skip the first line, it states the providing class and is not valid JSON.
-
-					GsonBuilder builder = this.createGsonBuilder();
-					builder.registerTypeAdapter(providingClass,
-							new SerializedJelloObjectInstanceCreator(providingClass, location));
-					Gson gson = builder.create();
-
-					newInstance = (Asset) gson.fromJson(br, providingClass);
-					((SerializedJelloObject) newInstance).onDeserialize();
+				@SuppressWarnings("unchecked")
+				Class<SerializedJelloObject> cls = (Class<SerializedJelloObject>) providingClass;
+				try {
+					newInstance = this.serializer.deserialize(location, cls);
 				} catch (IOException e) {
-					e.printStackTrace();
+					Debug.log(e);
 					newInstance = null;
 				}
 			} else {
@@ -503,69 +462,4 @@ public class AssetDatabase {
 		}
 	}
 
-	private class SerializedJelloObjectInstanceCreator implements InstanceCreator<Asset> {
-
-		private final Class<? extends Asset> clazz;
-		private final AssetLocation location;
-
-		public SerializedJelloObjectInstanceCreator(Class<? extends Asset> clazz, AssetLocation location) {
-			this.clazz = clazz;
-			this.location = location;
-		}
-
-		@Override
-		public Asset createInstance(Type type) {
-			return invokeConstructor(this.clazz, this.location);
-		}
-	}
-
-	public class AssetTypeAdapterFactory implements TypeAdapterFactory {
-
-		public boolean wroteRoot;
-
-		public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-			if (!Asset.class.isAssignableFrom(type.getRawType())) {
-				return null;
-			}
-
-			TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
-
-			return new TypeAdapter<T>() {
-
-				public void write(JsonWriter out, T value) throws IOException {
-					if (!wroteRoot) {
-						wroteRoot = true;
-						delegate.write(out, value);
-					} else {
-						Asset asset = (Asset) value;
-						if (asset == null) {
-							out.nullValue();
-						} else {
-							if (asset.isRuntimeAsset()) {
-								out.nullValue();
-							} else {
-								Path path = ((Asset) value).location.getPath();
-								out.value(path.toString());
-							}
-						}
-					}
-				}
-
-				@SuppressWarnings("unchecked")
-				public T read(JsonReader in) throws IOException {
-					JsonToken token = in.peek();
-					if (token == JsonToken.STRING) {
-						String relativePath = in.nextString();
-						Asset asset = getAsset(relativePath);
-						return (T) asset;
-					} else if (token == JsonToken.NULL) {
-						in.nextNull();
-						return null;
-					} else {
-						return delegate.read(in);
-					}
-				}
-			};
-		}
-	}
 }

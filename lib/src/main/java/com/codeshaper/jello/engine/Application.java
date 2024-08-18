@@ -3,14 +3,12 @@ package com.codeshaper.jello.engine;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.io.File;
-import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWNativeWin32;
@@ -22,7 +20,6 @@ import com.codeshaper.jello.engine.audio.SoundManager;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.rendering.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
-import com.google.gson.Gson;
 
 public class Application {
 
@@ -195,16 +192,16 @@ public class Application {
 	}
 
 	private ApplicationSettings loadAppSettings() {
-		Gson gson = AssetDatabase.getInstance().createGsonBuilder().create();
+		ApplicationSettings settings = null;
 		File file = new File("appSettings.json");
 		if (file.exists()) {
-			try (FileReader reader = new FileReader(file)) {
-				return gson.fromJson(reader, ApplicationSettings.class);
+			try {
+				settings = AssetDatabase.getInstance().serializer.deserialize(file, ApplicationSettings.class);
 			} catch (Exception e) {
-				e.printStackTrace();
+				Debug.log(e);
 			}
 		}
-		return new ApplicationSettings(); // Settings are missing?
+		return settings != null ? settings : new ApplicationSettings();
 	}
 
 	private abstract class Loop implements Runnable {

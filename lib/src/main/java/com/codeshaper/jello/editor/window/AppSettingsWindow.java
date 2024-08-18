@@ -2,8 +2,7 @@ package com.codeshaper.jello.editor.window;
 
 import java.awt.BorderLayout;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -20,7 +19,8 @@ import com.codeshaper.jello.engine.ApplicationSettings;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Texture;
 import com.codeshaper.jello.engine.database.AssetDatabase;
-import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 
 public class AppSettingsWindow extends EditorWindow {
 
@@ -74,18 +74,23 @@ public class AppSettingsWindow extends EditorWindow {
 	 * @return
 	 */
 	private ApplicationSettings loadAppSettings() {
-		Gson gson = AssetDatabase.getInstance().createGsonBuilder().create();
+		ApplicationSettings settings = null;
 		
 		if(this.settingsFile.exists()) {
-			try (FileReader reader = new FileReader(this.settingsFile)) {
-				return gson.fromJson(reader, ApplicationSettings.class);
-			} catch (Exception e) {
-				Debug.logError("Error reading Application Settings");
-				e.printStackTrace();
+			try {
+				settings = AssetDatabase.getInstance().serializer.deserialize(
+						this.settingsFile,
+						ApplicationSettings.class);
+			} catch (JsonIOException | JsonSyntaxException | IOException e) {
+				Debug.logError("Error reading appSettings.json");
+
+			}
+			if(settings == null) {
+				Debug.logError("Error reading appSettings.json");
 			}
 		}
 		
-		return new ApplicationSettings();
+		return settings != null ? settings : new ApplicationSettings();
 	}
 
 	
@@ -95,12 +100,15 @@ public class AppSettingsWindow extends EditorWindow {
 	 * @param settings the {@link ApplicationSettings} to save.
 	 */
 	private void saveAppSettings(ApplicationSettings settings) {
-		Gson gson = AssetDatabase.getInstance().createGsonBuilder().create();
-		try (FileWriter writer = new FileWriter(this.settingsFile)) {
-			gson.toJson(settings, writer);
+		boolean success;
+		try {
+			success = AssetDatabase.getInstance().serializer.serialize(settings, this.settingsFile);
 		} catch (Exception e) {
-			Debug.logError("Error saving Application Settings.");
-			e.printStackTrace();
+			success = false;
+		}
+		
+		if(!success) {
+			Debug.logError("Error saving appSettings.json");
 		}
 	}
 

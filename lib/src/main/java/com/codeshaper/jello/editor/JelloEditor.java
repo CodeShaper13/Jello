@@ -100,7 +100,7 @@ public class JelloEditor {
 		JelloEditor.instance = this;
 
 		GLFWErrorCallback.createPrint().set();
-		
+
 		boolean isInitialLoad = false;
 
 		this.rootProjectFolder = projectFolder;
@@ -118,7 +118,7 @@ public class JelloEditor {
 		this.writeEditorVersionFile();
 
 		SoundManager.initialize();
-		
+
 		this.properties = new EditorProperties(new File(this.rootProjectFolder.toFile(), "editor.properties"));
 		this.listenerList = new EventListenerList();
 		this.assetDatabase = new EditorAssetDatabase(this.assetsFolder);
@@ -127,14 +127,14 @@ public class JelloEditor {
 		this.sceneManager = new EditorSceneManager(this);
 
 		this.assetDatabase.rebuild();
-		
+
 		this.window = new EditorMainFrame(this);
 		this.logHandler = this.window.console;
 
 		this.window.sceneView.createContext();
-
-		this.renderer = new GameRenderer();
 		
+		this.renderer = new GameRenderer();
+
 		if (isInitialLoad) {
 			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
 			if (!this.assetDatabase.exists(path)) {
@@ -192,10 +192,14 @@ public class JelloEditor {
 		this.raiseEvent(PlayModeListener.class, (listener) -> {
 			listener.onPlaymodeChange(State.STARTED);
 		});
-		
+
+		SceneSnapshot snapshot = new SceneSnapshot(this.sceneManager);
+
 		this.application = new Application(this.sceneManager, () -> {
 			this.application = null;
-
+			
+			snapshot.restore(this.sceneManager);
+			
 			this.raiseEvent(PlayModeListener.class, (listener) -> {
 				listener.onPlaymodeChange(State.STOPPED);
 			});
@@ -291,7 +295,7 @@ public class JelloEditor {
 		cameraObj.setLocalEulerAngles(20, 0, 0);
 		cameraObj.addComponent(Camera.class);
 		cameraObj.addComponent(AudioListener.class);
-		
+
 		GameObject meshObj = new GameObject("Cube", scene);
 		meshObj.addComponent(MeshRenderer.class);
 
@@ -299,7 +303,7 @@ public class JelloEditor {
 		lightObj.setLocalPosition(0, 0, -2);
 		lightObj.setLocalEulerAngles(20, 45, 0);
 		lightObj.addComponent(DirectionalLight.class);
-		
+
 		this.assetDatabase.saveAsset(scene);
 
 		return scene;
