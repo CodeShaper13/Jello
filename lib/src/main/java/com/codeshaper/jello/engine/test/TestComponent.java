@@ -17,8 +17,6 @@ import com.codeshaper.jello.editor.property.modifier.TextBox;
 import com.codeshaper.jello.editor.property.modifier.ToolTip;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.EnumKeys;
-import com.codeshaper.jello.engine.Input;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.Vector;
 import com.codeshaper.jello.engine.asset.Texture;
@@ -97,10 +95,6 @@ public class TestComponent extends JelloComponent {
 	public void onUpdate(float deltaTime) {
 		if (this.printCallbackTraces) {
 			Debug.log("TestComponent#onUpdate(%s)", deltaTime);
-		}
-		
-		if(Input.isKeyPressed(EnumKeys.SPACE.code)) {
-			Debug.log("Space Bar Pressed!");
 		}
 	}
 

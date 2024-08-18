@@ -185,7 +185,8 @@ public class Application {
 		}
 		
 		this.sceneManager.unloadAllScenes();
-
+		Input.disable();
+		
 		if (this.onClose != null) {
 			this.onClose.run();
 		}
@@ -227,8 +228,6 @@ public class Application {
 		}
 
 		public void preformLoopIteration() {
-			glfwPollEvents();
-
 			long now = System.currentTimeMillis();
 			deltaUpdate += (now - initialTime) / timeU;
 			deltaFps += (now - initialTime) / timeR;
@@ -240,6 +239,8 @@ public class Application {
 			if (deltaUpdate >= 1) {
 				long diffTimeMillis = now - updateTime;
 
+				glfwPollEvents();
+				
 				// Call onStart on every component this is enabled in the scene that hasn't
 				// gotten onStart called on them yet.
 				for (Scene scene : sceneManager.getScenes()) {
@@ -265,6 +266,8 @@ public class Application {
 				}
 				updateTime = now;
 				deltaUpdate--;
+				
+				Input.onEndOfFrame();
 			}
 
 			if (appSettings.targetFps <= 0 || deltaFps >= 1) {
@@ -288,8 +291,6 @@ public class Application {
 				deltaFps--;
 				glfwSwapBuffers(window.windowHandle);
 			}
-
-			Input.onEndOfFrame();
 
 			initialTime = now;
 		}
