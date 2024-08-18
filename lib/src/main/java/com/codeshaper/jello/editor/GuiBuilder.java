@@ -134,7 +134,7 @@ public class GuiBuilder {
 		DisplayAs displayAs = field.getAnnotation(DisplayAs.class);
 		ToolTip tooltip = field.getAnnotation(ToolTip.class);
 
-		JLabel label = new JLabel(displayAs != null ? displayAs.value() : StringUtils.capitalize(field.getFieldName()));
+		JLabel label = new JLabel(displayAs != null ? displayAs.value() : EditorUtils.formatName(field.getFieldName()));
 		if (tooltip != null) {
 			label.setToolTipText(tooltip.value());
 		}
@@ -185,7 +185,7 @@ public class GuiBuilder {
 
 		Button buttonAnnotation = method.getAnnotation(Button.class);
 		if (StringUtils.isWhitespace(buttonAnnotation.value())) {
-			label = method.getName();
+			label = EditorUtils.formatName(method.getName());
 		} else {
 			label = buttonAnnotation.value();
 		}

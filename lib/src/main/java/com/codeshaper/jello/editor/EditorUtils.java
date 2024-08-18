@@ -2,12 +2,15 @@ package com.codeshaper.jello.editor;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.engine.Debug;
 
-public class EditorUtil {
+public class EditorUtils {
+
+	private EditorUtils() { }
 
 	public static boolean invokeMethod(ExposedField exposedField, String methodName)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -29,5 +32,10 @@ public class EditorUtil {
 		}
 
 		return false;
+	}
+
+	public static String formatName(String string) {
+		String[] words = StringUtils.splitByCharacterTypeCamelCase(string);
+		return StringUtils.capitalize(String.join(" ", words));
 	}
 }

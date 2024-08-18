@@ -12,6 +12,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
@@ -399,8 +400,7 @@ public class Material extends SerializedJelloObject {
 				for (Uniform uniform : shader.getProgram().getAllUniforms()) {
 					String uniformName = uniform.name;
 					
-					String[] words = StringUtils.splitByCharacterTypeCamelCase(uniform.name);
-					String fieldLabel = StringUtils.capitalize(String.join(" ", words));
+					String fieldLabel = EditorUtils.formatName(uniformName);
 					
 					switch (uniform.type) {
 					case int_:

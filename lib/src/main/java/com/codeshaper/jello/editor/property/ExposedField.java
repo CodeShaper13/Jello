@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
-import com.codeshaper.jello.editor.EditorUtil;
+import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.ReadOnly;
 
@@ -85,7 +85,7 @@ public class ExposedField implements IExposedField {
 		DisableIf disableIf = this.getAnnotation(DisableIf.class);
 		if(disableIf != null) {
 			try {
-				boolean value = EditorUtil.invokeMethod(this, disableIf.value());
+				boolean value = EditorUtils.invokeMethod(this, disableIf.value());
 				return value;
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				// TODO what should we do with these errors?
