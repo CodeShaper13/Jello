@@ -102,7 +102,7 @@ public class AppSettingsWindow extends EditorWindow {
 	private void saveAppSettings(ApplicationSettings settings) {
 		boolean success;
 		try {
-			success = AssetDatabase.getInstance().serializer.serialize(settings, this.settingsFile);
+			success = AssetDatabase.getInstance().serializer.serializeToFile(settings, this.settingsFile);
 		} catch (Exception e) {
 			success = false;
 		}

@@ -177,12 +177,14 @@ public class Application {
 		return JelloEditor.instance != null;
 	}
 
-	private void cleanup() {
+	private void shutdown() {
 		this.window.cleanup();
 
 		if (!isEditor() && SoundManager.isInitialized()) {
 			SoundManager.shutdown();
 		}
+		
+		this.sceneManager.unloadAllScenes();
 
 		if (this.onClose != null) {
 			this.onClose.run();
@@ -298,7 +300,7 @@ public class Application {
 		@Override
 		public void run() {
 			if (!running || glfwWindowShouldClose(window.windowHandle)) {
-				cleanup();
+				shutdown();
 				return;
 			}
 
@@ -321,7 +323,7 @@ public class Application {
 				this.preformLoopIteration();
 			}
 
-			cleanup();
+			shutdown();
 		}
 	}
 

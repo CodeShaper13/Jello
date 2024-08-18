@@ -186,7 +186,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 		
 		boolean success = false;
 		try {
-			success = this.serializer.serializeSJO(asset);
+			success = this.serializer.serializeScriptableJelloObject(asset);
 		} catch (IOException e) {
 			Debug.log(e);
 		}

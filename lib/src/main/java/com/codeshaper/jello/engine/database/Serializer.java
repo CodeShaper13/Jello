@@ -53,7 +53,7 @@ public class Serializer {
 	 * @param object the object to serialize.
 	 * @return a {@link JsonElement} representing the object.
 	 */
-	public JsonElement serialize(Object object) {
+	public JsonElement serializeToJsonElement(Object object) {
 		Gson gson = this.createGsonBuilder().create();
 		this.setupAssetAdapter(object.getClass());
 
@@ -61,18 +61,22 @@ public class Serializer {
 	}
 
 	/**
-	 * Serializes an object to a {@link File}.
+	 * Serializes an object to a {@link File}. To serialize
+	 * {@link SerializedJelloObject}s,
+	 * {@link Serializer#serializeScriptableJelloObject(SerializedJelloObject)}
+	 * should be used instead. That way the
+	 * {@link SerializedJelloObject#onSerialize()} callback will be invoked and the
+	 * file will be prefixed with the object's type.
 	 * 
-	 * @param object the object to write to the file.
-	 * @param file   the file to write the object to.
-	 * @return {@code true} if there were no errors, {@code false} if there was an
-	 *         error.
+	 * @param object the object to write to the file
+	 * @param file   the file to write the object to
+	 * @return {@code true} if there were no errors
 	 * @throws IOException     if the file exists but is a directory rather than a
 	 *                         regular file, does not exist but cannot be created,
 	 *                         or cannot be opened for any other reason
 	 * @throws JsonIOException if there was a problem writing to file
 	 */
-	public boolean serialize(Object object, File file) throws IOException, JsonIOException {
+	public boolean serializeToFile(Object object, File file) throws IOException, JsonIOException {
 		Gson gson = this.createGsonBuilder().create();
 		this.setupAssetAdapter(object.getClass());
 
@@ -86,12 +90,12 @@ public class Serializer {
 	 * Serializes the current state of a {@link SerializedJelloObject} to it's
 	 * providing file. If the file does not exist, it will be created.
 	 * 
-	 * @param object the {@link SerializedJelloObject} to save.
-	 * @return
+	 * @param object the {@link SerializedJelloObject} to save
+	 * @return {@code true} if there were no errors
 	 * @throws IOException       If an I/O error occurred
 	 * @throws SecurityException
 	 */
-	public boolean serializeSJO(SerializedJelloObject object) throws IOException {
+	public boolean serializeScriptableJelloObject(SerializedJelloObject object) throws IOException {
 		File file = object.location.getFullPath().toFile();
 		if (!file.exists()) {
 			file.createNewFile();
@@ -105,8 +109,7 @@ public class Serializer {
 			Gson gson = this.createGsonBuilder().create();
 			this.setupAssetAdapter(object.getClass());
 
-			object.onSerialize();
-
+			this.safelyInvokeOnSerialize(object);
 			gson.toJson(object, writer);
 
 			return true;
@@ -159,18 +162,20 @@ public class Serializer {
 	}
 
 	/**
-	 * Deserializes a {@link SerializedJelloObject}. After deserializing the object,
-	 * {@link SerializedJelloObject#onDeserialize()} is invoked. If the call throws
-	 * an exception, the exception is swallowed and an error is logged.
+	 * Deserializes a {@link SerializedJelloObject} from a file. After deserializing
+	 * the object, {@link SerializedJelloObject#onDeserialize()} is invoked. If the
+	 * call throws an exception, the exception is swallowed and an error is logged.
 	 * 
 	 * @param location the location of the Asset to deserialize.
 	 * @param cls      the type to deserialize the Json to.
 	 * @return the {@link SerializedJelloObject} that was created, of {@code null}
 	 *         if there was an error.
-	 * @throws IOException if an I/O error occurs
+	 * @throws JsonSyntaxException if json is not a valid representation for an
+	 *                             object of type cls
+	 * @throws IOException         if an I/O error occurs
 	 */
-	public SerializedJelloObject deserialize(AssetLocation location, Class<? extends SerializedJelloObject> cls)
-			throws IOException {
+	public <T extends SerializedJelloObject> T deserialize(AssetLocation location, Class<T> cls)
+			throws JsonSyntaxException, IOException {
 		InputStream stream = location.getInputSteam();
 		if (stream == null) {
 			return null;
@@ -179,17 +184,13 @@ public class Serializer {
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
 			br.readLine(); // Skip the first line, it states the providing class and is not valid JSON.
 
-			GsonBuilder builder = this.createGsonBuilder();
-			builder.registerTypeAdapter(cls,
-					new SerializedJelloObjectInstanceCreator(cls, location));
-			Gson gson = builder.create();
+			Gson gson = this.createGsonBuilder()
+					.registerTypeAdapter(cls, new SerializedJelloObjectInstanceCreator(cls, location))
+					.create();
 
-			SerializedJelloObject newInstance = gson.fromJson(br, cls);
-
-			try {
-				newInstance.onDeserialize();
-			} catch (Exception e) {
-				Debug.log(e, this);
+			T newInstance = gson.fromJson(br, cls);
+			if (newInstance != null) {
+				this.safelyInvokeOnDeserialize(newInstance);
 			}
 
 			return newInstance;
@@ -223,6 +224,26 @@ public class Serializer {
 		return builder;
 	}
 
+	private boolean safelyInvokeOnSerialize(SerializedJelloObject object) {
+		try {
+			object.onDeserialize();
+			return true;
+		} catch (Exception e) {
+			Debug.log(e, this);
+			return false;
+		}
+	}
+
+	private boolean safelyInvokeOnDeserialize(SerializedJelloObject object) {
+		try {
+			object.onDeserialize();
+			return true;
+		} catch (Exception e) {
+			Debug.log(e, this);
+			return false;
+		}
+	}
+
 	private class SerializedJelloObjectInstanceCreator implements InstanceCreator<Asset> {
 
 		private final Class<? extends Asset> clazz;
@@ -238,7 +259,7 @@ public class Serializer {
 			return database.invokeConstructor(this.clazz, this.location);
 		}
 	}
-	
+
 	private class AssetTypeAdapterFactory implements TypeAdapterFactory {
 
 		public boolean wroteRoot;

@@ -193,7 +193,7 @@ public class JelloEditor {
 			listener.onPlaymodeChange(State.STARTED);
 		});
 
-		SceneSnapshot snapshot = new SceneSnapshot(this.sceneManager);
+		SceneManagerSnapshot snapshot = new SceneManagerSnapshot(this.sceneManager);
 
 		this.application = new Application(this.sceneManager, () -> {
 			this.application = null;
@@ -219,11 +219,6 @@ public class JelloEditor {
 		}
 
 		this.application.stop();
-		this.application = null;
-
-		this.raiseEvent(PlayModeListener.class, (listener) -> {
-			listener.onPlaymodeChange(State.STOPPED);
-		});
 	}
 
 	/**
