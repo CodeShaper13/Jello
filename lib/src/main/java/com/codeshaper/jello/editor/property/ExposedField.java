@@ -2,7 +2,6 @@ package com.codeshaper.jello.editor.property;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 
 import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
@@ -12,7 +11,7 @@ public class ExposedField implements IExposedField {
 
 	public final Object instance;
 	public final Field backingField;
-	
+
 	public ExposedField(Object instance, String fieldName) {
 		this.instance = instance;
 
@@ -23,13 +22,13 @@ public class ExposedField implements IExposedField {
 		} catch (NoSuchFieldException | SecurityException e) {
 			e.printStackTrace();
 		}
-		
+
 		this.backingField = field;
 	}
 
 	public ExposedField(Object instance, Field field) {
 		this.instance = instance;
-		
+
 		field.trySetAccessible();
 		this.backingField = field;
 	}
@@ -43,11 +42,11 @@ public class ExposedField implements IExposedField {
 	public Class<?> getType() {
 		return this.backingField.getType();
 	}
-	
+
 	@Override
 	public Object get() {
 		try {
-			if(this.backingField.canAccess(this.instance)) {
+			if (this.backingField.canAccess(this.instance)) {
 				return this.backingField.get(this.instance);
 			} else {
 				System.out.println("Can't get field value, it is inaccessible.");
@@ -62,7 +61,7 @@ public class ExposedField implements IExposedField {
 	@Override
 	public boolean set(Object value) {
 		try {
-			if(this.backingField.canAccess(this.instance)) {
+			if (this.backingField.canAccess(this.instance)) {
 				this.backingField.set(this.instance, value);
 				return true;
 			} else {
@@ -75,23 +74,18 @@ public class ExposedField implements IExposedField {
 
 		return false;
 	}
-	
+
 	@Override
 	public boolean isReadOnly() {
-		if(this.backingField.isAnnotationPresent(ReadOnly.class)) {
+		if (this.backingField.isAnnotationPresent(ReadOnly.class)) {
 			return true;
 		}
-		
+
 		DisableIf disableIf = this.getAnnotation(DisableIf.class);
-		if(disableIf != null) {
-			try {
-				boolean value = EditorUtils.invokeMethod(this, disableIf.value());
-				return value;
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				// TODO what should we do with these errors?
-			}
+		if (disableIf != null) {
+			return EditorUtils.evaluteLine(this, disableIf.value());
 		}
-		
+
 		return false;
 	}
 
@@ -99,7 +93,7 @@ public class ExposedField implements IExposedField {
 	public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
 		return this.backingField.getAnnotation(annotationType);
 	}
-	
+
 	@Override
 	public ExposedField getSubProperty(String name) {
 		try {

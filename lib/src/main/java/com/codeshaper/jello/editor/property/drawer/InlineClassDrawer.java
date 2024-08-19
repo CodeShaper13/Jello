@@ -26,7 +26,7 @@ public abstract class InlineClassDrawer extends FieldDrawer {
 				continue;
 			}
 			JComponent component = GuiBuilder.field(subField);
-			if(horizontalArea != null) {
+			if(component != null) {
 				// Makes the labels take up the minimal amount of space.
 				if(component instanceof JPanel) {
 					JPanel panel = (JPanel)component;

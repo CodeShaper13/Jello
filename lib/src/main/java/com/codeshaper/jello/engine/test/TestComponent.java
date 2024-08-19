@@ -4,9 +4,11 @@ import org.joml.Quaternionf;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
+import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
 import com.codeshaper.jello.editor.property.modifier.DontExposeField;
 import com.codeshaper.jello.editor.property.modifier.ExposeField;
+import com.codeshaper.jello.editor.property.modifier.HideIf;
 import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
@@ -42,13 +44,19 @@ public class TestComponent extends JelloComponent {
 	public Texture myAssetReference = null;
 	
 	@Space
-	
+
+	@DisableIf("!myBool")
+	public int disableIf0 = 1;
+	@DisableIf("disableIfFunc()")
+	public int disableIf = 1;
 	@DisplayAs("Custom Name!")
 	public int customName = 1;
 	@DontExposeField
 	public int hidden;
 	@ExposeField
 	private int myPrivateField;
+	@HideIf("myBool")
+	public int hideIf;
 	@MaxValue(10)
 	public int maxValue10 = 5;
 	@MinValue(10)
@@ -64,8 +72,6 @@ public class TestComponent extends JelloComponent {
 	@ToolTip("An example of a tooltip")
 	public int tooltip = 1;
 	
-	// TODO @EnableIf, @DisableIf, @ShowIf, @HideIf
-
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
 		gizmos.color(Color.white.setA(0.5f));
@@ -122,6 +128,11 @@ public class TestComponent extends JelloComponent {
 		System.out.println("2");
 	}
 
+	@SuppressWarnings("unused")
+	private boolean disableIfFunc() {
+		return true;
+	}
+		
 	public enum EnumTest {
 		APPLE,
 		BANANA,

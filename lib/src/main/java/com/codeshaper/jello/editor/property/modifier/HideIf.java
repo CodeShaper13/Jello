@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Hides a field if a method evaluates to true.
+ * Hides a field if a field or method evaluates to true.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

@@ -47,6 +47,7 @@ import com.codeshaper.jello.editor.property.drawer.FieldDrawerRegistry;
 import com.codeshaper.jello.editor.property.drawer.FieldDrawer;
 import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.DisplayAs;
+import com.codeshaper.jello.editor.property.modifier.HideIf;
 import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
@@ -607,6 +608,13 @@ public class GuiBuilder {
 		if (fieldDrawerRegistry == null) {
 			System.out.println("GuiBuilder#init() must be called before using GuiBuilder#field()");
 			return GuiBuilder.label("ERROR"); // PRevent possible Null Pointer Exception.
+		}
+		
+		HideIf hideIf = field.getAnnotation(HideIf.class);
+		if(hideIf != null) {
+			if(EditorUtils.evaluteLine((ExposedField) field, hideIf.value())) {
+				return null;
+			}
 		}
 
 		if (field.getType().isArray()) {
