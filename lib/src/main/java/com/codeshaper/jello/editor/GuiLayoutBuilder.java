@@ -15,6 +15,7 @@ import javax.swing.SwingConstants;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -229,6 +230,10 @@ public class GuiLayoutBuilder {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.vector4fField(value, listener)));
 	}
 
+	public void quaternionField(String label, Quaternionf value, OnSubmitListerer<Quaternionf> listener) {
+		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.quaternionField(value, listener)));
+	}
+	
 	public void colorField(String label, Color color, OnSubmitListerer<Color> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.colorField(color, listener)));
 	}

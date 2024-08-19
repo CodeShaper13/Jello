@@ -57,6 +57,7 @@ import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.MathHelper;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
@@ -266,7 +267,8 @@ public class GuiBuilder {
 					field.set(v);
 				});
 			} else {
-				Debug.logWarning("Range annotation can only be on fields of type int, float, double and their wrapper classes.");
+				Debug.logWarning(
+						"Range annotation can only be on fields of type int, float, double and their wrapper classes.");
 				return null;
 			}
 		} else {
@@ -502,7 +504,34 @@ public class GuiBuilder {
 	}
 
 	public static JPanel quaternionField(Quaternionf quaternion, OnSubmitListerer<Quaternionf> listener) {
-		return null;
+		JPanel panel = GuiBuilder.horizontalArea();
+
+		Vector3f eu = MathHelper.quaternionToEulerAnglesDegrees(quaternion);
+
+		JNumberField xField = GuiBuilder.floatField(eu.x, null);
+		JNumberField yField = GuiBuilder.floatField(eu.y, null);
+		JNumberField zField = GuiBuilder.floatField(eu.z, null);
+
+		OnSubmitListerer<Float> l = (v) -> {
+			Vector3f eulerDegrees = new Vector3f(
+					(float) xField.getValue(),
+					(float) yField.getValue(),
+					(float) zField.getValue());
+			listener.onSubmit(MathHelper.quaternionFromEulerAnglesDegrees(eulerDegrees));
+		};
+
+		addNumberFieldListeners(xField, l);
+		addNumberFieldListeners(yField, l);
+		addNumberFieldListeners(zField, l);
+
+		panel.add(new JLabel("X"));
+		panel.add(xField);
+		panel.add(new JLabel("Y"));
+		panel.add(yField);
+		panel.add(new JLabel("Z"));
+		panel.add(zField);
+
+		return panel;
 	}
 
 	public static JButton colorField(Color color, OnSubmitListerer<Color> listener) {

@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
@@ -152,7 +151,9 @@ public class GameObjectEditor extends Editor<GameObject> {
 		builder.vector3fField("Position", this.target.getLocalPosition(), (v) -> {
 			this.target.setLocalPosition(v);
 		});
-		builder.field(new ExposedField(this.target, "localRotation"));
+		builder.quaternionField("Rotation", this.target.getLocalRotation(), (v) -> {
+			this.target.setLocalRotation(v);
+		});
 		builder.vector3fField("Scale", this.target.getLocalScale(), (v) -> {
 			this.target.setLocalScale(v);
 		});
