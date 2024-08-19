@@ -680,6 +680,43 @@ public final class GameObject implements IInspectable {
 		return this.components.get(index);
 	}
 
+	/**
+	 * Moves a {@link JelloComponent} up or down in the list of components. If the
+	 * component can't be moved up or down because it is already at the front or
+	 * back respectively, nothing happens.
+	 * 
+	 * @param component the component to move
+	 * @param direction the direction to move the component, -1 = closer to the
+	 *                  front of the list, 1 = closer to the back of the list.
+	 * @return {@code true} if the component was moved in the list.
+	 */
+	public boolean moveComponent(JelloComponent component, int direction) {
+		if (!(direction == -1 || direction == 1)) {
+			return false;
+		}
+
+		int index = this.components.indexOf(component);
+		if (index == -1) {
+			return false;
+		}
+
+		if (direction == -1) {
+			if (index == 0) {
+				return false; // Already at the front of the list.
+			}
+			this.components.remove(index);
+			this.components.add(index - 1, component);
+			return true;
+		} else { // direction == 1
+			if (index == this.components.size() - 1) {
+				return false; // Already at the back of the list.
+			}
+			this.components.remove(index);
+			this.components.add(index + 1, component);
+			return true;
+		}
+	}
+
 	public Iterable<JelloComponent> getAllComponents() {
 		return this.components;
 	}
@@ -759,7 +796,7 @@ public final class GameObject implements IInspectable {
 			}
 		}
 	}
-	
+
 	interface ILogic {
 
 		void invoke(JelloComponent component);

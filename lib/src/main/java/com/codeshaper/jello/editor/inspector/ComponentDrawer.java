@@ -75,6 +75,10 @@ public class ComponentDrawer<T extends JelloComponent> {
 
 	public class ComponentHeader extends JPanel {
 
+		public static ImageIcon moveUpIcon = new ImageIcon(
+				ComponentDrawer.class.getResource("/editor/icons/component_moveUp.png"));
+		public static ImageIcon moveDownIcon = new ImageIcon(
+				ComponentDrawer.class.getResource("/editor/icons/component_moveDown.png"));
 		public static ImageIcon helpIcon = new ImageIcon(
 				ComponentDrawer.class.getResource("/editor/icons/component_help.png"));
 		public static ImageIcon editIcon = new ImageIcon(
@@ -94,7 +98,7 @@ public class ComponentDrawer<T extends JelloComponent> {
 			});
 
 			String label = component.getClass().getSimpleName();
-			Icon icon = this.getComponentIcon(component);			
+			Icon icon = this.getComponentIcon(component);
 			JLabel componentName = new JLabel(label, icon, SwingConstants.RIGHT);
 
 			GridBagConstraints labelConstraint = new GridBagConstraints();
@@ -102,6 +106,19 @@ public class ComponentDrawer<T extends JelloComponent> {
 
 			this.add(toggle);
 			this.add(componentName, labelConstraint);
+
+			this.addButton(moveUpIcon, "Move component up", e -> {
+				if (component.getOwner().moveComponent(component, -1)) {
+					JelloEditor.getWindow(InspectorWindow.class).refresh();
+				}
+			});
+			this.addButton(moveDownIcon, "Move component down", e -> {
+				if(component.getOwner().moveComponent(component, 1)) {
+					JelloEditor.getWindow(InspectorWindow.class).refresh();
+				}
+			});
+
+			this.add(Box.createHorizontalStrut(10));
 
 			String url = getHelpUrl();
 			boolean hasHelpLink = !StringUtils.isWhitespace(url);
@@ -143,13 +160,13 @@ public class ComponentDrawer<T extends JelloComponent> {
 
 			return btn;
 		}
-		
+
 		private Icon getComponentIcon(JelloComponent component) {
 			ComponentIcon annotation = component.getClass().getAnnotation(ComponentIcon.class);
-			if(annotation != null) {
+			if (annotation != null) {
 				String path = annotation.value();
 				URL url = ComponentDrawer.class.getResource(path);
-				if(url != null) {
+				if (url != null) {
 					return new ImageIcon(url);
 				} else {
 					Debug.logError("Couldn't load component icon at ", path);
