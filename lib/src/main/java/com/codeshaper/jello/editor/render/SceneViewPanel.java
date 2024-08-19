@@ -16,6 +16,7 @@ import org.lwjgl.opengl.GL;
 import com.codeshaper.jello.editor.GizmoDrawer;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.swing.AWTGLCanvasContextControl;
+import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
@@ -58,7 +59,10 @@ public class SceneViewPanel extends JPanel {
 						return;
 					}
 
-					canvas.render();
+					boolean isPlaying = Application.isPlaying();
+					if(!isPlaying || (isPlaying && toolbar.redrawInPlayMode())) {
+						canvas.render();
+					}
 				});
 			}
 		}, 0, 1000L / FPS);
