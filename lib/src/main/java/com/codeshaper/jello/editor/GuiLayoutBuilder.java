@@ -1,6 +1,7 @@
 package com.codeshaper.jello.editor;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -43,7 +44,12 @@ public class GuiLayoutBuilder {
 	private JPanel horizontalPanel;
 
 	public GuiLayoutBuilder() {
-		this.panel = new JPanel();
+		this.panel = new JPanel() {
+			@Override
+			public Dimension getPreferredSize() {
+				return new Dimension(100, super.getPreferredSize().height);
+			}
+		};
 		this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
 	}
 

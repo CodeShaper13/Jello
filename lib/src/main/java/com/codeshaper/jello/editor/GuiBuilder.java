@@ -325,7 +325,7 @@ public class GuiBuilder {
 			});
 		}
 
-		return combine(slider, field);
+		return horizontalArea(slider, field);
 	}
 
 	public static JPanel floatSlider(float min, float max, float value, OnSubmitListerer<Float> listener) {
@@ -357,7 +357,7 @@ public class GuiBuilder {
 			});
 		}
 
-		return combine(slider, field);
+		return horizontalArea(slider, field);
 	}
 
 	public static JPanel vector2iField(Vector2i value, OnSubmitListerer<Vector2i> listener) {

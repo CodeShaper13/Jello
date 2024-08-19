@@ -1,5 +1,6 @@
 package com.codeshaper.jello.editor.swing;
 
+import java.awt.Dimension;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.regex.Matcher;
@@ -72,7 +73,12 @@ public class JNumberField extends JFormattedTextField {
 
 		this.setFormatterFactory(new DefaultFormatterFactory(formatter));
 	}
-
+	
+	@Override
+	public Dimension getMinimumSize() {
+		return new Dimension(40, super.getMinimumSize().height);
+	}
+	
 	public void setMin(double min) {
 		this.hasMinValue = true;
 		this.minValue = min;
