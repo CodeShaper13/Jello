@@ -24,7 +24,7 @@ import com.codeshaper.jello.engine.JelloComponent;
  * There can be an unlimited number of Camera's at any time. The order in which
  * camera are rendered is controlled by the {@link Camera#depth} field.
  */
-@ComponentName("Camera")
+@ComponentName("Rendering/Camera")
 @ComponentIcon("/editor/componentIcons/camera.png")
 public final class Camera extends JelloComponent {
 
