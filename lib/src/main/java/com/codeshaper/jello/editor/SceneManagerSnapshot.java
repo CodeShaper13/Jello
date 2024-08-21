@@ -47,7 +47,7 @@ public class SceneManagerSnapshot {
 
 			// Add all GameObjects that existed prior to play mode.
 			Scene originalScene = serialize.deserialize(data.json, Scene.class);
-			for (int i = originalScene.getRootGameObjectCount() - 1; i >= 0; i--) {
+			for (int i = 0; i < originalScene.getRootGameObjectCount(); i++) {
 				GameObject obj = originalScene.getRootGameObject(i);
 				scene.moveGameObjectTo(obj);
 			}
