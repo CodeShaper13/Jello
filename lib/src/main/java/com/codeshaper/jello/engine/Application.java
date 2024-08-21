@@ -259,7 +259,7 @@ public class Application {
 					for (GameObject rootObject : scene.getRootGameObjects()) {
 						rootObject.invokeRecursively(rootObject, (c) -> {
 							if (c.isEnabledInScene()) {
-								c.onUpdate(diffTimeMillis);
+								c.onUpdate(diffTimeMillis / 1_000f);
 							}
 						});
 					}
