@@ -274,15 +274,14 @@ public class Application {
 				for (Camera camera : Camera.getAllCameras()) {
 					// TODO sort with Camera#depth
 					if (camera.isEnabled()) {
-						Matrix4f m = camera.getOwner().getLocalMatrix();
-						Vector3f v = new Vector3f();
-						m.getTranslation(v);
+						Matrix4f viewMatrix = camera.getOwner().getWorldMatrix();
+						Vector3f v = viewMatrix.getTranslation(new Vector3f());
 						v.mul(-1f);
-						m.setTranslation(v);
+						viewMatrix.setTranslation(v);
 						renderer.render(
 								sceneManager,
 								camera,
-								m,
+								viewMatrix,
 								window.getWidth(),
 								window.getHeight());
 					}

@@ -5,7 +5,7 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Texture;
 
-@ComponentName("Sprite Renderer")
+@ComponentName("Rendering/Sprite Renderer")
 public final class SpriteRenderer extends JelloComponent {
 
 	public Texture sprite;

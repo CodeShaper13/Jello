@@ -7,7 +7,7 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Material;
 
-@ComponentName("Line Renderer")
+@ComponentName("Rendering/Line Renderer")
 public final class LineRenderer extends JelloComponent {
 
 	public Vector3d[] points;

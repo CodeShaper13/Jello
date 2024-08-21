@@ -355,6 +355,10 @@ public class HierarchyWindow extends EditorWindow {
 
 			JMenuItem delete = new JMenuItem("Delete");
 			delete.addActionListener(e -> {
+				InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
+				if(inspector.getTarget() == gameObject) {
+					inspector.setTarget(null);
+				}
 				gameObject.destroy();
 				model.reload(tree.getSelectionPath().getParentPath());
 			});
