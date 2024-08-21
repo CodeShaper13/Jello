@@ -32,7 +32,7 @@ public abstract class JelloComponent {
 
 	boolean enabled;
 
-	transient GameObject gameObject;
+	transient GameObject owner;
 	transient boolean hasOnStartBeenCalled;
 
 	/**
@@ -41,8 +41,8 @@ public abstract class JelloComponent {
 	 * 
 	 * @return the GameObject that owns this GameObject.
 	 */
-	public final GameObject getOwner() {
-		return this.gameObject;
+	public final GameObject gameObject() {
+		return this.owner;
 	}
 
 	public final void setEnabled(boolean enabled) {
@@ -54,7 +54,7 @@ public abstract class JelloComponent {
 
 		this.enabled = enabled;
 
-		if (this.getOwner().isActiveInScene()) {
+		if (this.gameObject().isActiveInScene()) {
 			if (!wasEnabled && enabled) {
 				this.invokeOnEnable();
 			} else if (wasEnabled && !enabled) {
@@ -84,7 +84,7 @@ public abstract class JelloComponent {
 	 * @see GameObject#isActiveInScene()
 	 */
 	public final boolean isEnabledInScene() {
-		return this.enabled && this.gameObject.isActiveInScene();
+		return this.enabled && this.owner.isActiveInScene();
 	}
 
 	/**
@@ -177,14 +177,14 @@ public abstract class JelloComponent {
 	 */
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
 		if (isSelected) {
-			Vector3f position = this.gameObject.getPosition();
+			Vector3f position = this.owner.getPosition();
 			Vector3f preAllocVec = new Vector3f();
 			gizmos.color(Color.red);
-			gizmos.drawRay(position, this.gameObject.getRight(preAllocVec));
+			gizmos.drawRay(position, this.owner.getRight(preAllocVec));
 			gizmos.color(Color.green);
-			gizmos.drawRay(position, this.gameObject.getUp(preAllocVec));
+			gizmos.drawRay(position, this.owner.getUp(preAllocVec));
 			gizmos.color(Color.blue);
-			gizmos.drawRay(position, this.gameObject.getForward(preAllocVec));
+			gizmos.drawRay(position, this.owner.getForward(preAllocVec));
 		}
 	}
 

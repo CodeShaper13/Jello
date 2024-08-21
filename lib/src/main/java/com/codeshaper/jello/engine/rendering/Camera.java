@@ -105,7 +105,7 @@ public final class Camera extends JelloComponent {
 		super.onDrawGizmos(gizmos, isSelected);
 
 		float aspect = 1f;
-		GameObject gameObject = this.getOwner();
+		GameObject gameObject = this.gameObject();
 
 		gizmos.color(Color.white);
 		gizmos.drawFrustum(

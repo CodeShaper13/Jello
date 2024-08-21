@@ -39,7 +39,7 @@ public final class SpotLight extends AbstractLight {
 		if(isSelected) {
 			gizmos.color(AbstractLight.gizmoColor);
 			
-			GameObject gameObject = this.getOwner();
+			GameObject gameObject = this.gameObject();
 
 			Vector3f alloc0 = new Vector3f();
 			Vector3f alloc1 = new Vector3f();

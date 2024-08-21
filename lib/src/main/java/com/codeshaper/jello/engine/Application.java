@@ -274,7 +274,7 @@ public class Application {
 				for (Camera camera : Camera.getAllCameras()) {
 					// TODO sort with Camera#depth
 					if (camera.isEnabled()) {
-						Matrix4f viewMatrix = camera.getOwner().getWorldMatrix();
+						Matrix4f viewMatrix = camera.gameObject().getWorldMatrix();
 						Vector3f v = viewMatrix.getTranslation(new Vector3f());
 						v.mul(-1f);
 						viewMatrix.setTranslation(v);

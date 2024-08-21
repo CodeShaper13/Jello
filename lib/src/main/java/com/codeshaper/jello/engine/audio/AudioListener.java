@@ -35,7 +35,7 @@ public final class AudioListener extends JelloComponent {
 
 		audioListenerCount++;
 		
-		Vector3f pos = this.getOwner().getPosition(this.worldPosLastFrame);
+		Vector3f pos = this.gameObject().getPosition(this.worldPosLastFrame);
 		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
 		alListener3f(AL_VELOCITY, 0, 0, 0);
 		
@@ -50,7 +50,7 @@ public final class AudioListener extends JelloComponent {
 			Debug.logWarning("There are %s Audio Listeners active, there should only be at most 1", audioListenerCount);
 		}
 		
-		GameObject owner = this.getOwner();
+		GameObject owner = this.gameObject();
 		
 		Vector3f pos = owner.getPosition();
 		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);

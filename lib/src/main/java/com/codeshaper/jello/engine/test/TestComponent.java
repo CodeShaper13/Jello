@@ -75,7 +75,7 @@ public class TestComponent extends JelloComponent {
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
 		gizmos.color(Color.white.setA(0.5f));
-		gizmos.drawCube(this.getOwner().getPosition(), new Quaternionf(), Vector.vector3Zero());
+		gizmos.drawCube(this.gameObject().getPosition(), new Quaternionf(), Vector.vector3Zero());
 	}
 	
 	@Override

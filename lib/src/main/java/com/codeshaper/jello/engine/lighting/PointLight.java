@@ -29,7 +29,7 @@ public final class PointLight extends AbstractLight {
 		
 		if(isSelected) {
 			gizmos.color(AbstractLight.gizmoColor);
-			gizmos.drawWireSphere(this.getOwner().getPosition(), this.range);
+			gizmos.drawWireSphere(this.gameObject().getPosition(), this.range);
 		}
 	}
 	

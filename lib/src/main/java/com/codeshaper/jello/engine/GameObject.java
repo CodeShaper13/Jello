@@ -345,7 +345,7 @@ public final class GameObject implements IInspectable {
 	public void destroy() {
 		if (Application.isPlaying()) {
 			this.invokeRecursively(this, (c) -> {
-				c.getOwner().removeComponent(c);
+				c.gameObject().removeComponent(c);
 
 			});
 		}
@@ -533,7 +533,7 @@ public final class GameObject implements IInspectable {
 		// TODO handle errors.
 		try {
 			T component = type.getDeclaredConstructor().newInstance();
-			component.gameObject = this;
+			component.owner = this;
 			component.enabled = true;
 			this.components.add(component);
 
@@ -762,14 +762,14 @@ public final class GameObject implements IInspectable {
 			if (active) {
 				this.isActive = true;
 				this.invokeRecursively(this, (c) -> {
-					GameObject obj = c.getOwner();
+					GameObject obj = c.gameObject();
 					if (obj.isActive && c.isEnabled()) {
 						c.invokeOnEnable();
 					}
 				});
 			} else {
 				this.invokeRecursively(this, (c) -> {
-					GameObject obj = c.getOwner();
+					GameObject obj = c.gameObject();
 					if (obj.isActive && c.isEnabled()) {
 						c.invokeOnDisable();
 					}

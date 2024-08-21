@@ -58,6 +58,7 @@ public class Scene extends SerializedJelloObject {
 		}
 
 		this.rootGameObjects.add(gameObject);
+		gameObject.scene = this;
 	}
 
 	/**
@@ -93,7 +94,7 @@ public class Scene extends SerializedJelloObject {
 	private void recursivelySetupObject(GameObject gameObject) {
 		gameObject.scene = this;
 		for(JelloComponent component : gameObject.getAllComponents()) {
-			component.gameObject = gameObject;
+			component.owner = gameObject;
 		}
 		
 		for(GameObject child : gameObject.getChildren()) {

@@ -25,7 +25,7 @@ public final class DirectionalLight extends AbstractLight {
 		
 		if(isSelected) {
 			gizmos.color(AbstractLight.gizmoColor);
-			GameObject gameObject = this.getOwner();
+			GameObject gameObject = this.gameObject();
 			Vector3f pos = gameObject.getPosition();
 			gizmos.drawLine(pos, gameObject.getForward().mul(3).add(pos));
 		}

@@ -108,12 +108,12 @@ public class ComponentDrawer<T extends JelloComponent> {
 			this.add(componentName, labelConstraint);
 
 			this.addButton(moveUpIcon, "Move component up", e -> {
-				if (component.getOwner().moveComponent(component, -1)) {
+				if (component.gameObject().moveComponent(component, -1)) {
 					JelloEditor.getWindow(InspectorWindow.class).refresh();
 				}
 			});
 			this.addButton(moveDownIcon, "Move component down", e -> {
-				if(component.getOwner().moveComponent(component, 1)) {
+				if(component.gameObject().moveComponent(component, 1)) {
 					JelloEditor.getWindow(InspectorWindow.class).refresh();
 				}
 			});
@@ -137,7 +137,7 @@ public class ComponentDrawer<T extends JelloComponent> {
 			});
 
 			this.addButton(removeIcon, "Remove Component", e -> {
-				component.getOwner().removeComponent(component);
+				component.gameObject().removeComponent(component);
 				JelloEditor.getWindow(InspectorWindow.class).refresh();
 			});
 		}

@@ -108,7 +108,7 @@ public class GameRenderer {
 
 			List<Renderer> renderers = this.instructions.get(material);
 			for (Renderer renderer : renderers) {
-				program.setUniform(GAME_OBJECT_MATRIX, renderer.getOwner().getWorldMatrix());
+				program.setUniform(GAME_OBJECT_MATRIX, renderer.gameObject().getWorldMatrix());
 
 				renderer.onRender();
 			}
