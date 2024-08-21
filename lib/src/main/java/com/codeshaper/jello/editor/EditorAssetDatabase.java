@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.attribute.FileTimes;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,17 +17,17 @@ import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.SceneManager;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.Script;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.database.ComponentList;
-import com.google.gson.Gson;
 
 public class EditorAssetDatabase extends AssetDatabase {
 
 	private final ScriptCompiler compiler;
-	
+
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
 
@@ -52,11 +53,14 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 */
 	public void rebuild() {
 		boolean verboseMode = true;
-		
+
 		Debug.log("[Editor] Building Database...");
-		
+
 		this.invokeEvent(Phase.PRE_REBUILD);
-				
+
+		SceneManager sceneManager = JelloEditor.instance.sceneManager;
+		SceneManagerSnapshot snapshot = new SceneManagerSnapshot(sceneManager);
+
 		// Check all the Assets and if the file that provides them no longer exists,
 		// remove the Asset from the Database.
 		for (int i = this.assets.size() - 1; i >= 0; --i) {
@@ -66,38 +70,47 @@ public class EditorAssetDatabase extends AssetDatabase {
 			}
 			Path path = asset.getFullPath();
 			if (!Files.exists(path)) {
-				if(verboseMode) {
+				if (verboseMode) {
 					Debug.log("Removing %s from Database.  It's backing file is missing.", asset.getPath());
 				}
 				this.remove(asset);
 			}
 		}
 
+		// Compile all scripts.
 		this.compiler.compileProject();
 		this.extentionMapping.compileProjectMappings(this.compiler);
 		this.componentList.compileProjectComponents(this.compiler);
-		
+
 		Collection<File> allFiles = FileUtils.listFiles(this.assetsFolder.toFile(), null, true);
-		
+
 		// Create new Assets.
-		for(File file : allFiles) {
+		for (File file : allFiles) {
 			Path path = this.assetsFolder.relativize(file.toPath());
-			if(!this.exists(path)) {
-				if(verboseMode) {
+			if (!this.exists(path)) {
+				if (verboseMode) {
 					Debug.log("Adding %s to Database.", path);
 				}
 				this.tryAddAsset(path);
 			}
 		}
-		
+
 		// Re-import Assets.
-		for(File file : allFiles) {
-			// TODO
+		for (CachedAsset asset : this.assets) {
+			if(asset.isBuiltin()) {
+				continue;
+			}
+			
+			if (asset.hasFileBeenModified()) {
+				this.reload(asset.getPath());
+			}
 		}
-		
+
+		snapshot.restore(sceneManager);
+
 		this.invokeEvent(Phase.REBUILD);
 		this.invokeEvent(Phase.POST_REBUILD);
-		
+
 		Debug.log("[Editor] Database rebuilt!");
 	}
 
@@ -158,6 +171,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 
 		CachedAsset cachedAsset = new CachedAsset(location, assetClass);
 		cachedAsset.instance = asset;
+		cachedAsset.lastLoaded = FileTimes.now();
 		this.assets.add(cachedAsset);
 
 		return asset;
@@ -183,7 +197,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 		if (asset == null) {
 			throw new IllegalArgumentException("asset may not be null");
 		}
-		
+
 		boolean success = false;
 		try {
 			success = this.serializer.serializeScriptableJelloObject(asset);
@@ -240,13 +254,30 @@ public class EditorAssetDatabase extends AssetDatabase {
 		throw new NotImplementedException(); // TODO implement
 	}
 
+	/**
+	 * Reloads an Asset. If the Asset is not loaded, it will be loaded and no reload
+	 * will occur.
+	 * 
+	 * @param assetPath
+	 */
+	public void reload(Path assetPath) {
+		CachedAsset asset = this.getCachedAsset(assetPath);
+		if (asset.isLoaded()) {
+			asset.instance.unload();
+			asset.instance.load();
+			asset.lastLoaded = FileTimes.now();
+		} else {
+			this.getAsset(assetPath);
+		}
+	}
+
 	protected void remove(CachedAsset asset) {
 		if (asset.isLoaded()) {
 			this.unload(asset);
 		}
 		this.assets.remove(asset);
 	}
-	
+
 	private void invokeEvent(Phase phase) {
 		JelloEditor.instance.raiseEvent(ProjectReloadListener.class, (listener) -> {
 			listener.onProjectReload(phase);

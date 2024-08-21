@@ -8,8 +8,10 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +20,9 @@ import javax.swing.table.TableModel;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.file.attribute.FileTimes;
 
+import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.JelloComponent;
@@ -54,7 +58,7 @@ public class AssetDatabase {
 	protected final ComponentList componentList;
 
 	public Serializer serializer;
-	
+
 	public static AssetDatabase getInstance() {
 		return instance;
 	}
@@ -73,7 +77,7 @@ public class AssetDatabase {
 		this.componentList = new ComponentList();
 
 		this.serializer = new Serializer(this);
-		
+
 		this.buildDatabase();
 	}
 
@@ -170,7 +174,7 @@ public class AssetDatabase {
 	}
 
 	/**
-	 * Unloads the Asset by performing any cleanup with {@link Asset#cleanup()}.
+	 * Unloads the Asset by performing any cleanup with {@link Asset#unload()}.
 	 * This should remove any references that the Asset holds to native objects. If
 	 * any references exist to the java object, the asset will still be kept in
 	 * memory until the references are gone like any java object.
@@ -183,7 +187,7 @@ public class AssetDatabase {
 
 	protected void unload(CachedAsset asset) {
 		if (asset.isLoaded()) {
-			asset.instance.cleanup();
+			asset.instance.unload();
 			asset.instance = null;
 		}
 	}
@@ -195,12 +199,12 @@ public class AssetDatabase {
 	public void unloadAll() {
 		for (CachedAsset asset : this.assets) {
 			if (asset.isLoaded()) {
-				asset.instance.cleanup();
+				asset.instance.unload();
 				asset.instance = null;
 			}
 		}
 	}
-
+	
 	public TableModel getTableModel() {
 		DefaultTableModel model = new DefaultTableModel(this.assets.size(), 4);
 		model.setColumnIdentifiers(new String[] { "Path:", "Class:", "Is Loaded?", "" });
@@ -332,10 +336,14 @@ public class AssetDatabase {
 				}
 			} else {
 				newInstance = this.invokeConstructor(providingClass, location);
+				if(newInstance != null) {
+					newInstance.load();
+				}
 			}
 
 			if (newInstance != null) {
 				cachedAsset.instance = newInstance;
+				cachedAsset.lastLoaded = FileTimes.now();
 				return newInstance;
 			} else {
 				Debug.logWarning("[AssetDatabase]: Error constructing Asset."); // TODO explain the error.
@@ -393,11 +401,12 @@ public class AssetDatabase {
 			return new ArrayList<String>();
 		}
 	}
-	
+
 	protected class CachedAsset {
 
-		protected final AssetLocation location;
-		protected final Class<? extends Asset> providingClass;
+		private final AssetLocation location;
+		private final Class<? extends Asset> providingClass;
+		public FileTime lastLoaded;
 		/**
 		 * The instance of the Asset. If the Asset is not loaded, this is null.
 		 */
@@ -437,7 +446,7 @@ public class AssetDatabase {
 		 * Assets that extends @link {@link SerializedJelloObject} (e.g. Material), the
 		 * exact class is returned (e.g. {@link Material}.
 		 * 
-		 * @return
+		 * @return the class providing the implementation of the Asset.
 		 */
 		public Class<? extends Asset> getProvidingClass() {
 			return this.providingClass;
@@ -458,8 +467,33 @@ public class AssetDatabase {
 		 * @return {@link true} if this is a builtin Asset.
 		 */
 		public boolean isBuiltin() {
-			return this.location.pointsToBuiltin();
+			return this.location.isBuiltin();
+		}
+
+		/**
+		 * Checks if the file providing this Asset has been modified since it was last
+		 * imported.
+		 * 
+		 * @return
+		 */
+		public boolean hasFileBeenModified() {
+			if (this.lastLoaded == null) {
+				return false;
+			} else {
+				FileTime t = this.getLastModified();
+				if (t == null) {
+					return false;
+				}
+				return this.lastLoaded.compareTo(t) < 0;
+			}
+		}
+
+		private FileTime getLastModified() {
+			try {
+				return Files.getLastModifiedTime(this.location.getFullPath());
+			} catch (IOException e) {
+				return null;
+			}
 		}
 	}
-
 }

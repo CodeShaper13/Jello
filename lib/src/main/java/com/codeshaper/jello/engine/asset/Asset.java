@@ -27,7 +27,7 @@ public abstract class Asset implements IInspectable {
 	 * @return {@code true} if the Asset was created at runtime, {@code false} if it
 	 *         came from a file.
 	 */
-	public boolean isRuntimeAsset() {
+	public final boolean isRuntimeAsset() {
 		return this.location == null;
 	}
 
@@ -38,7 +38,7 @@ public abstract class Asset implements IInspectable {
 	 * 
 	 * @return the name of the asset. May be null.
 	 */
-	public String getAssetName() {
+	public final String getAssetName() {
 		if (this.isRuntimeAsset()) {
 			return null;
 		} else {
@@ -46,7 +46,17 @@ public abstract class Asset implements IInspectable {
 		}
 	}
 
-	public void cleanup() {
+	/**
+	 * Called to load the Asset.
+	 */
+	public void load() {
+	}
+
+	/**
+	 * Called to unload the Asset. If the Asset has any native resources, they
+	 * should be freed here.
+	 */
+	public void unload() {
 	}
 
 	@Override

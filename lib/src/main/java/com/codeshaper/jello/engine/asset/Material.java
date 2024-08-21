@@ -45,6 +45,18 @@ public class Material extends SerializedJelloObject {
 			this.setShader(this.shader);
 		}
 	}
+	
+	@Override
+	public void unload() {
+		super.unload();
+		
+		this.ints.clear();
+		this.floats.clear();
+		this.vec2s.clear();
+		this.vec3s.clear();
+		this.vec4s.clear();
+		this.textures.clear();
+	}
 
 	@Override
 	public Editor<?> getInspectorDrawer(JPanel panel) {

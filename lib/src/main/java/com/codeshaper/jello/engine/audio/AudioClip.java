@@ -40,8 +40,8 @@ public final class AudioClip extends Asset {
 	}
 
 	@Override
-	public void cleanup() {
-		super.cleanup();
+	public void unload() {
+		super.unload();
 
 		alDeleteBuffers(this.bufferId);
 		if (this.pcm != null) {

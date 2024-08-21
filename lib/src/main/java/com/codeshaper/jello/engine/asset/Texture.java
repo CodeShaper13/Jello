@@ -8,7 +8,6 @@ import java.nio.IntBuffer;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.system.MemoryStack;
 
-import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
@@ -25,7 +24,12 @@ public class Texture extends Asset {
 
 	public Texture(AssetLocation location) {
 		super(location);
-				
+	}
+
+	@Override
+	public void load() {
+		super.load();
+
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			IntBuffer w = stack.mallocInt(1);
 			IntBuffer h = stack.mallocInt(1);
@@ -52,14 +56,14 @@ public class Texture extends Asset {
 			}
 		}
 	}
-
+	
+	@Override
+	public void unload() {
+		glDeleteTextures(textureId);
+	}
+	
 	public void bind() {
 		glBindTexture(GL_TEXTURE_2D, textureId);
-	}
-
-	@Override
-	public void cleanup() {
-		glDeleteTextures(textureId);
 	}
 
 	private void generateTexture(int width, int height, ByteBuffer buf) {

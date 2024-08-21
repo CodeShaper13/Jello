@@ -33,7 +33,12 @@ public class Shader extends Asset {
 
 	public Shader(AssetLocation location) {
 		super(location);
-
+	}
+	
+	@Override
+	public void load() {
+		super.load();
+		
 		Gson gson = new Gson();
 
 		try (InputStream stream = location.getInputSteam(); Reader reader = new InputStreamReader(stream)) {
@@ -54,8 +59,8 @@ public class Shader extends Asset {
 	}
 
 	@Override
-	public void cleanup() {
-		super.cleanup();
+	public void unload() {
+		super.unload();
 
 		if (this.program != null) {
 			this.program.deleteProgram();

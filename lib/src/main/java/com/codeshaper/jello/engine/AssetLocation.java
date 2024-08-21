@@ -11,8 +11,8 @@ import org.apache.commons.io.FilenameUtils;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
 /**
- * An {@link AssetLocation} provides the location of an Asset within the
- * project.
+ * An {@link AssetLocation} provides a way of specifying the location of an
+ * Asset within the project.
  */
 public final class AssetLocation {
 
@@ -23,21 +23,21 @@ public final class AssetLocation {
 	}
 
 	/**
-	 * Gets an {@link InputStream} to the Asset. The returned Input Stream must be
-	 * closed by the caller. If this location does not point to an Asset, null is
-	 * returned.
+	 * Gets an {@link InputStream} the provide the contents of the file. The
+	 * returned Input Stream must be closed by the caller. If this AssetLocation does not
+	 * point to an Asset, null is returned.
 	 * 
 	 * @return
 	 * @see AssetLocation#isValid()
 	 */
+	// TODO make this work in builds
 	public InputStream getInputSteam() {
-		if (this.pointsToBuiltin()) {
+		if (this.isBuiltin()) {
 			return this.getClass().getResourceAsStream("/" + this.relativePath);
 		} else {
 			try {
 				return new FileInputStream(this.getFullPath().toFile());
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+			} catch (FileNotFoundException | SecurityException e) {
 				return null;
 			}
 		}
@@ -69,7 +69,7 @@ public final class AssetLocation {
 	 * @return
 	 */
 	public Path getFullPath() {
-		if (this.pointsToBuiltin()) {
+		if (this.isBuiltin()) {
 			return this.getPath();
 		} else {
 			return AssetDatabase.getInstance().assetsFolder.resolve(this.relativePath);
@@ -81,7 +81,7 @@ public final class AssetLocation {
 	 * 
 	 * @return {@code true} if the Asset is a builtin Asset.
 	 */
-	public boolean pointsToBuiltin() {
+	public boolean isBuiltin() {
 		return this.relativePath.startsWith("builtin");
 	}
 
@@ -91,9 +91,9 @@ public final class AssetLocation {
 	 * 
 	 * @return {@code true} if this points to a file.
 	 */
-	// TODO make this work in builds as well.
+	// TODO make this work in builds.
 	public boolean isValid() {
-		if (this.pointsToBuiltin()) {
+		if (this.isBuiltin()) {
 			return this.getClass().getResource("/" + this.relativePath) != null;
 		} else {
 			return Files.exists(this.relativePath);

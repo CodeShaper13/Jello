@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
@@ -23,13 +25,23 @@ public class TextAsset extends Asset {
 		super(location);
 
 		this.lines = new ArrayList<String>();
-
-		this.read();
 	}
 
 	@Override
-	public void cleanup() {
-		super.cleanup();
+	public void load() {
+		super.load();
+
+		try {
+			Path fullPath = this.location.getFullPath();
+			this.lines = Files.readAllLines(fullPath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void unload() {
+		super.unload();
 
 		this.lines = null; // Free memory.
 	}
@@ -45,7 +57,11 @@ public class TextAsset extends Asset {
 	 * @return the number of lines in the file.
 	 */
 	public int getLineCount() {
-		return this.lines.size();
+		if(this.lines == null) {
+			return 0;
+		} else {
+			return this.lines.size();
+		}
 	}
 
 	/**
@@ -56,15 +72,10 @@ public class TextAsset extends Asset {
 	 * @return the line
 	 */
 	public String getLine(int lineNumber) {
-		return this.lines.get(lineNumber);
-	}
-
-	private void read() {
-		try {
-			Path fullPath = this.location.getFullPath();
-			this.lines = Files.readAllLines(fullPath);
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(this.lines == null) {
+			return StringUtils.EMPTY;
+		} else {
+			return this.lines.get(lineNumber);
 		}
 	}
 
@@ -83,7 +94,7 @@ public class TextAsset extends Asset {
 					text += "\n";
 				}
 			}
-			
+
 			drawer.textBox(null, text, 10);
 		}
 	}

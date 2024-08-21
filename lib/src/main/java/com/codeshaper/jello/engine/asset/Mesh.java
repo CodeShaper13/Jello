@@ -25,15 +25,18 @@ public class Mesh extends Asset {
 
 	public Mesh(AssetLocation location) {
 		super(location);
-		
-		MeshBuilder data = ModelLoader.loadModel(location);
-		this.constructMesh(data.verts, data.textCoords, data.indices);
 	}
 
 	public Mesh(float[] positions, float[] textCoords, int[] indices) {
 		super(null);
 		
 		this.constructMesh(positions, textCoords, indices);
+	}
+
+	@Override
+	public void load() {
+		MeshBuilder data = ModelLoader.loadModel(location);
+		this.constructMesh(data.verts, data.textCoords, data.indices);
 	}
 	
 	private void constructMesh(float[] positions, float[] textCoords, int[] indices) {		
@@ -78,7 +81,7 @@ public class Mesh extends Asset {
 	}
 
 	@Override
-	public void cleanup() {
+	public void unload() {
 		this.vboIdList.forEach(GL30::glDeleteBuffers);
 		glDeleteVertexArrays(this.vaoId);
 	}
