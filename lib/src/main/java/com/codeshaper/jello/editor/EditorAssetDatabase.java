@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.file.attribute.FileTimes;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +20,7 @@ import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.Script;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.database.CachedAsset;
 import com.codeshaper.jello.engine.database.ComponentList;
 
 public class EditorAssetDatabase extends AssetDatabase {
@@ -67,14 +67,14 @@ public class EditorAssetDatabase extends AssetDatabase {
 			if (asset.isBuiltin()) {
 				continue; // builtin assets are never removed.
 			}
-			File file = asset.getLocation().getFile();
+			File file = asset.location.getFile();
 			if (!file.exists()) {
 				if (verboseMode) {
 					Debug.log("Removing %s from Database.  It's backing file is missing.", file);
 				}
 
 				if (asset.isLoaded()) {
-					asset.instance.unload();
+					asset.getInstance().unload();
 				}
 				this.assets.remove(asset);
 			}
@@ -94,7 +94,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 				if (verboseMode) {
 					Debug.log("Adding %s to Database.", location);
 				}
-				this.tryAddAsset(location);
+				this.addToDatabase(location);
 			}
 		}
 
@@ -105,7 +105,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			}
 
 			if (asset.hasFileBeenModified()) {
-				this.reload(asset.getLocation());
+				this.reload(asset.location);
 			}
 		}
 
@@ -133,7 +133,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 		}
 
 		if (asset.isLoaded()) {
-			asset.instance.unload();
+			asset.getInstance().unload();
 		}
 		this.assets.remove(asset);
 
@@ -173,15 +173,14 @@ public class EditorAssetDatabase extends AssetDatabase {
 		}
 
 		AssetLocation location = new AssetLocation(pathWithNameAndExtension);
-		SerializedJelloObject asset = (SerializedJelloObject) this.invokeConstructor(assetClass, location);
-		this.saveAsset(asset);
+		SerializedJelloObject instance = (SerializedJelloObject) this.instantiateAsset(assetClass, location);
+		this.saveAsset(instance);
 
 		CachedAsset cachedAsset = new CachedAsset(location, assetClass);
-		cachedAsset.instance = asset;
-		cachedAsset.lastLoaded = FileTimes.now();
+		cachedAsset.setInstance(instance);
 		this.assets.add(cachedAsset);
 
-		return asset;
+		return instance;
 	}
 
 	/**
@@ -190,7 +189,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * @return
 	 */
 	public boolean addAsset(AssetLocation location) {
-		return this.tryAddAsset(location) != null;
+		return this.addToDatabase(location) != null;
 	}
 
 	/**
@@ -237,7 +236,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 
 		File newFile = JelloFileUtils.renameFile(location.getFile(), newName);
 		if (newFile != null) {
-			asset.setPath(this.toRelativePath(newFile.toPath()));
+			asset.location.updateLocation(this.toRelativePath(newFile.toPath()));
 			return true;
 		} else {
 			Debug.logError("[Asset Database]: Unable to rename %s to %s", location, newName);
@@ -268,19 +267,31 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * @param assetPath
 	 */
 	public void reload(AssetLocation location) {
-		CachedAsset asset = this.getCachedAsset(location);
-		if (asset.isLoaded()) {
-			asset.instance.unload();
-			asset.instance.load();
-			asset.lastLoaded = FileTimes.now();
-		} else {
-			this.getAsset(location);
+		if(this.isLoaded(location)) {
+			this.unload(location);
 		}
+		this.getAsset(location); // Reloads the Asset.
 	}
 
 	private void invokeEvent(Phase phase) {
 		JelloEditor.instance.raiseEvent(ProjectReloadListener.class, (listener) -> {
 			listener.onProjectReload(phase);
 		});
+	}
+	
+	/**
+	 * Takes a full path and converts it to a relative path. If the path is already
+	 * a relative path, nothing happens.
+	 * <p>
+	 * D:\MyProject\assets\water.jelobj -> water.jelobj
+	 * <p>
+	 * D:\MyProject\assets\materials\water.jelobj -> materials\water.jelobj
+	 * </p>
+	 * 
+	 * @param fullPath a full path.
+	 * @return the path relative to the /assets directory.
+	 */
+	private Path toRelativePath(Path fullPath) {
+		return this.assetsFolder.relativize(fullPath);
 	}
 }

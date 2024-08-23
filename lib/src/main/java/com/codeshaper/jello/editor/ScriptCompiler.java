@@ -138,7 +138,7 @@ public class ScriptCompiler {
 	 * @return
 	 */
 	private Path getCompiledClassDirectory(Script script) {
-		Path pathToScriptFromAssets = script.location.getPath().getParent();
+		Path pathToScriptFromAssets = script.location.getRelativePath().getParent();
 
 		if (pathToScriptFromAssets == null) {
 			return this.compiledClassDirectory.toPath();

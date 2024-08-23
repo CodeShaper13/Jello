@@ -1,13 +1,14 @@
 package com.codeshaper.jello.engine.asset;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
@@ -15,6 +16,7 @@ import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
+import com.codeshaper.jello.engine.Debug;
 
 @AssetFileExtension(".txt")
 public class TextAsset extends Asset {
@@ -30,12 +32,11 @@ public class TextAsset extends Asset {
 	@Override
 	public void load() {
 		super.load();
-
-		try {
-			Path fullPath = this.location.getFullPath();
-			this.lines = Files.readAllLines(fullPath);
+		
+		try(InputStream stream = this.location.getInputSteam()) {
+			this.lines = IOUtils.readLines(stream, StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Debug.log(e);
 		}
 	}
 
@@ -57,7 +58,7 @@ public class TextAsset extends Asset {
 	 * @return the number of lines in the file.
 	 */
 	public int getLineCount() {
-		if(this.lines == null) {
+		if (this.lines == null) {
 			return 0;
 		} else {
 			return this.lines.size();
@@ -72,7 +73,7 @@ public class TextAsset extends Asset {
 	 * @return the line
 	 */
 	public String getLine(int lineNumber) {
-		if(this.lines == null) {
+		if (this.lines == null) {
 			return StringUtils.EMPTY;
 		} else {
 			return this.lines.get(lineNumber);

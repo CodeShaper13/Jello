@@ -577,7 +577,7 @@ public class GuiBuilder {
 
 		comboBox.addItem(Path.of("None"));
 		for (AssetLocation location : locations) {
-			comboBox.addItem(location.getPath());
+			comboBox.addItem(location.getRelativePath());
 		}
 
 		if (value == null) {
@@ -585,7 +585,7 @@ public class GuiBuilder {
 		} else {
 			AssetLocation location = ((Asset) value).location;
 			if (location != null && locations.contains(location)) {
-				comboBox.setSelectedItem(location.getPath());
+				comboBox.setSelectedItem(location.getRelativePath());
 			} else {
 				comboBox.setSelectedIndex(-1);
 			}

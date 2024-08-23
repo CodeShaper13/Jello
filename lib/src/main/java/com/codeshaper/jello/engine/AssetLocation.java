@@ -23,7 +23,7 @@ public final class AssetLocation {
 	public AssetLocation(String location) {
 		this(Path.of(location));
 	}
-	
+
 	public AssetLocation(File file) {
 		this(AssetDatabase.getInstance().assetsFolder.relativize(file.toPath()));
 	}
@@ -39,7 +39,11 @@ public final class AssetLocation {
 
 	@Override
 	public boolean equals(Object obj) {
-		return this.relativePath.equals(obj);
+		if (this == obj) {
+			return true;
+		}
+
+		return obj instanceof AssetLocation && this.relativePath.equals(((AssetLocation) obj).relativePath);
 	}
 
 	@Override
@@ -61,7 +65,7 @@ public final class AssetLocation {
 			return this.getClass().getResourceAsStream("/" + this.relativePath);
 		} else {
 			try {
-				return new FileInputStream(this.getFullPath().toFile());
+				return new FileInputStream(this.getFile());
 			} catch (FileNotFoundException | SecurityException e) {
 				return null;
 			}
@@ -111,21 +115,8 @@ public final class AssetLocation {
 	 * 
 	 * @return
 	 */
-	public Path getPath() {
+	public Path getRelativePath() {
 		return this.relativePath;
-	}
-
-	/**
-	 * Gets the full path to the Asset on disk. For builtin Assets,
-	 * {@link CachedAsset#getPath()} is returned.
-	 */
-	@Deprecated
-	public Path getFullPath() {
-		if (this.isBuiltin()) {
-			return this.relativePath;
-		} else {
-			return AssetDatabase.getInstance().assetsFolder.resolve(this.relativePath);
-		}
 	}
 
 	/**
@@ -148,11 +139,15 @@ public final class AssetLocation {
 		if (this.isBuiltin()) {
 			return this.getClass().getResource("/" + this.relativePath) != null;
 		} else {
-			return Files.exists(this.relativePath);
+			return Files.exists(this.getFullPath());
 		}
 	}
 
 	public void updateLocation(Path newRelativePath) {
 		this.relativePath = newRelativePath;
+	}
+	
+	private Path getFullPath() {
+		return AssetDatabase.getInstance().assetsFolder.resolve(this.relativePath);
 	}
 }

@@ -4,7 +4,6 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -108,7 +107,7 @@ public class Application {
 				// because there's only one in their project. Search the Asset Database for all
 				// Scenes and load the first one we find.
 				AssetDatabase database = AssetDatabase.getInstance();
-				List<Path> paths = database.getAllAssets(Scene.class, true);
+				List<AssetLocation> paths = database.getAllAssets(Scene.class, true);
 				if (paths.size() >= 1) {
 					this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
 				}
@@ -323,20 +322,6 @@ public class Application {
 			}
 
 			shutdown();
-		}
-	}
-
-	public static class LaunchArguments {
-
-		public final List<Path> startingScenes;
-
-		public LaunchArguments() {
-			this.startingScenes = new ArrayList<Path>();
-		}
-
-		public LaunchArguments addStartingScene(Scene scene) {
-			this.startingScenes.add(scene.location.getPath());
-			return this;
 		}
 	}
 }

@@ -96,7 +96,7 @@ public class Serializer {
 	 * @throws SecurityException
 	 */
 	public boolean serializeScriptableJelloObject(SerializedJelloObject object) throws IOException {
-		File file = object.location.getFullPath().toFile();
+		File file = object.location.getFile();
 		if (!file.exists()) {
 			file.createNewFile();
 		}
@@ -256,7 +256,7 @@ public class Serializer {
 
 		@Override
 		public Asset createInstance(Type type) {
-			return database.invokeConstructor(this.clazz, this.location);
+			return database.instantiateAsset(this.clazz, this.location);
 		}
 	}
 
@@ -285,7 +285,7 @@ public class Serializer {
 							if (asset.isRuntimeAsset()) {
 								out.nullValue();
 							} else {
-								Path path = ((Asset) value).location.getPath();
+								Path path = ((Asset) value).location.getRelativePath();
 								out.value(path.toString());
 							}
 						}

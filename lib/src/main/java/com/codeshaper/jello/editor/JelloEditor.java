@@ -139,7 +139,7 @@ public class JelloEditor {
 		if (isInitialLoad) {
 			AssetLocation location = new AssetLocation("scene." + SerializedJelloObject.EXTENSION);
 			if (!this.assetDatabase.exists(location)) {
-				Scene scene = this.constructDefaultScene(location.getPath());
+				Scene scene = this.constructDefaultScene(location.getRelativePath());
 				this.sceneManager.loadScene(scene);
 			}
 		} else {

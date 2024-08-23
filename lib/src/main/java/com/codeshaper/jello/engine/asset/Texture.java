@@ -35,14 +35,13 @@ public class Texture extends Asset {
 			IntBuffer h = stack.mallocInt(1);
 			IntBuffer channels = stack.mallocInt(1);
 
-			String texturePath = this.location.getFullPath().toString();						
 			try(InputStream stream = location.getInputSteam()) {
 				byte[] byteArray = IOUtils.toByteArray(stream);
 				ByteBuffer bytes = stack.bytes(byteArray);
 				ByteBuffer buf = stbi_load_from_memory(bytes, w, h, channels, 4);
 
 				if (buf == null) {
-					Debug.logError("Image file [" + texturePath + "] not loaded: " + stbi_failure_reason());
+					Debug.logError("Error loading Texture: " + stbi_failure_reason());
 				}
 
 				int width = w.get();
