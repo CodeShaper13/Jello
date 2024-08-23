@@ -22,6 +22,7 @@ import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.editor.event.ProjectSaveListener;
 import com.codeshaper.jello.editor.event.SceneChangeListener;
 import com.codeshaper.jello.engine.Application;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.Scene;
@@ -136,9 +137,9 @@ public class JelloEditor {
 		this.renderer = new GameRenderer();
 
 		if (isInitialLoad) {
-			Path path = Path.of("scene." + SerializedJelloObject.EXTENSION);
-			if (!this.assetDatabase.exists(path)) {
-				Scene scene = this.constructDefaultScene(path);
+			AssetLocation location = new AssetLocation("scene." + SerializedJelloObject.EXTENSION);
+			if (!this.assetDatabase.exists(location)) {
+				Scene scene = this.constructDefaultScene(location.getPath());
 				this.sceneManager.loadScene(scene);
 			}
 		} else {
@@ -281,7 +282,6 @@ public class JelloEditor {
 	 */
 	private Scene constructDefaultScene(Path path) {
 		String assetName = FilenameUtils.removeExtension(path.getFileName().toString());
-		System.out.println(path.getParent());
 		Scene scene = (Scene) this.assetDatabase.createAsset(Scene.class, path.getParent(),
 				assetName);
 

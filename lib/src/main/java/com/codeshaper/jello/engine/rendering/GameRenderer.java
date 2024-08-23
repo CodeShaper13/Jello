@@ -10,6 +10,7 @@ import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
@@ -39,7 +40,7 @@ public class GameRenderer {
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		this.errorShader = (Shader) AssetDatabase.getInstance().getAsset("builtin/shaders/error.shader");
+		this.errorShader = (Shader) AssetDatabase.getInstance().getAsset(new AssetLocation("builtin/shaders/error.shader"));
 		this.instructions = new HashMap<Material, List<Renderer>>(256);
 	}
 

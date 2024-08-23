@@ -8,7 +8,6 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileFilter;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EventObject;
 
@@ -41,6 +40,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
 
@@ -93,8 +93,8 @@ public class FileBrowserWindow extends EditorWindow {
 			                null,
 			                FilenameUtils.removeExtension(file.getName()));
 					if(newFileName != null) {
-						Path relativePath = rootDirectory.toPath().relativize(file.toPath());
-						boolean success = JelloEditor.instance.assetDatabase.renameAsset(relativePath, newFileName);
+						boolean success = JelloEditor.instance.assetDatabase.renameAsset(
+								new AssetLocation(file), newFileName);
 						if(success) {
 							fileList.refresh();
 						} else {
@@ -120,7 +120,8 @@ public class FileBrowserWindow extends EditorWindow {
 					}
 					fileTreeModel.reload();
 				} else {
-					JelloEditor.instance.assetDatabase.deleteAsset(rootDirectory.toPath().relativize(this.file.toPath()));
+					JelloEditor.instance.assetDatabase.deleteAsset(
+							new AssetLocation(file));
 					fileListModel.removeElement(this.file);
 				}
 			}
@@ -383,12 +384,7 @@ public class FileBrowserWindow extends EditorWindow {
 				InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
 				File file = this.getSelectedValue();
 				if (file != null) {
-					// Convert to a relative path.
-					Path pathAbsolute = file.toPath();
-					Path pathBase = JelloEditor.instance.assetsFolder;
-					Path pathRelative = pathBase.relativize(pathAbsolute);
-
-					Asset asset = JelloEditor.instance.assetDatabase.getAsset(pathRelative);
+					Asset asset = JelloEditor.instance.assetDatabase.getAsset(new AssetLocation(file));
 					inspector.setTarget(asset);
 				}
 			});

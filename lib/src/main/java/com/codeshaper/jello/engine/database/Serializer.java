@@ -297,7 +297,7 @@ public class Serializer {
 					JsonToken token = in.peek();
 					if (token == JsonToken.STRING) {
 						String relativePath = in.nextString();
-						Asset asset = database.getAsset(relativePath);
+						Asset asset = database.getAsset(new AssetLocation(relativePath));
 						return (T) asset;
 					} else if (token == JsonToken.NULL) {
 						in.nextNull();

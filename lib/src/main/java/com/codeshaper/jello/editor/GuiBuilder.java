@@ -553,7 +553,7 @@ public class GuiBuilder {
 	public static <T extends Asset> JComboBox<Path> assetField(T value, Class<T> clazz, OnSubmitListerer<T> listener) {
 		AssetDatabase database = AssetDatabase.getInstance();
 
-		List<Path> paths = database.getAllAssetsOfType(clazz, true);
+		List<AssetLocation> locations = database.getAllAssets(clazz, true);
 
 		JComboBox<Path> comboBox = new JComboBox<Path>();
 		comboBox.setRenderer(new DefaultListCellRenderer() {
@@ -576,15 +576,15 @@ public class GuiBuilder {
 		});
 
 		comboBox.addItem(Path.of("None"));
-		for (Path path : paths) {
-			comboBox.addItem(path);
+		for (AssetLocation location : locations) {
+			comboBox.addItem(location.getPath());
 		}
 
 		if (value == null) {
 			comboBox.setSelectedIndex(0); // Have None selected.
 		} else {
 			AssetLocation location = ((Asset) value).location;
-			if (location != null && paths.contains(location.getPath())) {
+			if (location != null && locations.contains(location)) {
 				comboBox.setSelectedItem(location.getPath());
 			} else {
 				comboBox.setSelectedIndex(-1);
@@ -596,7 +596,7 @@ public class GuiBuilder {
 				listener.onSubmit(null);
 			} else {
 				Path path = (Path) comboBox.getSelectedItem();
-				Asset asset = database.getAsset(path);
+				Asset asset = database.getAsset(new AssetLocation(path));
 				listener.onSubmit((T) asset);
 			}
 		});

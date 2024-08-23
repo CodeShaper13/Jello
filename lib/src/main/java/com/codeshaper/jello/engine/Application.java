@@ -108,7 +108,7 @@ public class Application {
 				// because there's only one in their project. Search the Asset Database for all
 				// Scenes and load the first one we find.
 				AssetDatabase database = AssetDatabase.getInstance();
-				List<Path> paths = database.getAllAssetsOfType(Scene.class, true);
+				List<Path> paths = database.getAllAssets(Scene.class, true);
 				if (paths.size() >= 1) {
 					this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
 				}

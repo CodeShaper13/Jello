@@ -28,8 +28,8 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.CreateAssetEntries.MenuEntry;
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 public abstract class FileBrowserPopupMenu extends JPopupMenu {
@@ -265,9 +265,8 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 						}
 
 						// Add the new Asset to the Asset Database.
-						Path relativePath = assetsDirectory.relativize(file.toPath());
-						if(JelloEditor.instance.assetDatabase.addAsset(relativePath)) {
-							onCreate(relativePath.toFile());
+						if(JelloEditor.instance.assetDatabase.addAsset(new AssetLocation(file))) {
+							onCreate(file);
 						}
 					} catch (Exception exception) {
 						Debug.log("Error creating new Asset");

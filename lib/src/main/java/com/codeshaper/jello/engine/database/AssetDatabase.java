@@ -13,7 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -22,11 +24,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.file.attribute.FileTimes;
 
-import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Asset;
+import com.codeshaper.jello.engine.asset.GenericAsset;
 import com.codeshaper.jello.engine.asset.Material;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
@@ -54,7 +56,7 @@ public class AssetDatabase {
 	public final Path assetsFolder;
 
 	protected final List<CachedAsset> assets;
-	protected final ExtensionMapping extentionMapping;
+	protected final ExtensionMapping extensionMapping;
 	protected final ComponentList componentList;
 
 	public Serializer serializer;
@@ -73,26 +75,15 @@ public class AssetDatabase {
 		this.assetsFolder = projectFolder;
 		this.assets = new ArrayList<CachedAsset>();
 
-		this.extentionMapping = new ExtensionMapping();
+		this.extensionMapping = new ExtensionMapping();
 		this.componentList = new ComponentList();
 
 		this.serializer = new Serializer(this);
 
-		this.buildDatabase();
-	}
-
-	/**
-	 * Builds the Asset database from scratch.
-	 */
-	private void buildDatabase() {
-		this.unloadAll();
-
-		this.assets.clear();
-
 		// Add the builtin Assets to the list.
 		for (String stringPath : this.getBuiltinAssetPaths()) {
-			Path path = Path.of(stringPath);
-			this.tryAddAsset(path);
+			AssetLocation location = new AssetLocation(stringPath);
+			this.tryAddAsset(location);
 		}
 	}
 
@@ -103,24 +94,22 @@ public class AssetDatabase {
 	/**
 	 * Checks if an Asset exists.
 	 * 
-	 * @param assetPath the relative path to the Asset.
+	 * @param location the location of the Asset
 	 * @return {@link true} if the Asset exists, {@link false} if it does not.
 	 */
-	public boolean exists(Path assetPath) {
-		CachedAsset asset = this.getCachedAsset(assetPath);
-		return asset != null;
+	public boolean exists(AssetLocation location) {
+		return this.getCachedAsset(location) != null;
 	}
 
 	/**
-	 * Checks if an Asset has been loaded. If the Asset does not exist,
-	 * {@link false} is returned.
+	 * Checks if an Asset has been loaded. If the Asset has not been loaded, or it
+	 * does not exist, an error is logged and {@link false} is returned.
 	 * 
-	 * @param assetFile the relative path to the Asset.
-	 * @return {@link true} if the Asset has been loaded, {@link false} if it has
-	 *         not been.
+	 * @param location the location of the Asset
+	 * @return {@link true} if the Asset has been loaded.
 	 */
-	public boolean isLoaded(Path assetPath) {
-		CachedAsset asset = this.getCachedAsset(assetPath);
+	public boolean isLoaded(AssetLocation location) {
+		CachedAsset asset = this.getCachedAsset(location);
 		if (asset != null) {
 			return asset.isLoaded();
 		} else {
@@ -129,23 +118,20 @@ public class AssetDatabase {
 	}
 
 	/**
-	 * Finds an Asset at a location. If the Asset doesn't exist, null is returned.
+	 * Finds an Asset. If the Asset has not yet been loaded, it will be loaded. If
+	 * the Asset doesn't exist, an error is logged and {@code null} is returned.
 	 * 
-	 * @param assetPath the relative path to the Asset.
+	 * @param location the location of the Asset
 	 * @return
 	 */
-	public Asset getAsset(String assetPath) {
-		return this.getAssetInternal(Paths.get(assetPath));
-	}
-
-	/**
-	 * Finds an Asset at a location. If the Asset doesn't exist, null is returned.
-	 * 
-	 * @param assetPath the relative path to the Asset.
-	 * @return
-	 */
-	public Asset getAsset(Path assetPath) {
-		return this.getAssetInternal(assetPath);
+	public Asset getAsset(AssetLocation location) {
+		Asset asset = this.getAssetInternal(location);
+		if (asset == null) {
+			this.logMissingAssetError(location);
+			return null;
+		} else {
+			return asset;
+		}
 	}
 
 	/**
@@ -153,71 +139,66 @@ public class AssetDatabase {
 	 * 
 	 * @param assetType
 	 * @param includeSubClasses
+	 * @param loadAssets
 	 * @return
 	 */
-	public List<Path> getAllAssetsOfType(Class<? extends Asset> assetType, boolean includeSubClasses) {
-		List<Path> paths = new ArrayList<Path>();
+	public List<AssetLocation> getAllAssets(Class<? extends Asset> assetType, boolean includeSubClasses) {
+		List<AssetLocation> locations = new ArrayList<AssetLocation>();
 
 		for (CachedAsset asset : this.assets) {
 			if (includeSubClasses) {
 				if (assetType.equals(asset.getProvidingClass())) {
-					paths.add(asset.getPath());
+					locations.add(asset.location);
 				}
 			} else {
 				if (assetType.isAssignableFrom(asset.getProvidingClass())) {
-					paths.add(asset.getPath());
+					locations.add(asset.location);
 				}
 			}
 		}
 
-		return paths;
+		return locations;
 	}
 
 	/**
-	 * Unloads the Asset by performing any cleanup with {@link Asset#unload()}.
-	 * This should remove any references that the Asset holds to native objects. If
-	 * any references exist to the java object, the asset will still be kept in
-	 * memory until the references are gone like any java object.
+	 * Unloads an Asset. This will request that the Asset releases any native
+	 * objects and frees up as much memory as it can by called
+	 * {@link Asset#unload()}.
 	 * 
-	 * @param assetFile
+	 * @param location the location of the Asset
+	 * @return {@code true} if the Asset was unloaded, {@code false} if either the
+	 *         Asset does not exist or the Asset was not loaded.
 	 */
-	public void unload(Path assetFile) {
-		this.unload(this.getCachedAsset(assetFile));
-	}
-
-	protected void unload(CachedAsset asset) {
-		if (asset.isLoaded()) {
-			asset.instance.unload();
-			asset.instance = null;
-		}
-	}
-
-	/**
-	 * Unloads all loaded assets by called {@link AssetDatabase#unload(File)} on
-	 * every loaded asset.
-	 */
-	public void unloadAll() {
-		for (CachedAsset asset : this.assets) {
+	public boolean unload(AssetLocation location) {
+		CachedAsset asset = this.getCachedAsset(location);
+		if (asset == null) {
+			this.logMissingAssetError(location);
+			return false;
+		} else {
 			if (asset.isLoaded()) {
 				asset.instance.unload();
 				asset.instance = null;
+				return true;
 			}
+			return false;
 		}
 	}
-	
-	public TableModel getTableModel() {
-		DefaultTableModel model = new DefaultTableModel(this.assets.size(), 4);
-		model.setColumnIdentifiers(new String[] { "Path:", "Class:", "Is Loaded?", "" });
-		for (int i = 0; i < this.assets.size(); i++) {
-			CachedAsset asset = this.assets.get(i);
-			model.setValueAt(asset.getPath(), i, 0);
-			model.setValueAt(asset.getProvidingClass().getSimpleName(), i, 1);
-			model.setValueAt(asset.isLoaded(), i, 2);
-			String s = asset.instance != null ? asset.instance.location.getPath().toString() : "NUL";
-			model.setValueAt(s, i, 3);
-		}
 
-		return model;
+	/**
+	 * Unloads all loaded Assets by called {@link AssetDatabase#unload(File)} on
+	 * every loaded asset.
+	 * 
+	 * @return the number of Assets that were unloaded
+	 * @see AssetDatabase#unload(AssetLocation)
+	 */
+	public int unloadAll() {
+		int count = 0;
+		for (CachedAsset asset : this.assets) {
+			if (this.unload(asset.location)) {
+				count++;
+			}
+		}
+		return count;
 	}
 
 	/**
@@ -257,29 +238,38 @@ public class AssetDatabase {
 		return this.assetsFolder.relativize(fullPath);
 	}
 
-	protected CachedAsset tryAddAsset(Path relativePath) {
-		Class<? extends Asset> clazz = this.getProvidingClass(relativePath);
-		if (clazz == null) {
-			Debug.log("ERROR!"); // TODO
-			return null;
-		} else {
-			AssetLocation location = new AssetLocation(relativePath);
-			CachedAsset cachedAsset = new CachedAsset(location, clazz);
-			this.assets.add(cachedAsset);
-			return cachedAsset;
+	public TableModel getTableModel() {
+		DefaultTableModel model = new DefaultTableModel(this.assets.size(), 4);
+		model.setColumnIdentifiers(new String[] { "Path:", "Class:", "Is Loaded?", "" });
+		for (int i = 0; i < this.assets.size(); i++) {
+			CachedAsset asset = this.assets.get(i);
+			model.setValueAt(asset.getLocation().getPath(), i, 0);
+			model.setValueAt(asset.getProvidingClass().getSimpleName(), i, 1);
+			model.setValueAt(asset.isLoaded(), i, 2);
+			String s = asset.instance != null ? asset.instance.location.getPath().toString() : "NUL";
+			model.setValueAt(s, i, 3);
 		}
+
+		return model;
+	}
+
+	protected CachedAsset tryAddAsset(AssetLocation location) {
+		Class<? extends Asset> clazz = this.getProvidingClass(location);
+		CachedAsset cachedAsset = new CachedAsset(location, clazz);
+		this.assets.add(cachedAsset);
+		return cachedAsset;
 	}
 
 	/**
 	 * 
-	 * @param assetPath a path relative to the /assets folder.
+	 * @param location the location of the Asset
 	 * @return
 	 */
-	protected CachedAsset getCachedAsset(Path assetPath) {
+	protected CachedAsset getCachedAsset(AssetLocation location) {
 		CachedAsset asset;
 		for (int i = 0; i < this.assets.size(); i++) {
 			asset = this.assets.get(i);
-			if (asset.getPath().equals(assetPath)) {
+			if (asset.location.equals(location)) {
 				return asset;
 			}
 		}
@@ -287,42 +277,62 @@ public class AssetDatabase {
 	}
 
 	/**
+	 * Gets the java class that provides the implementation of the Asset based on
+	 * the Asset's file type.
+	 * <p>
+	 * If the file's type is .jeloobj, the file will be opened to determine what
+	 * subclass of {@link SerializedJelloObject} created the file. If an IO error
+	 * occurs, the class can't be found, or an exception is thrown in the class's
+	 * initiation, and error is logged and {@link GenericAsset} is returned.
+	 * <p>
+	 * If the file type has no associated java class, {@link GenericAsset} will be
+	 * returned.
 	 * 
-	 * @param path the path to the Asset.
+	 * @param location the location of the Asset
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	private Class<? extends Asset> getProvidingClass(Path path) {
-		String extensions = FilenameUtils.getExtension(path.toString());
-		Class<? extends Asset> clazz = this.extentionMapping.getAssetClass(extensions);
+	private Class<? extends Asset> getProvidingClass(AssetLocation location) {
+		String extension = location.getExtension();
+		Class<? extends Asset> clazz = this.extensionMapping.getAssetClass(extension);
 		if (clazz == SerializedJelloObject.class) {
-			try (BufferedReader br = new BufferedReader(new FileReader(this.toFullPath(path).toFile()))) {
-				String jelloObjectClassName = br.readLine();
-				return (Class<? extends Asset>) Class.forName(jelloObjectClassName);
-			} catch (IOException | ExceptionInInitializerError e) {
-				e.printStackTrace();
-				return null;
+			String jelloObjectClassName = null;
+			try (BufferedReader br = new BufferedReader(new FileReader(location.getFullPath().toFile()))) {
+				jelloObjectClassName = br.readLine();
+				@SuppressWarnings("unchecked")
+				Class<? extends Asset> jelloObjCls = (Class<? extends Asset>) Class.forName(jelloObjectClassName);
+				return jelloObjCls;
+			} catch (IOException e) {
+				Debug.logError("[Asset Database]: Unable to get the class for \"%s\", there was an IO error.",
+						location);
+			} catch (ExceptionInInitializerError e) {
+				Debug.log(e); // TODO
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				return null;
+				Debug.logError(
+						"[Asset Database]: Unable to find a class with the name \"%s\"",
+						jelloObjectClassName);
 			}
+			return GenericAsset.class;
 		} else {
 			return clazz;
 		}
 	}
 
-	private Asset getAssetInternal(Path assetPath) {
-		CachedAsset cachedAsset = this.getCachedAsset(assetPath);
-		if (cachedAsset == null) {
-			Debug.logError("[AssetDatabase]: No asset could be found at %s", assetPath.toString());
-			return null;
+	/**
+	 * 
+	 * @param location
+	 * @return
+	 * @throws IllegalArgumentException if location is null.
+	 */
+	private Asset getAssetInternal(AssetLocation location) {
+		if (location == null) {
+			throw new IllegalArgumentException("location may not be null");
 		}
-
+		
+		CachedAsset cachedAsset = this.getCachedAsset(location);
 		if (cachedAsset.isLoaded()) {
 			return cachedAsset.instance;
 		} else {
 			// Asset has not been loaded, instantiate the asset.
-			AssetLocation location = new AssetLocation(assetPath);
 			Asset newInstance;
 			Class<? extends Asset> providingClass = cachedAsset.getProvidingClass();
 			if (SerializedJelloObject.class.isAssignableFrom(providingClass)) {
@@ -336,7 +346,7 @@ public class AssetDatabase {
 				}
 			} else {
 				newInstance = this.invokeConstructor(providingClass, location);
-				if(newInstance != null) {
+				if (newInstance != null) {
 					newInstance.load();
 				}
 			}
@@ -402,11 +412,17 @@ public class AssetDatabase {
 		}
 	}
 
+	private void logMissingAssetError(AssetLocation location) {
+		Debug.logError(
+				"[Asset Database]: No Asset exists at \"%s\"",
+				location.getPath().toString());
+	}
+
 	protected class CachedAsset {
 
 		private final AssetLocation location;
 		private final Class<? extends Asset> providingClass;
-		public FileTime lastLoaded;
+		public long lastLoaded;
 		/**
 		 * The instance of the Asset. If the Asset is not loaded, this is null.
 		 */
@@ -415,6 +431,15 @@ public class AssetDatabase {
 		public CachedAsset(AssetLocation location, Class<? extends Asset> providingClass) {
 			this.location = location;
 			this.providingClass = providingClass;
+		}
+		
+		public Asset getInstance() {
+			return this.instance;
+		}
+		
+		public void setInstance(Asset instance) {
+			this.instance = instance;
+			this.lastLoaded = Date.
 		}
 
 		/**
@@ -425,15 +450,6 @@ public class AssetDatabase {
 		 */
 		public Path getPath() {
 			return this.location.getPath();
-		}
-
-		/**
-		 * Gets the full path to the Asset.
-		 * 
-		 * @return
-		 */
-		public Path getFullPath() {
-			return this.location.getFullPath();
 		}
 
 		// This is only used when renaming an asset.
@@ -477,23 +493,19 @@ public class AssetDatabase {
 		 * @return
 		 */
 		public boolean hasFileBeenModified() {
-			if (this.lastLoaded == null) {
+			if (this.lastLoaded == 0) {
 				return false;
 			} else {
-				FileTime t = this.getLastModified();
-				if (t == null) {
-					return false;
-				}
-				return this.lastLoaded.compareTo(t) < 0;
+				return this.lastLoaded < this.getLastModified();
 			}
 		}
 
-		private FileTime getLastModified() {
-			try {
-				return Files.getLastModifiedTime(this.location.getFullPath());
-			} catch (IOException e) {
-				return null;
-			}
+		private long getLastModified() {
+			return this.location.getFile().lastModified();
+		}
+
+		public AssetLocation getLocation() {
+			return this.location;
 		}
 	}
 }

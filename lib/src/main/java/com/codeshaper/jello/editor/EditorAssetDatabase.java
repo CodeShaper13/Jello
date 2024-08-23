@@ -3,7 +3,6 @@ package com.codeshaper.jello.editor;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 
@@ -68,41 +67,45 @@ public class EditorAssetDatabase extends AssetDatabase {
 			if (asset.isBuiltin()) {
 				continue; // builtin assets are never removed.
 			}
-			Path path = asset.getFullPath();
-			if (!Files.exists(path)) {
+			File file = asset.getLocation().getFile();
+			if (!file.exists()) {
 				if (verboseMode) {
-					Debug.log("Removing %s from Database.  It's backing file is missing.", asset.getPath());
+					Debug.log("Removing %s from Database.  It's backing file is missing.", file);
 				}
-				this.remove(asset);
+
+				if (asset.isLoaded()) {
+					asset.instance.unload();
+				}
+				this.assets.remove(asset);
 			}
 		}
 
 		// Compile all scripts.
 		this.compiler.compileProject();
-		this.extentionMapping.compileProjectMappings(this.compiler);
+		this.extensionMapping.compileProjectMappings(this.compiler);
 		this.componentList.compileProjectComponents(this.compiler);
 
 		Collection<File> allFiles = FileUtils.listFiles(this.assetsFolder.toFile(), null, true);
 
 		// Create new Assets.
 		for (File file : allFiles) {
-			Path path = this.assetsFolder.relativize(file.toPath());
-			if (!this.exists(path)) {
+			AssetLocation location = new AssetLocation(file);
+			if (!this.exists(location)) {
 				if (verboseMode) {
-					Debug.log("Adding %s to Database.", path);
+					Debug.log("Adding %s to Database.", location);
 				}
-				this.tryAddAsset(path);
+				this.tryAddAsset(location);
 			}
 		}
 
 		// Re-import Assets.
 		for (CachedAsset asset : this.assets) {
-			if(asset.isBuiltin()) {
+			if (asset.isBuiltin()) {
 				continue;
 			}
-			
+
 			if (asset.hasFileBeenModified()) {
-				this.reload(asset.getPath());
+				this.reload(asset.getLocation());
 			}
 		}
 
@@ -115,24 +118,28 @@ public class EditorAssetDatabase extends AssetDatabase {
 	}
 
 	/**
-	 * Deletes an Asset from the database and it's providing file from the system.
+	 * Deletes an Asset from the Database and it's providing file from the system.
+	 * If the Asset is loaded, the Asset will be unloaded first before deleting it.
 	 * 
-	 * @param assetPath a path to the Asset relative to the \assets directory.
+	 * @param location the location of the Asset to delete
 	 * @return {@link true} if the Asset was deleted, {@link false} false if there
 	 *         was an error.
 	 */
-	public boolean deleteAsset(Path assetPath) {
-		CachedAsset asset = this.getCachedAsset(assetPath);
+	public boolean deleteAsset(AssetLocation location) {
+		CachedAsset asset = this.getCachedAsset(location);
 		if (asset == null) {
-			Debug.logError("[Asset Database]: Could not delete Asset, no Asset exists with the path %s.", assetPath);
+			Debug.logError("[Asset Database]: Could not delete Asset, no Asset exists with the path %s.", location);
 			return false;
 		}
 
-		this.remove(asset);
+		if (asset.isLoaded()) {
+			asset.instance.unload();
+		}
+		this.assets.remove(asset);
 
 		boolean error;
 		try {
-			error = !Desktop.getDesktop().moveToTrash(this.toFullPath(assetPath).toFile());
+			error = !Desktop.getDesktop().moveToTrash(location.getFile());
 		} catch (UnsupportedOperationException | SecurityException e) {
 			error = true;
 		}
@@ -160,7 +167,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			String assetName) {
 		String fileName = assetName + "." + SerializedJelloObject.EXTENSION;
 		Path pathWithNameAndExtension = path == null ? Path.of(fileName) : path.resolve(fileName);
-		if (this.exists(path)) {
+		if (this.exists(new AssetLocation(path))) {
 			Debug.logError("[Asset Database]: Could not create Asset, an Asset already exists at %s", path);
 			return null;
 		}
@@ -182,8 +189,8 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * @param path
 	 * @return
 	 */
-	public boolean addAsset(Path path) {
-		return this.tryAddAsset(path) != null;
+	public boolean addAsset(AssetLocation location) {
+		return this.tryAddAsset(location) != null;
 	}
 
 	/**
@@ -216,24 +223,24 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * @return {@link true} if the Asset was renamed, {@link false} false if there
 	 *         was an error.
 	 */
-	public boolean renameAsset(Path assetPath, String newName) {
+	public boolean renameAsset(AssetLocation location, String newName) {
 		if (StringUtils.isWhitespace(newName)) {
 			Debug.logError("[Asset Database]: newName may not be blank or whitespaces.");
 			return false;
 		}
 
-		CachedAsset asset = this.getCachedAsset(assetPath);
+		CachedAsset asset = this.getCachedAsset(location);
 		if (asset == null) {
-			Debug.logError("[Asset Database]: Unable to rename %s, it does not exist.", assetPath.toString());
+			Debug.logError("[Asset Database]: Unable to rename %s, it does not exist.", location);
 			return false;
 		}
 
-		File newFile = JelloFileUtils.renameFile(this.toFullPath(assetPath).toFile(), newName);
+		File newFile = JelloFileUtils.renameFile(location.getFile(), newName);
 		if (newFile != null) {
 			asset.setPath(this.toRelativePath(newFile.toPath()));
 			return true;
 		} else {
-			Debug.logError("[Asset Database]: Unable to rename %s to %s", assetPath.toString(), newName);
+			Debug.logError("[Asset Database]: Unable to rename %s to %s", location, newName);
 			return false;
 		}
 	}
@@ -246,8 +253,8 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * @return {@link true} if the Asset was moved, {@link false} false if there was
 	 *         an error.
 	 */
-	public boolean moveAsset(Path assetPath, Path destination) {
-		if (!Files.isDirectory(destination)) {
+	public boolean moveAsset(AssetLocation location, AssetLocation newLocation) {
+		if (!newLocation.getFile().isDirectory()) {
 			Debug.logError("[Asset Database]: destination must be a directory");
 		}
 
@@ -260,22 +267,15 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * 
 	 * @param assetPath
 	 */
-	public void reload(Path assetPath) {
-		CachedAsset asset = this.getCachedAsset(assetPath);
+	public void reload(AssetLocation location) {
+		CachedAsset asset = this.getCachedAsset(location);
 		if (asset.isLoaded()) {
 			asset.instance.unload();
 			asset.instance.load();
 			asset.lastLoaded = FileTimes.now();
 		} else {
-			this.getAsset(assetPath);
+			this.getAsset(location);
 		}
-	}
-
-	protected void remove(CachedAsset asset) {
-		if (asset.isLoaded()) {
-			this.unload(asset);
-		}
-		this.assets.remove(asset);
 	}
 
 	private void invokeEvent(Phase phase) {

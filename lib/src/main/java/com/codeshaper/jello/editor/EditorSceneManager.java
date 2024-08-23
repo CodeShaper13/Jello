@@ -1,9 +1,8 @@
 package com.codeshaper.jello.editor;
 
-import java.nio.file.Path;
-
 import com.codeshaper.jello.editor.event.SceneChangeListener;
 import com.codeshaper.jello.editor.event.SceneChangeListener.Action;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
@@ -62,14 +61,14 @@ public class EditorSceneManager extends SceneManager {
 		for (int i = 0; i < sceneCount; i++) {
 			String stringPath = this.editor.properties.getString("loadedScene" + i, null);
 			if (stringPath != null) {
-				Path path = Path.of(stringPath);
-				if(this.editor.assetDatabase.exists(path)) {
-					Asset asset = this.editor.assetDatabase.getAsset(path);
+				AssetLocation location = new AssetLocation(stringPath);
+				if(this.editor.assetDatabase.exists(location)) {
+					Asset asset = this.editor.assetDatabase.getAsset(location);
 					if (asset != null && asset instanceof Scene) {
 						this.loadScene((Scene) asset);
 					}	
 				} else {
-					Debug.logWarning("Unable to open Scene at \"%s\"", path.toString());
+					Debug.logWarning("Unable to open Scene at \"%s\"", location.toString());
 				}
 			}
 		}

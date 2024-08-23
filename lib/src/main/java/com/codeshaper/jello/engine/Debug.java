@@ -77,7 +77,7 @@ public class Debug {
 	 * 
 	 * @param exception the exception to log.
 	 */
-	public static void log(Exception exception) {
+	public static void log(Throwable exception) {
 		if (!isInEditor()) {
 			return;
 		}
@@ -93,7 +93,7 @@ public class Debug {
 	 * @param context   the object that threw the exception.
 	 * @param exception the exception to log.
 	 */
-	public static void log(Exception exception, Object context) {
+	public static void log(Throwable exception, Object context) {
 		if (!isInEditor()) {
 			return;
 		}
