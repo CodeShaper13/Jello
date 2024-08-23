@@ -10,7 +10,6 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.opengl.WGL;
 import org.lwjgl.system.windows.User32;
@@ -274,10 +273,10 @@ public class Application {
 				for (Camera camera : Camera.getAllCameras()) {
 					// TODO sort with Camera#depth
 					if (camera.isEnabled()) {
-						Matrix4f viewMatrix = camera.gameObject().getWorldMatrix();
-						Vector3f v = viewMatrix.getTranslation(new Vector3f());
-						v.mul(-1f);
-						viewMatrix.setTranslation(v);
+						
+						Matrix4f viewMatrix = camera.gameObject().getWorldMatrix();						
+						viewMatrix.invert();
+						
 						renderer.render(
 								sceneManager,
 								camera,
