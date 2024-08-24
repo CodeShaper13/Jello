@@ -3,12 +3,13 @@ package com.codeshaper.jello.editor.inspector;
 import javax.swing.JPanel;
 
 import com.codeshaper.jello.editor.window.InspectorWindow;
+import com.codeshaper.jello.engine.JelloObject;
 
 /**
  * Any object that can be shown in the Inspector must provide an Editor to do
  * the drawing.
  */
-public abstract class Editor<T extends IInspectable> {
+public abstract class Editor<T extends JelloObject> {
 
 	/**
 	 * The object this Editor is for.

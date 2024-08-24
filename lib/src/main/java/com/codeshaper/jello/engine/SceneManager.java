@@ -78,6 +78,20 @@ public class SceneManager {
 
 		return false;
 	}
+	
+	public Scene getScene(String sceneName) {
+		if(sceneName == null) {
+			throw new IllegalArgumentException("sceneName may not be null");
+		}
+		
+		for(Scene scene : this.loadedScenes) {
+			if(scene.getAssetName().equals(sceneName)) {
+				return scene;
+			}
+		}
+		
+		return null;
+	}
 
 	/**
 	 * Gets the number of loaded {@link Scene}s.

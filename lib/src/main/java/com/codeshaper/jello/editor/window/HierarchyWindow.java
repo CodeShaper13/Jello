@@ -27,6 +27,7 @@ import javax.swing.tree.TreeSelectionModel;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.ComponentDrawer;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
 
@@ -99,9 +100,9 @@ public class HierarchyWindow extends EditorWindow {
 				@Override
 				public void valueChanged(TreeSelectionEvent e) {
 					Object selectedNode = tree.getLastSelectedPathComponent();
-					if (selectedNode instanceof GameObject gameObject) {
+					if (selectedNode instanceof JelloObject) {
 						InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
-						inspector.setTarget(gameObject);
+						inspector.setTarget((JelloObject)selectedNode);
 					}
 				}
 			});

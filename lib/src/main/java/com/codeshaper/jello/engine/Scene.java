@@ -73,6 +73,36 @@ public class Scene extends SerializedJelloObject {
 	public GameObject getRootGameObject(int index) {
 		return this.rootGameObjects.get(index);
 	}
+	
+	public GameObject getGameObject(String path) {
+		String[] names = path.split("/");
+		if(names.length == 0) {
+			return null;
+		}
+		
+		GameObject result = null;
+		for(GameObject obj : this.rootGameObjects) {
+			if(obj.getName().equals(names[0])) {
+				result = obj;
+				break;
+			}
+		}
+		
+		if(names.length == 1) { // Path has no children.
+			return result;
+		}
+		
+		for(int i = 1; i < names.length; i++) {
+			GameObject child = result.getChild(names[i]);
+			if(child == null) {
+				return null;
+			} else {
+				result = child;
+			}
+		}
+		
+		return result;
+	}
 
 	/**
 	 * Gets an iterator of all root GameObjects in the Scene.

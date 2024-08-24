@@ -6,10 +6,10 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
-import com.codeshaper.jello.editor.inspector.IInspectable;
 import com.codeshaper.jello.engine.AssetLocation;
+import com.codeshaper.jello.engine.JelloObject;
 
-public abstract class Asset implements IInspectable {
+public abstract class Asset extends JelloObject {
 
 	/**
 	 * The location of the file that provides this Asset. For Asset's created at
@@ -59,6 +59,11 @@ public abstract class Asset implements IInspectable {
 	public void unload() {
 	}
 
+	@Override
+	public String getPersistencePath() {
+		return this.isRuntimeAsset() ? null : "[Asset]" + this.location.getRelativePath().toString();
+	}
+	
 	@Override
 	public Editor<?> getInspectorDrawer(JPanel panel) {
 		return new AssetEditor<Asset>(this, panel);

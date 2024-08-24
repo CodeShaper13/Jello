@@ -13,9 +13,8 @@ import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.GameObjectEditor;
-import com.codeshaper.jello.editor.inspector.IInspectable;
 
-public final class GameObject implements IInspectable {
+public final class GameObject extends JelloObject {
 
 	private String name;
 	private boolean isActive;
@@ -133,6 +132,11 @@ public final class GameObject implements IInspectable {
 		} else {
 			return includeSceneName ? this.scene.location.getRelativePath() + "/" + this.getName() : this.getName();
 		}
+	}
+
+	@Override
+	public String getPersistencePath() {
+		return "[GameObject]" + this.getPath(true);
 	}
 
 	@Override
@@ -516,6 +520,24 @@ public final class GameObject implements IInspectable {
 	 */
 	public GameObject getChild(int index) {
 		return this.children.get(index);
+	}
+
+	/**
+	 * Gets a child with a specific name.
+	 * 
+	 * @param name the name of the child
+	 * @return the first child with name {@code name}, or {@code null} if there are
+	 *         no children with that name
+	 */
+	public GameObject getChild(String name) {
+		GameObject child;
+		for (int i = 0; i < this.children.size(); i++) {
+			child = this.children.get(i);
+			if (child.getName().equals(name)) {
+				return child;
+			}
+		}
+		return null;
 	}
 
 	/**
