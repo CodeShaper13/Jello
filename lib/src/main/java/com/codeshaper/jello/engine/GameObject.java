@@ -116,6 +116,25 @@ public final class GameObject implements IInspectable {
 		this.name = name != null ? name : StringUtils.EMPTY;
 	}
 
+	/**
+	 * Gets the path in the hierarchy to the GameObject. For root GameObjects, this
+	 * is just the GameObject's name from {@link GameObject#getName()}. For non-root
+	 * GameObjects, the path is every parent, separated by {@code /}, then the
+	 * GameObject's name. If {@code includeSceneName} is {@code true} the Scene's
+	 * path will be prefixed, followed by a {@code /}
+	 * 
+	 * @param includeSceneName should the Scene's path be prefixed
+	 * @return a path to the GameObject
+	 * @see GameObject#isRoot()
+	 */
+	public String getPath(boolean includeSceneName) {
+		if (this.getParent() != null) {
+			return this.parent.getPath(includeSceneName) + "/" + this.getName();
+		} else {
+			return includeSceneName ? this.scene.location.getRelativePath() + "/" + this.getName() : this.getName();
+		}
+	}
+
 	@Override
 	public Editor<?> getInspectorDrawer(JPanel panel) {
 		return new GameObjectEditor(this, panel);
