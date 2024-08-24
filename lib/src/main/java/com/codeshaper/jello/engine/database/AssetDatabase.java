@@ -357,7 +357,12 @@ public class AssetDatabase {
 			throw new IllegalArgumentException("location may not be null");
 		}
 
-		CachedAsset cachedAsset = this.getCachedAsset(location);		
+		CachedAsset cachedAsset = this.getCachedAsset(location);	
+		if(cachedAsset == null) {
+			this.logMissingAssetError(location);
+			return null;
+		}
+		
 		if (cachedAsset.isLoaded()) {
 			return cachedAsset.getInstance();
 		} else {
