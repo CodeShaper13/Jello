@@ -9,7 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 
-import com.codeshaper.jello.editor.ScriptCompiler;
+import com.codeshaper.jello.editor.scripts.ScriptCompiler;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;

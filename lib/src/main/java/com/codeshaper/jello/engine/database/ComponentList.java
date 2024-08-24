@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import com.codeshaper.jello.editor.ScriptCompiler;
+import com.codeshaper.jello.editor.scripts.ScriptCompiler;
 import com.codeshaper.jello.engine.JelloComponent;
 
 /**
