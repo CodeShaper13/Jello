@@ -16,6 +16,7 @@ import com.codeshaper.jello.editor.window.FileBrowserWindow;
 import com.codeshaper.jello.editor.window.HierarchyWindow;
 import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import ModernDocking.DockingRegion;
 import ModernDocking.app.AppState;
@@ -37,11 +38,13 @@ public class EditorMainFrame extends JFrame {
 	public final ConsoleWindow console;
 	public final HierarchyWindow hierarchy;
 	public final FileBrowserWindow fileBrowser;
+	
+	private boolean isDarkMode;
 
 	public EditorMainFrame(JelloEditor editor) {
 		super("Jello");
 
-		FlatDarkLaf.setup();
+		this.setDarkMode(JelloEditor.instance.properties.getBoolean("isDarkMode", true));
 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new BorderLayout());
@@ -89,6 +92,22 @@ public class EditorMainFrame extends JFrame {
 			}
 			AppState.setAutoPersist(true);
 		});
+	}
+	
+	public boolean isDarkMode() {
+		return this.isDarkMode;
+	}
+	
+	public void setDarkMode(boolean darkMode) {
+		if(darkMode) {
+			FlatDarkLaf.setup();
+		} else {
+			FlatLightLaf.setup();
+		}
+		
+		SwingUtilities.updateComponentTreeUI(this);
+		this.isDarkMode = darkMode;
+		JelloEditor.instance.properties.setBoolean("isDarkMode", darkMode);
 	}
 
 	private WindowLayout getDefaultLayout() {

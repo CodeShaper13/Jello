@@ -167,9 +167,29 @@ public class EditorMenuBar extends JMenuBar {
 
 			this.add(new LayoutsMenu());
 
+			JMenuItem open = new JMenu("Open");
 			for (Dockable dockable : Docking.getDockables()) {
-				this.add(new DockableMenuItem(dockable.getPersistentID(), "Open " + dockable.getTabText()));
+				open.add(new DockableMenuItem(dockable.getPersistentID(), dockable.getTabText()));
 			}
+			this.add(open);
+			
+			this.addSeparator();
+			
+			JMenu themes = new JMenu("Theme");			
+			
+			JMenuItem dark = new JMenuItem("Dark");
+			dark.addActionListener((e) -> {
+				window.setDarkMode(true);
+			});
+			JMenuItem light = new JMenuItem("Light");
+			light.addActionListener((e) -> {
+				window.setDarkMode(false);
+			});
+			
+			themes.add(dark);
+			themes.add(light);
+			
+			this.add(themes);
 		}
 	}
 
