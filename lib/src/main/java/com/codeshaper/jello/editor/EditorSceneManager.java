@@ -51,7 +51,7 @@ public class EditorSceneManager extends SceneManager {
 	 * Saves all open Scenes to disk.
 	 */
 	public void saveAllScenes() {
-		for (Scene scene : this.getScenes()) {
+		for (Scene scene : this.loadedScenes) {
 			this.saveScene(scene);
 		}
 	}
