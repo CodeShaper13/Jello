@@ -62,6 +62,7 @@ public class Shader extends Asset {
 	public void unload() {
 		super.unload();
 
+		this.data = null;
 		if (this.program != null) {
 			this.program.deleteProgram();
 		}
