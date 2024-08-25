@@ -55,8 +55,12 @@
 		void main() {
 		    fragColor = mainColor * texture(mainTexture, outTextCoord);
 		    
-	        if (_fog.density > 0) {
-		        fragColor = applyFog(outPosition, fragColor);
+		    if(fragColor.a < 0.1) {
+        		discard;
+    		} else {		    
+		        if (_fog.density > 0) {
+			        fragColor = applyFog(outPosition, fragColor);
+			    }
 		    }
 		}
 	  "
