@@ -139,7 +139,7 @@ public class HierarchyWindow extends EditorWindow {
 		@Override
 		public Object getChild(Object parent, int index) {
 			if (parent instanceof SceneManager) {
-				return ((SceneManager) parent).getLoadedScene(index);
+				return ((SceneManager) parent).getScene(index);
 			} else if (parent instanceof Scene) {
 				return ((Scene) parent).getRootGameObject(index);
 			} else if (parent instanceof GameObject) {
@@ -152,7 +152,7 @@ public class HierarchyWindow extends EditorWindow {
 		@Override
 		public int getChildCount(Object parent) {
 			if (parent instanceof SceneManager) {
-				return ((SceneManager) parent).getLoadedSceneCount();
+				return ((SceneManager) parent).getSceneCount();
 			} else if (parent instanceof Scene) {
 				return ((Scene) parent).getRootGameObjectCount();
 			} else if (parent instanceof GameObject) {
@@ -179,8 +179,8 @@ public class HierarchyWindow extends EditorWindow {
 		public int getIndexOfChild(Object parent, Object child) {
 			if (parent instanceof SceneManager) {
 				SceneManager manager = (SceneManager) parent;
-				for (int i = 0; i < manager.getLoadedSceneCount(); i++) {
-					if (manager.getLoadedScene(i) == child) {
+				for (int i = 0; i < manager.getSceneCount(); i++) {
+					if (manager.getScene(i) == child) {
 						return i;
 					}
 				}

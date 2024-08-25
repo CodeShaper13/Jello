@@ -63,7 +63,8 @@ public class GameRenderer {
 
 		this.instructions.clear();
 
-		for (Scene scene : sceneManager.getScenes()) {
+		for(int i = 0; i < sceneManager.getSceneCount(); i++) {
+			Scene scene = sceneManager.getScene(i);
 			for (GameObject obj : scene.getRootGameObjects()) {
 				this.createInstructionsRecursively(obj);
 			}

@@ -20,10 +20,10 @@ public class SceneManagerSnapshot {
 	 * @param sceneManager
 	 */
 	public SceneManagerSnapshot(SceneManager sceneManager) {
-		this.scenes = new ArrayList<SceneSnapshot>(sceneManager.getLoadedSceneCount());
+		this.scenes = new ArrayList<SceneSnapshot>(sceneManager.getSceneCount());
 
-		for (int i = 0; i < sceneManager.getLoadedSceneCount(); i++) {
-			scenes.add(new SceneSnapshot(sceneManager.getLoadedScene(i)));
+		for (int i = 0; i < sceneManager.getSceneCount(); i++) {
+			scenes.add(new SceneSnapshot(sceneManager.getScene(i)));
 		}
 	}
 

@@ -21,6 +21,7 @@ import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.Scene;
+import com.codeshaper.jello.engine.SceneManager;
 import com.codeshaper.jello.engine.rendering.Camera;
 
 public class SceneViewPanel extends JPanel {
@@ -147,7 +148,9 @@ public class SceneViewPanel extends JPanel {
 
 			GameObject selectedGameObject = JelloEditor.instance.window.hierarchy.getSelected();
 
-			for (Scene scene : JelloEditor.instance.sceneManager.getScenes()) {
+			SceneManager sceneManager = JelloEditor.instance.sceneManager;
+			for(int i = 0; i < sceneManager.getSceneCount(); i++) {
+				Scene scene = sceneManager.getScene(i);
 				for (GameObject obj : scene.getRootGameObjects()) {
 					this.callOnDrawGizmosRecursivly(obj, selectedGameObject);
 				}

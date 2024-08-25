@@ -115,8 +115,8 @@ public class Application {
 		} else {
 			this.sceneManager = sceneManager;
 			
-			for(int i = sceneManager.getLoadedSceneCount() - 1; i >= 0; i--) {
-				Scene scene = sceneManager.getLoadedScene(i);
+			for(int i = sceneManager.getSceneCount() - 1; i >= 0; i--) {
+				Scene scene = sceneManager.getScene(i);
 				for (int j = scene.getRootGameObjectCount() - 1; j >= 0; j--) {
 					sceneManager.recursiveCallOnConstruct(scene.getRootGameObject(j));
 				}
@@ -241,7 +241,8 @@ public class Application {
 				
 				// Call onStart on every component this is enabled in the scene that hasn't
 				// gotten onStart called on them yet.
-				for (Scene scene : sceneManager.getScenes()) {
+				for(int i = 0; i < sceneManager.getSceneCount(); i++) {
+					Scene scene = sceneManager.getScene(i);
 					for (GameObject rootObject : scene.getRootGameObjects()) {
 						rootObject.invokeRecursively(rootObject, (c) -> {
 							if (c.isEnabledInScene() && !c.hasOnStartBeenCalled) {
@@ -253,7 +254,8 @@ public class Application {
 				}
 
 				// Call onUpdate on every component that is enabled in the scene.
-				for (Scene scene : sceneManager.getScenes()) {
+				for(int i = 0; i < sceneManager.getSceneCount(); i++) {
+					Scene scene = sceneManager.getScene(i);
 					for (GameObject rootObject : scene.getRootGameObjects()) {
 						rootObject.invokeRecursively(rootObject, (c) -> {
 							if (c.isEnabledInScene()) {
