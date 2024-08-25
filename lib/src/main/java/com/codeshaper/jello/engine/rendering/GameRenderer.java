@@ -71,10 +71,13 @@ public class GameRenderer {
 		}
 
 		for (Material material : this.instructions.keySet()) {
-			Shader shader = material.getShader();
-
-			if (shader == null || shader.isInvalid()) {
-				shader = this.errorShader;
+			Shader shader = this.errorShader;
+			
+			if (material != null) {
+				Shader matShader = material.getShader();
+				if(matShader != null && !matShader.isInvalid()) {
+					shader = matShader;
+				}
 			}
 
 			ShaderData data = shader.getData();
@@ -106,7 +109,9 @@ public class GameRenderer {
 			program.setUniform(_FOG_COLOR, camera.fogColor.toVector3f());
 	        program.setUniform(_FOG_DENSITY, camera.fogDensity);
 	        
-			material.setUniforms();
+	        if(material != null) {
+	        	material.setUniforms();
+	        }
 
 			List<Renderer> renderers = this.instructions.get(material);
 			for (Renderer renderer : renderers) {
@@ -131,9 +136,9 @@ public class GameRenderer {
 				if (component instanceof Renderer) {
 					Renderer renderer = (Renderer) component;
 					Material material = renderer.getMaterial();
-					if (material != null) {
+					//if (material != null) {
 						this.addInstruction(material, renderer);
-					}
+					//}
 				}
 			}
 		}
