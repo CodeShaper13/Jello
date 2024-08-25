@@ -42,7 +42,6 @@ public class ScriptCompiler {
 	 */
 	public boolean compileProject() {
 		this.allCompiledClasses.clear();
-		this.classLoader = new ScriptClassLoader(this.compiledClassDirectory);
 
 		if (this.compiledClassDirectory.exists()) {
 			try {
@@ -50,7 +49,11 @@ public class ScriptCompiler {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		} else {
+			this.compiledClassDirectory.mkdirs();
 		}
+		
+		this.classLoader = new ScriptClassLoader(this.compiledClassDirectory);
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		int errorCount = 0;

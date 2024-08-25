@@ -85,7 +85,7 @@ public class ScriptClassLoader extends ClassLoader {
 	private void createLoaders(Collection<File> paths) {
 		for (File file : paths) {
 			if(!file.exists()) {
-				System.err.println("File \"" + file.toString() + "\" does not exists");
+				System.err.println("[ScriptClassLoader]: File \"" + file.toString() + "\" does not exists");
 				continue;
 			} else if(file.isDirectory()) {
 				this.loaders.add(new DirectoryLoader(file));
