@@ -121,7 +121,7 @@ public class Scene extends SerializedJelloObject {
 		this.rootGameObjects.remove(gameObject);
 	}
 	
-	private void recursivelySetupObject(GameObject gameObject) {
+	void recursivelySetupObject(GameObject gameObject) {
 		gameObject.scene = this;
 		for(JelloComponent component : gameObject.getAllComponents()) {
 			component.owner = gameObject;

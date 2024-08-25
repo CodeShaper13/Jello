@@ -13,6 +13,9 @@ import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.GameObjectEditor;
+import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.database.Serializer;
+import com.google.gson.JsonElement;
 
 public final class GameObject extends JelloObject {
 
@@ -39,19 +42,15 @@ public final class GameObject extends JelloObject {
 	public GameObject(String name, Scene scene) {
 		this();
 
-		this.setName(name);
-
 		if (scene == null) {
 			throw new IllegalArgumentException("scene may not be null.");
 		}
+		
+		this.setName(name);
 
 		scene.moveGameObjectTo(this);
 
-		if (Application.isPlaying()) {
-			for (int i = 0; i < this.components.size(); i++) {
-				this.components.get(i).invokeOnConstruct();
-			}
-		}
+		this.invokeOnConstructIfInApplication();
 	}
 
 	/**
@@ -64,24 +63,47 @@ public final class GameObject extends JelloObject {
 	public GameObject(String name, GameObject parent) {
 		this();
 
-		this.setName(name);
-
 		if (parent == null) {
 			throw new IllegalArgumentException("parent may not be null.");
 		}
+		
+		this.setName(name);
 
 		Scene parentScene = parent.getScene();
 		this.scene = parentScene;
 		parentScene.moveGameObjectTo(this);
 		this.setParent(parent);
 
-		if (Application.isPlaying()) {
-			for (int i = 0; i < this.components.size(); i++) {
-				this.components.get(i).invokeOnConstruct();
-			}
-		}
+		this.invokeOnConstructIfInApplication();
 	}
-
+	
+	public static GameObject fromJson(JsonElement json, Scene scene) {
+		Serializer serializer = AssetDatabase.getInstance().serializer;		
+		GameObject newGameObject = serializer.deserialize(json, GameObject.class);
+		scene.moveGameObjectTo(newGameObject);
+		scene.recursivelySetupObject(newGameObject);
+		
+		newGameObject.invokeOnConstructIfInApplication();
+		
+		return newGameObject;
+	}
+	
+	public static GameObject fromJson(JsonElement json, GameObject parent) {
+		Serializer serializer = AssetDatabase.getInstance().serializer;		
+		GameObject newGameObject = serializer.deserialize(json, GameObject.class);
+		
+		Scene parentScene = parent.getScene();
+		newGameObject.scene = parentScene;
+		parentScene.moveGameObjectTo(newGameObject);
+		newGameObject.setParent(parent);
+		
+		parentScene.recursivelySetupObject(newGameObject);
+		
+		newGameObject.invokeOnConstructIfInApplication();
+		
+		return newGameObject;
+	}
+	
 	private GameObject() {
 		this.isActive = true;
 		this.children = new ArrayList<GameObject>();
@@ -838,6 +860,14 @@ public final class GameObject extends JelloObject {
 		}
 	}
 
+	private void invokeOnConstructIfInApplication() {
+		if (Application.isPlaying()) {
+			for (int i = 0; i < this.components.size(); i++) {
+				this.components.get(i).invokeOnConstruct();
+			}
+		}
+	}
+	
 	interface ILogic {
 
 		void invoke(JelloComponent component);

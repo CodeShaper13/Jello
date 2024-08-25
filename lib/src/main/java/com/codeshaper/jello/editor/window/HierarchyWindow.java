@@ -30,6 +30,9 @@ import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloObject;
 import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.SceneManager;
+import com.codeshaper.jello.engine.database.AssetDatabase;
+import com.codeshaper.jello.engine.database.Serializer;
+import com.google.gson.JsonElement;
 
 public class HierarchyWindow extends EditorWindow {
 
@@ -40,6 +43,7 @@ public class HierarchyWindow extends EditorWindow {
 
 	private HierarchyTreeModel model;
 	private HierarchyTree tree;
+	private JsonElement coppiedGameObject;
 
 	public HierarchyWindow() {
 		super("Scene Hierarchy", "hierarchy");
@@ -102,7 +106,7 @@ public class HierarchyWindow extends EditorWindow {
 					Object selectedNode = tree.getLastSelectedPathComponent();
 					if (selectedNode instanceof JelloObject) {
 						InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
-						inspector.setTarget((JelloObject)selectedNode);
+						inspector.setTarget((JelloObject) selectedNode);
 					}
 				}
 			});
@@ -339,14 +343,37 @@ public class HierarchyWindow extends EditorWindow {
 
 	private class GameObjectMenu extends JPopupMenu {
 
+		private final GameObject gameObject;
+		
 		public GameObjectMenu(GameObject gameObject) {
-			JMenuItem newChild = new JMenuItem("New Child");
-			newChild.addActionListener(e -> {
-				new GameObject("New GameObject", gameObject);
-				model.reloadSelected();
-				// TODO tree.expandPath(new TreePath(defaultMutableTreeNode.getPath()));
+			this.gameObject = gameObject;
+			Serializer serializer = AssetDatabase.getInstance().serializer;
+			
+			JMenuItem copy = new JMenuItem("Copy");
+			copy.addActionListener(e -> {
+				coppiedGameObject = serializer.serializeToJsonElement(gameObject);
 			});
-			this.add(newChild);
+			this.add(copy);
+
+			JMenuItem paste = new JMenuItem("Paste");
+			paste.setEnabled(coppiedGameObject != null);
+			paste.addActionListener(e -> {
+				if (coppiedGameObject != null) {
+					this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
+				}
+			});
+			this.add(paste);
+
+			JMenuItem pasteAsChild = new JMenuItem("Paste As Child");
+			pasteAsChild.setEnabled(coppiedGameObject != null);
+			pasteAsChild.addActionListener(e -> {
+				if (coppiedGameObject != null) {
+					this.addGameObjFromJson(coppiedGameObject, gameObject);
+				}
+			});
+			this.add(pasteAsChild);
+			
+			this.addSeparator();
 
 			JMenuItem rename = new JMenuItem("Rename");
 			rename.addActionListener(e -> {
@@ -354,16 +381,42 @@ public class HierarchyWindow extends EditorWindow {
 			});
 			this.add(rename);
 
+			JMenuItem duplicate = new JMenuItem("Duplicate");
+			duplicate.addActionListener(e -> {
+				JsonElement json = serializer.serializeToJsonElement(gameObject);
+				this.addGameObjFromJson(json, gameObject.getParent());
+				model.reload(tree.getSelectionPath().getParentPath());
+			});
+			this.add(duplicate);
+
 			JMenuItem delete = new JMenuItem("Delete");
 			delete.addActionListener(e -> {
 				InspectorWindow inspector = JelloEditor.getWindow(InspectorWindow.class);
-				if(inspector.getTarget() == gameObject) {
+				if (inspector.getTarget() == gameObject) {
 					inspector.setTarget(null);
 				}
 				gameObject.destroy();
 				model.reload(tree.getSelectionPath().getParentPath());
 			});
 			this.add(delete);
+
+			this.addSeparator();
+
+			JMenuItem newChild = new JMenuItem("New Child");
+			newChild.addActionListener(e -> {
+				new GameObject("New GameObject", gameObject);
+				model.reloadSelected();
+				// TODO tree.expandPath(new TreePath(defaultMutableTreeNode.getPath()));
+			});
+			this.add(newChild);
+		}
+		
+		private void addGameObjFromJson(JsonElement json, GameObject parent) {
+			GameObject newGameObject = GameObject.fromJson(json, this.gameObject.getScene());
+			newGameObject.setName(newGameObject.getName() + "-Copy");
+			if(parent != null) {
+				newGameObject.setParent(parent);
+			}
 		}
 	}
 }
