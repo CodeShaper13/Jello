@@ -149,7 +149,7 @@ public class Input {
 			return false;
 		}
 
-		return GLFW.glfwGetKey(instance.window, key.code) == GLFW.GLFW_RELEASE;
+		return GLFW.glfwGetKey(instance.window, key.code) == GLFW.GLFW_PRESS;
 	}
 
 	/**
@@ -266,7 +266,7 @@ public class Input {
 	}
 
 	/**
-	 * Sets Application's the cursor state. {@code null} will never be returned.
+	 * Gets Application's the cursor state. {@code null} will never be returned.
 	 * 
 	 * @return the Application's cursor state.
 	 */
@@ -291,17 +291,22 @@ public class Input {
 	}
 
 	/**
-	 * Gets the Application's {@link CursorState}. If {@code null} is passed,
+	 * Sets the Application's {@link CursorState}. This will only have an effect if
+	 * the Application window is in focus, which is not always true in
+	 * {@link JelloComponent#onConstruct()}, so calls to this method should happen
+	 * in {@link JelloComponent#onStart()} instead. If {@code null} is passed,
 	 * nothing happens.
 	 * 
-	 * @param state
+	 * @param state the {@link CursorState} to use.
 	 */
 	public static void setCursorState(CursorState state) {
 		if (!isEnabled()) {
 			return;
 		}
 
-		GLFW.glfwSetInputMode(instance.window, GLFW.GLFW_CURSOR, state.value);
+		if(state != null) {
+			GLFW.glfwSetInputMode(instance.window, GLFW.GLFW_CURSOR, state.value);
+		}
 	}
 
 	/**
