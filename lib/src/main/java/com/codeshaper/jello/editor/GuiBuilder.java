@@ -1,6 +1,7 @@
 package com.codeshaper.jello.editor;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.FocusAdapter;
@@ -28,6 +29,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +69,7 @@ import com.codeshaper.jello.engine.database.AssetDatabase;
  * <p>
  * This is a lower level alternative to using {@link GuiLayoutBuilder}.
  */
-public class GuiBuilder {
+public final class GuiBuilder {
 
 	private static final int SLIDER_DECIMAL_PLACES = 1000;
 	private static FieldDrawerRegistry fieldDrawerRegistry;
@@ -76,6 +78,8 @@ public class GuiBuilder {
 		fieldDrawerRegistry = new FieldDrawerRegistry(editor);
 	}
 
+	private GuiBuilder() { }
+	
 	/**
 	 * Combines 2 or more components into the same horizontal space. All components
 	 * receive equal space.
@@ -175,7 +179,13 @@ public class GuiBuilder {
 	}
 
 	public static JButton button(String label, Icon icon, Runnable onClick) {
-		JButton btn = new JButton(label, icon);
+		JButton btn = new JButton(label, icon) {
+			@Override
+			public Dimension getMaximumSize() {
+				return new Dimension(Integer.MAX_VALUE, this.getPreferredSize().height);
+			}
+		};
+		btn.setAlignmentX(SwingConstants.LEFT);
 		if (onClick != null) {
 			btn.addActionListener(e -> onClick.run());
 		}

@@ -5,7 +5,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
@@ -76,11 +75,6 @@ public class SerializedJelloObject extends Asset {
 			if(this.autoSaveToggle.isSelected()) {
 				this.saveAsset();
 			}
-		}
-
-		@Override
-		public void drawAsset(GuiLayoutBuilder drawer) {
-			super.drawAsset(drawer);
 		}
 		
 		/**

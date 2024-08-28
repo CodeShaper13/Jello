@@ -2,6 +2,7 @@ package com.codeshaper.jello.editor.inspector;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
@@ -43,23 +44,31 @@ public class GameObjectEditor extends Editor<GameObject> {
 
 		panel.setLayout(new BorderLayout());
 
-		JPanel upperPanel = new JPanel();
-		upperPanel.setLayout(new GridBagLayout());
-
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1;
-
-		// Header:
-		gbc.gridy = 0;
-		upperPanel.add(this.createHeaderPanel(), gbc);
-
-		// Transform Panel.
-		gbc.gridy = 1;
-		upperPanel.add(this.createTransformPanel(), gbc);
-
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+		
+		// Header
+		builder.startHorizontal();		
+		builder.checkbox(null, this.target.isActive(), v -> {
+			this.target.setActive(v);
+		});		
+		builder.textField(null, this.target.getName(), v -> {
+			this.target.setName(v);
+		});		
+		builder.endHorizontal();
+		
+		// Transform
+		GuiLayoutBuilder transformBuilder = builder.subPanel("Transform");
+		transformBuilder.vector3fField("Position", this.target.getLocalPosition(), (v) -> {
+			this.target.setLocalPosition(v);
+		});
+		transformBuilder.quaternionField("Rotation", this.target.getLocalRotation(), (v) -> {
+			this.target.setLocalRotation(v);
+		});
+		transformBuilder.vector3fField("Scale", this.target.getLocalScale(), (v) -> {
+			this.target.setLocalScale(v);
+		});
+		
 		this.addComponentButton = new JButton("Add Component");
-		this.addComponentButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		this.addComponentButton.addActionListener(e -> {
 			JDialog dialog = new AddComponentDialog();
 			dialog.setVisible(true);
@@ -68,14 +77,15 @@ public class GameObjectEditor extends Editor<GameObject> {
 
 		// Component List:
 		this.componentListPanel = new JPanel();
-		this.componentListPanel.setLayout(new GridBagLayout());
+		this.componentListPanel.setLayout(new BoxLayout(this.componentListPanel, BoxLayout.Y_AXIS));
 
-		this.componentScrollPane = new JScrollPane(this.componentListPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+		this.componentScrollPane = new JScrollPane(this.componentListPanel,
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		this.componentScrollPane.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createTitledBorder("Components"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+				BorderFactory.createTitledBorder("Components"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));		
 
-		panel.add(upperPanel, BorderLayout.NORTH);
+		panel.add(builder.getPanel(), BorderLayout.NORTH);
 		panel.add(this.componentScrollPane, BorderLayout.CENTER);
 		panel.add(this.addComponentButton, BorderLayout.SOUTH);
 
@@ -95,73 +105,31 @@ public class GameObjectEditor extends Editor<GameObject> {
 	private void createComponentListPanel() {
 		this.componentListPanel.removeAll();
 
-		GridBagConstraints constraint = new GridBagConstraints();
-		constraint.fill = GridBagConstraints.BOTH;
-		constraint.weightx = 1.0f;
-
-		Border borderRightSpace = BorderFactory.createEmptyBorder(0, 0, 0, 8);
 		Border borderBox = BorderFactory.createTitledBorder("");
 		Border borderEdge = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-		Border border = BorderFactory.createCompoundBorder(borderRightSpace,
-				BorderFactory.createCompoundBorder(borderBox, borderEdge));
+		Border border = BorderFactory.createCompoundBorder(borderBox, borderEdge);
 
 		int componentCount = this.target.getComponentCount();
 		for (int i = 0; i < componentCount; i++) {
-			JelloComponent component = this.target.getComponentAtIndex(i);
-			ComponentDrawer<? extends JelloComponent> editor = component.getComponentDrawer();
-			JPanel panel = new JPanel();
+			JPanel panel = new JPanel() {
+				public Dimension getMaximumSize() {
+					return new Dimension(super.getMaximumSize().width, this.getPreferredSize().height);
+				};
+			};
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
 			panel.setBorder(border);
-			editor.makeGui(panel);
-			constraint.gridy = i * 2;
-			this.componentListPanel.add(panel, constraint);
+
+			Editor<?> editor = this.target.getComponentAtIndex(i).getInspectorDrawer(panel);
+			editor.draw();
+			
+			this.componentListPanel.add(panel);
 
 			if (i != componentCount - 1) { // Don't add a space after the last component.
-				constraint.gridy = (i * 2) + 1;
-				this.componentListPanel.add(Box.createVerticalStrut(20), constraint);
+				this.componentListPanel.add(Box.createVerticalStrut(20));
 			}
 		}
-
+		
 		this.addComponentButton.getParent().revalidate();
-	}
-
-	private JPanel createHeaderPanel() {
-		JPanel panel = new JPanel(new BorderLayout());
-		this.enabledToggle = new JCheckBox();
-		this.enabledToggle.setSelected(this.target.isActive());
-		this.enabledToggle.addActionListener(e -> {
-			this.target.setActive(this.enabledToggle.isSelected());
-		});
-		panel.add(this.enabledToggle, BorderLayout.WEST);
-		this.objectName = new JTextField();
-		this.objectName.setText(this.target.getName());
-		this.objectName.addActionListener(e -> {
-			this.target.setName(this.objectName.getText());
-		});
-		panel.add(this.objectName, BorderLayout.CENTER);
-		panel.add(Box.createGlue(), BorderLayout.EAST);
-
-		return panel;
-	}
-
-	private JPanel createTransformPanel() {
-		GuiLayoutBuilder builder = new GuiLayoutBuilder();
-
-		builder.vector3fField("Position", this.target.getLocalPosition(), (v) -> {
-			this.target.setLocalPosition(v);
-		});
-		builder.quaternionField("Rotation", this.target.getLocalRotation(), (v) -> {
-			this.target.setLocalRotation(v);
-		});
-		builder.vector3fField("Scale", this.target.getLocalScale(), (v) -> {
-			this.target.setLocalScale(v);
-		});
-
-		JPanel panel = builder.getPanel();
-		panel.setBorder(BorderFactory.createTitledBorder("Transform"));
-
-		return panel;
 	}
 
 	private class AddComponentDialog extends JDialog {

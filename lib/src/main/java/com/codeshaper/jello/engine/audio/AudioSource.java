@@ -1,7 +1,8 @@
 package com.codeshaper.jello.engine.audio;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
-import com.codeshaper.jello.editor.inspector.ComponentDrawer;
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
+import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.Space;
 import com.codeshaper.jello.editor.property.modifier.ToolTip;
@@ -11,6 +12,8 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.JelloComponent;
 
 import static org.lwjgl.openal.AL10.*;
+
+import javax.swing.JPanel;
 
 @ComponentName("Audio/Audio Source")
 @ComponentIcon("/editor/componentIcons/audioSource.png")
@@ -67,8 +70,8 @@ public final class AudioSource extends JelloComponent {
 	}
 	
 	@Override
-	public ComponentDrawer<?> getComponentDrawer() {
-		return new AudioSourceDrawer(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new AudioSourceDrawer(this, panel);
 	}
 
 	/**
@@ -183,14 +186,14 @@ public final class AudioSource extends JelloComponent {
 		return this.is3d;
 	}
 
-	private class AudioSourceDrawer extends ComponentDrawer<AudioSource> {
+	private class AudioSourceDrawer extends ComponentEditor<AudioSource> {
 
-		public AudioSourceDrawer(AudioSource component) {
-			super(component);
+		public AudioSourceDrawer(AudioSource component, JPanel panel) {
+			super(component, panel);
 		}
 		
 		@Override
-		protected void drawComponent(GuiLayoutBuilder builder) {			
+		public void drawComponent(GuiLayoutBuilder builder) {			
 			builder.assetField("Clip", getAudioClip(), AudioClip.class, (v) -> setAudioClip(v));
 			builder.space();
 			

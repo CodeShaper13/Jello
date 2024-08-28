@@ -17,39 +17,45 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.window.InspectorWindow;
+import com.codeshaper.jello.engine.ComponentHelpUrl;
 import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.JelloComponent;
 
-public class ComponentDrawer<T extends JelloComponent> {
+public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 
-	protected final T component;
 
-	public ComponentDrawer(T component) {
-		this.component = component;
+	public ComponentEditor(T component, JPanel panel) {
+		super(component, panel);
 	}
-
-	public void makeGui(JPanel panel) {
-		panel.add(this.getHeader());
-		panel.add(new JSeparator());
-
+	
+	@Override
+	protected void onDraw(boolean isInitialDraw) {
+		this.panel.add(this.getHeader());
+		this.panel.add(new JSeparator());
+		
 		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawComponent(drawer);
-		panel.add(drawer.getPanel());
+		this.panel.add(drawer.getPanel());
 	}
-
+	
+	@Override
+	protected void onRefresh() {
+		super.onRefresh();
+		
+		this.panel.removeAll();
+	}
+	
 	/**
 	 * Gets the header for the component. Override to provide a custom header.
 	 * 
 	 * @return
 	 */
 	public ComponentHeader getHeader() {
-		return new ComponentHeader(this.component);
+		return new ComponentHeader(this.target);
 	}
 
 	/**
@@ -60,33 +66,23 @@ public class ComponentDrawer<T extends JelloComponent> {
 	 * @param builder
 	 */
 	protected void drawComponent(GuiLayoutBuilder builder) {
-		builder.addAll(this.component);
-	}
-
-	/**
-	 * Gets a help URL to online documentation for the component. If null is
-	 * returned, the help button in the header will be disabled.
-	 * 
-	 * @return
-	 */
-	public String getHelpUrl() {
-		return "https://www.google.com/search?q=help"; // TODO
+		builder.addAll(this.target);
 	}
 
 	public class ComponentHeader extends JPanel {
 
 		public static ImageIcon moveUpIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editor/icons/component_moveUp.png"));
+				ComponentEditor.class.getResource("/editor/icons/component_moveUp.png"));
 		public static ImageIcon moveDownIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editor/icons/component_moveDown.png"));
+				ComponentEditor.class.getResource("/editor/icons/component_moveDown.png"));
 		public static ImageIcon helpIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editor/icons/component_help.png"));
+				ComponentEditor.class.getResource("/editor/icons/component_help.png"));
 		public static ImageIcon editIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editor/icons/component_edit.png"));
+				ComponentEditor.class.getResource("/editor/icons/component_edit.png"));
 		public static ImageIcon removeIcon = new ImageIcon(
-				ComponentDrawer.class.getResource("/editor/icons/component_remove.png"));
+				ComponentEditor.class.getResource("/editor/icons/component_remove.png"));
 		public static ImageIcon defaultComponentIcon = new ImageIcon(
-				ComponentDrawer.class.getResource(ComponentIcon.DEFAULT_ICON_PATH));
+				ComponentEditor.class.getResource(ComponentIcon.DEFAULT_ICON_PATH));
 
 		public ComponentHeader(T component) {
 			this.setLayout(new GridBagLayout());
@@ -120,17 +116,16 @@ public class ComponentDrawer<T extends JelloComponent> {
 
 			this.add(Box.createHorizontalStrut(10));
 
-			String url = getHelpUrl();
-			boolean hasHelpLink = !StringUtils.isWhitespace(url);
+			ComponentHelpUrl help = target.getClass().getAnnotation(ComponentHelpUrl.class);			
 			JButton btn = this.addButton(helpIcon, "Open Online Help", e -> {
-				if (hasHelpLink) {
+				if (help != null && help.value() != null) {
 					try {
-						Desktop.getDesktop().browse(new URI(url));
+						Desktop.getDesktop().browse(new URI(help.value()));
 					} catch (Exception exception) {
 					}
 				}
 			});
-			btn.setEnabled(hasHelpLink);
+			btn.setEnabled(help != null && help.value() != null);
 
 			this.addButton(editIcon, "Edit Component in IDE", e -> {
 				// TODO open in IDE.
@@ -165,7 +160,7 @@ public class ComponentDrawer<T extends JelloComponent> {
 			ComponentIcon annotation = component.getClass().getAnnotation(ComponentIcon.class);
 			if (annotation != null) {
 				String path = annotation.value();
-				URL url = ComponentDrawer.class.getResource(path);
+				URL url = ComponentEditor.class.getResource(path);
 				if (url != null) {
 					return new ImageIcon(url);
 				} else {

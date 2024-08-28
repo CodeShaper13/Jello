@@ -43,8 +43,16 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 				BorderFactory.createTitledBorder(""), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 		
 		this.panel.add(scrollPane, BorderLayout.CENTER);
+	}
+	
+	@Override
+	public void onDraw(boolean isInitialDraw) {
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+		this.drawAsset(builder);
+				
+		this.gridBagPanel.add(builder.getPanel(), this.constraints);		
 		
-		this.func();
+		this.panel.revalidate();
 	}
 	
 	@Override
@@ -52,19 +60,10 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 		super.onRefresh();
 		
 		this.gridBagPanel.removeAll();
-		this.func();
-		
-		this.panel.revalidate();
 	}
 	
-	protected void drawAsset(GuiLayoutBuilder drawer) {
-		drawer.addAll(this.target);
-	}
-	
-	private void func() {		
-		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
-		this.drawAsset(drawer);		
-		this.gridBagPanel.add(drawer.getPanel(), this.constraints);		
+	protected void drawAsset(GuiLayoutBuilder builder) {
+		builder.addAll(this.target);
 	}
 	
 	private class Header extends JPanel {

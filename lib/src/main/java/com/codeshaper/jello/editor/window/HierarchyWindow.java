@@ -25,7 +25,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.editor.inspector.ComponentDrawer;
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloObject;
 import com.codeshaper.jello.engine.Scene;
@@ -37,9 +37,9 @@ import com.google.gson.JsonElement;
 public class HierarchyWindow extends EditorWindow {
 
 	private static final ImageIcon SCENE_ICON = new ImageIcon(
-			ComponentDrawer.class.getResource("/editor/icons/hierarchy_scene.png"));
+			ComponentEditor.class.getResource("/editor/icons/hierarchy_scene.png"));
 	private static final ImageIcon GAME_OBJECT_ICON = new ImageIcon(
-			ComponentDrawer.class.getResource("/editor/icons/hierarchy_gameObject.png"));
+			ComponentEditor.class.getResource("/editor/icons/hierarchy_gameObject.png"));
 
 	private HierarchyTreeModel model;
 	private HierarchyTree tree;

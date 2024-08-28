@@ -3,7 +3,8 @@ package com.codeshaper.jello.engine.audio;
 import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
-import com.codeshaper.jello.editor.inspector.ComponentDrawer;
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
+import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.ComponentIcon;
@@ -13,6 +14,8 @@ import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
 
 import static org.lwjgl.openal.AL10.*;
+
+import javax.swing.JPanel;
 
 @ComponentName("Audio/Audio Listener")
 @ComponentIcon("/editor/componentIcons/audioListener.png")
@@ -79,8 +82,8 @@ public final class AudioListener extends JelloComponent {
 	}
 	
 	@Override
-	public ComponentDrawer<?> getComponentDrawer() {
-		return new AudioListenerDrawer(this);
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new AudioListenerDrawer(this, panel);
 	}
 	
 	public void setVolume(float v) {
@@ -95,14 +98,14 @@ public final class AudioListener extends JelloComponent {
 	    return alGetListenerf(AL_GAIN);
 	}
 	
-	private class AudioListenerDrawer extends ComponentDrawer<AudioListener> {
+	private class AudioListenerDrawer extends ComponentEditor<AudioListener> {
 
-		public AudioListenerDrawer(AudioListener component) {
-			super(component);
+		public AudioListenerDrawer(AudioListener component, JPanel panel) {
+			super(component, panel);
 		}
 
 		@Override
-		protected void drawComponent(GuiLayoutBuilder builder) {
+		public void drawComponent(GuiLayoutBuilder builder) {
 			builder.floatField("Volume", volume, (v) -> setVolume(v));
 		}
 	}

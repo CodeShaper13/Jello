@@ -112,6 +112,7 @@ public class InspectorWindow extends EditorWindow {
 		if (this.target != null) {
 			// Create a new editor.
 			this.editor = this.target.getInspectorDrawer(this.panel);
+			this.editor.draw();
 			JelloEditor.instance.properties.setString(SELECTED_ASSET_KEY, this.target.getPersistencePath());
 		}
 
@@ -133,7 +134,7 @@ public class InspectorWindow extends EditorWindow {
 	 */
 	public void refresh() {
 		if (this.editor != null) {
-			this.editor.onRefresh();
+			this.editor.refresh();
 		}
 	}
 }

@@ -1,9 +1,12 @@
 package com.codeshaper.jello.engine;
 
+import javax.swing.JPanel;
+
 import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.GizmoDrawer;
-import com.codeshaper.jello.editor.inspector.ComponentDrawer;
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
+import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.modifier.Button;
 
@@ -16,7 +19,7 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  * and @link {@link JelloComponent#onStart()}
  * <p>
  * Components can customize their presentation in the Editor through annotations
- * and a custom {@link ComponentDrawer}.
+ * and a custom {@link ComponentEditor}.
  * <p>
  * The {@link ComponentIcon} annotation specifies a custom icon to use in the
  * Editor. <br>
@@ -28,7 +31,7 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  * that are either public or have the {@link ExposedField} annotations, and
  * buttons for all methods that have the {@link Button} annotation.
  */
-public abstract class JelloComponent {
+public abstract class JelloComponent extends JelloObject {
 
 	boolean enabled;
 
@@ -43,6 +46,17 @@ public abstract class JelloComponent {
 	 */
 	public final GameObject gameObject() {
 		return this.owner;
+	}
+	
+	@Override
+	public String getPersistencePath() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public Editor<?> getInspectorDrawer(JPanel panel) {
+		return new ComponentEditor<JelloComponent>(this, panel);
 	}
 
 	public final void setEnabled(boolean enabled) {
@@ -186,10 +200,6 @@ public abstract class JelloComponent {
 			gizmos.color(Color.blue);
 			gizmos.drawRay(position, this.owner.getForward(preAllocVec));
 		}
-	}
-
-	public ComponentDrawer<?> getComponentDrawer() {
-		return new ComponentDrawer<JelloComponent>(this);
 	}
 
 	void invokeOnConstruct() {

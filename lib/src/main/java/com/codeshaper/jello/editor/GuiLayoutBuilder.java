@@ -6,13 +6,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -38,7 +41,7 @@ import com.codeshaper.jello.engine.asset.Asset;
  * Provides an easy way to create Uis with components organized in a descending
  * list. For lower level control, use {@link GuiBuilder}
  */
-public class GuiLayoutBuilder {
+public final class GuiLayoutBuilder {
 
 	private JPanel panel;
 	private JPanel horizontalPanel;
@@ -51,6 +54,11 @@ public class GuiLayoutBuilder {
 			}
 		};
 		this.panel.setLayout(new BoxLayout(this.panel, BoxLayout.Y_AXIS));
+	}
+
+	public void clear() {
+		this.panel.removeAll();
+		this.horizontalPanel = null;
 	}
 
 	/**
@@ -93,7 +101,7 @@ public class GuiLayoutBuilder {
 
 	}
 
-	public void stopHorizontal() {
+	public void endHorizontal() {
 		if (!this.isHorizontal()) {
 			return;
 		}
@@ -104,6 +112,21 @@ public class GuiLayoutBuilder {
 
 	public boolean isHorizontal() {
 		return this.horizontalPanel != null;
+	}
+
+	public void setBorder(Border border) {
+		this.panel.setBorder(border);
+	}
+
+	public void setBorder(String title) {
+		this.panel.setBorder(BorderFactory.createTitledBorder(title));
+	}
+
+	public GuiLayoutBuilder subPanel(String title) {
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+		builder.panel.setBorder(BorderFactory.createTitledBorder(title));
+		this.add(builder.panel);
+		return builder;
 	}
 
 	/**
@@ -126,10 +149,25 @@ public class GuiLayoutBuilder {
 		this.add(GuiBuilder.label(text, icon, alignment));
 	}
 
+	/**
+	 * Adds a single line text field where the user can edit a string.
+	 * 
+	 * @param label
+	 * @param text
+	 * @param listener
+	 */
 	public void textField(String label, String text, OnSubmitListerer<String> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textField(text, listener)));
 	}
 
+	/**
+	 * Adds a multi-line text field where the user can edit a string.
+	 * 
+	 * @param label
+	 * @param text
+	 * @param lines
+	 * @param listener
+	 */
 	public void textArea(String label, String text, int lines, OnSubmitListerer<String> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.textArea(text, lines, listener)));
 	}
@@ -239,7 +277,7 @@ public class GuiLayoutBuilder {
 	public void quaternionField(String label, Quaternionf value, OnSubmitListerer<Quaternionf> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.quaternionField(value, listener)));
 	}
-	
+
 	public void colorField(String label, Color color, OnSubmitListerer<Color> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.colorField(color, listener)));
 	}
@@ -251,11 +289,11 @@ public class GuiLayoutBuilder {
 	public void sliderField(String label, float min, float max, float value, OnSubmitListerer<Float> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.floatSlider(min, max, value, listener)));
 	}
-	
+
 	public void sliderField(String label, double min, double max, double value, OnSubmitListerer<Double> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.doubleSlider(min, max, value, listener)));
 	}
-	
+
 	public <T extends Asset> void assetField(String label, T value, Class<T> clazz, OnSubmitListerer<T> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.assetField(value, clazz, listener)));
 	}
@@ -314,11 +352,11 @@ public class GuiLayoutBuilder {
 	 * 
 	 * @return
 	 */
-	public JPanel getPanel() {
+	public JComponent getPanel() {
 		return this.panel;
 	}
 
-	private void add(Component component) {
+	public void add(Component component) {
 		if (this.isHorizontal()) {
 			this.horizontalPanel.add(component);
 		} else {
@@ -334,6 +372,23 @@ public class GuiLayoutBuilder {
 			return GuiBuilder.combine(GuiBuilder.label(label), component);
 		} else {
 			return component;
+		}
+	}
+
+	public class Control {
+
+		private final JComponent component;
+
+		private Control(JComponent component) {
+			this.component = component;
+		}
+
+		public void setEnabled(boolean enabled) {
+			this.component.setEnabled(enabled);
+		}
+
+		public void setTooltip(String text) {
+			this.component.setToolTipText(text);
 		}
 	}
 

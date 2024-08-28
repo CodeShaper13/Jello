@@ -6,8 +6,8 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -26,7 +26,7 @@ public class AppSettingsWindow extends EditorWindow {
 
 	private final File settingsFile;
 	private ApplicationSettings appSettings;
-	private JPanel builderPanel;
+	private JComponent builderPanel;
 
 	public AppSettingsWindow() {
 		super("Game Settings", "applicationSettings");
