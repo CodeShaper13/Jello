@@ -26,6 +26,7 @@ import com.codeshaper.jello.engine.rendering.shader.UniformType;
 public class Material extends SerializedJelloObject {
 
 	private Shader shader = null;
+	public int renderOrder;
 	private HashMap<String, Integer> ints = new HashMap<String, Integer>();
 	private HashMap<String, Float> floats = new HashMap<String, Float>();
 	private HashMap<String, Vector2f> vec2s = new HashMap<String, Vector2f>();
@@ -407,6 +408,9 @@ public class Material extends SerializedJelloObject {
 			builder.assetField("Shader: ", this.target.shader, Shader.class, (v) -> {
 				this.target.setShader(v);
 				this.onRefresh();
+			});
+			builder.intField("Render Order", this.target.renderOrder, (v) -> {
+				this.target.renderOrder = v;
 			});
 
 			builder.space();

@@ -3,7 +3,7 @@ package com.codeshaper.jello.engine.rendering;
 import static org.lwjgl.opengl.GL30.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 
 import org.joml.Math;
@@ -31,9 +31,23 @@ public class GameRenderer {
 	public static final String _FOG_COLOR = "_fog.color";
 	public static final String _FOG_DENSITY = "_fog.density";
 
-	
 	private final Shader errorShader;
-	private final HashMap<Material, List<Renderer>> instructions;
+	private final List<C> instructions;
+	
+	private class C {
+		
+		public final Material material;
+		public final List<Renderer> renderers;
+		
+		public C(Material material) {
+			this.material = material;
+			this.renderers = new ArrayList<Renderer>();
+		}
+		
+		public int getRenderOrder() {
+			return this.material != null ? this.material.renderOrder : 0;
+		}
+	}
 
 	public GameRenderer() {
 		glEnable(GL_BLEND);
@@ -41,7 +55,7 @@ public class GameRenderer {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		this.errorShader = (Shader) AssetDatabase.getInstance().getAsset(new AssetLocation("builtin/shaders/error.shader"));
-		this.instructions = new HashMap<Material, List<Renderer>>(256);
+		this.instructions = new ArrayList<GameRenderer.C>();
 	}
 
 	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int windowWidth,
@@ -69,8 +83,13 @@ public class GameRenderer {
 				this.createInstructionsRecursively(obj);
 			}
 		}
-
-		for (Material material : this.instructions.keySet()) {
+				
+		Collections.sort(this.instructions, (m1, m2) -> {
+			return Integer.compare(m1.getRenderOrder(), m2.getRenderOrder());
+		});
+		
+		for(C c : this.instructions) {
+			Material material = c.material;			
 			Shader shader = this.errorShader;
 			
 			if (material != null) {
@@ -113,7 +132,7 @@ public class GameRenderer {
 	        	material.setUniforms();
 	        }
 
-			List<Renderer> renderers = this.instructions.get(material);
+			List<Renderer> renderers = c.renderers;
 			for (Renderer renderer : renderers) {
 				program.setUniform(GAME_OBJECT_MATRIX, renderer.gameObject().getWorldMatrix());
 
@@ -135,10 +154,7 @@ public class GameRenderer {
 			if (component.isEnabled()) {
 				if (component instanceof Renderer) {
 					Renderer renderer = (Renderer) component;
-					Material material = renderer.getMaterial();
-					//if (material != null) {
-						this.addInstruction(material, renderer);
-					//}
+					this.addInstruction(renderer.getMaterial(), renderer);
 				}
 			}
 		}
@@ -149,6 +165,22 @@ public class GameRenderer {
 	}
 
 	private void addInstruction(Material material, Renderer renderer) {
+		C c = null;
+		for(C c1 : this.instructions) {
+			if(c1.material == material) {
+				c = c1;
+				break;
+			}
+		}
+		
+		if(c == null) {
+			c = new C(material);
+			this.instructions.add(c);
+		}
+		
+		c.renderers.add(renderer);
+		
+		/*
 		if (this.instructions.containsKey(material)) {
 			this.instructions.get(material).add(renderer);
 		} else {
@@ -156,5 +188,6 @@ public class GameRenderer {
 			list.add(renderer);
 			this.instructions.put(material, list);
 		}
+		*/
 	}
 }

@@ -3,6 +3,8 @@ package com.codeshaper.jello.editor.property;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+
 import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.ReadOnly;
@@ -97,11 +99,11 @@ public class ExposedField implements IExposedField {
 	@Override
 	public ExposedField getSubProperty(String name) {
 		try {
-			Field subField = this.backingField.getType().getField(name);
+			Field subField = FieldUtils.getField(this.backingField.getType(), name, true);
 			Object instance = this.backingField.get(this.instance);
 			return new ExposedField(instance, subField);
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			// Swallow.
+		} catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
 		}
 
 		return null;

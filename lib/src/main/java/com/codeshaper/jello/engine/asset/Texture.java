@@ -25,6 +25,12 @@ public class Texture extends Asset {
 	public Texture(AssetLocation location) {
 		super(location);
 	}
+	
+	public Texture(int width, int height, ByteBuffer buffer) {
+		super(null);
+		
+		this.generateTexture(width, height, buffer);
+	}
 
 	@Override
 	public void load() {
@@ -58,17 +64,17 @@ public class Texture extends Asset {
 	
 	@Override
 	public void unload() {
-		glDeleteTextures(textureId);
+		glDeleteTextures(this.textureId);
 	}
 	
 	public void bind() {
-		glBindTexture(GL_TEXTURE_2D, textureId);
+		glBindTexture(GL_TEXTURE_2D, this.textureId);
 	}
 
 	private void generateTexture(int width, int height, ByteBuffer buf) {
-		textureId = glGenTextures();
+		this.textureId = glGenTextures();
 
-		glBindTexture(GL_TEXTURE_2D, textureId);
+		glBindTexture(GL_TEXTURE_2D, this.textureId);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

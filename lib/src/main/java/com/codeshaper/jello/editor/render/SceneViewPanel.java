@@ -86,7 +86,15 @@ public class SceneViewPanel extends JPanel {
 	public void createContext() {
 		this.canvas.createContextImmediately();
 	}
+	
+	public int getWidth() {
+		return this.canvas.getWidth();
+	}
 
+	public int getHeight() {
+		return this.canvas.getHeight();
+	}
+	
 	public class SceneAWTGLCanvas extends AWTGLCanvasContextControl {
 
 		private GizmoDrawer gizmoDrawer;

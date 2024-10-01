@@ -31,7 +31,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);
 
-		this.compiler = new ScriptCompiler(JelloEditor.instance.rootProjectFolder.toFile(), this);
+		this.compiler = new ScriptCompiler(projectFolder.getParent().toFile(), this);
 	}
 
 	/**
@@ -53,14 +53,22 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 */
 	public void rebuild() {
 		boolean verboseMode = true;
-
+		boolean isInEditor = JelloEditor.instance != null;
+		
 		Debug.log("[Editor] Building Database...");
 
-		this.invokeEvent(Phase.PRE_REBUILD);
 
-		SceneManager sceneManager = JelloEditor.instance.sceneManager;
-		SceneManagerSnapshot snapshot = new SceneManagerSnapshot(sceneManager);
+		if(isInEditor) {
+			this.invokeEvent(Phase.PRE_REBUILD);
+		}
 
+		SceneManager sceneManager = null;
+		SceneManagerSnapshot snapshot = null;
+		if(isInEditor) {
+			sceneManager = JelloEditor.instance.sceneManager;
+			snapshot = new SceneManagerSnapshot(sceneManager);
+		}
+		
 		// Check all the Assets and if the file that provides them no longer exists,
 		// remove the Asset from the Database.
 		for (int i = this.assets.size() - 1; i >= 0; --i) {
@@ -110,11 +118,15 @@ public class EditorAssetDatabase extends AssetDatabase {
 			}
 		}
 
-		snapshot.restore(sceneManager);
-
-		this.invokeEvent(Phase.REBUILD);
-		this.invokeEvent(Phase.POST_REBUILD);
-
+		if(isInEditor) {
+			snapshot.restore(sceneManager);
+		}
+		
+		if(isInEditor) {
+			this.invokeEvent(Phase.REBUILD);
+			this.invokeEvent(Phase.POST_REBUILD);
+		}
+		
 		Debug.log("[Editor] Database rebuilt!");
 	}
 

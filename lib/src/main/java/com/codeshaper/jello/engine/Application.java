@@ -10,10 +10,13 @@ import javax.swing.SwingUtilities;
 
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWNativeWin32;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.WGL;
 import org.lwjgl.system.windows.User32;
 
+import com.codeshaper.jello.editor.EditorAssetDatabase;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.audio.SoundManager;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.rendering.Camera;
@@ -83,12 +86,17 @@ public class Application {
 		this.appSettings = new ApplicationSettings(); // this.loadAppSettings();
 
 		this.window = new Window(this.appSettings);
+		
+		if(!this.isEditor()) {
+			GL.createCapabilities();
+		}
 
 		if (AssetDatabase.getInstance() == null) { // null in builds.
-			Path projectFolder = Path.of("C:\\Users\\Pj\\Desktop\\jelloprojects\\dev\\assets"); // TODO what should this
+			Path projectFolder = Path.of("D:\\Jello\\Projects\\devProject\\assets"); // TODO what should this
 																								// be in a
-			// build?
-			new AssetDatabase(projectFolder);
+			EditorAssetDatabase database = new EditorAssetDatabase(projectFolder);
+			database.rebuild();
+			// TODO load assets into database
 		}
 
 		if (!SoundManager.isInitialized()) {

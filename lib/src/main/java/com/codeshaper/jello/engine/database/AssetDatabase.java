@@ -10,11 +10,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.codeshaper.jello.engine.AssetLocation;
@@ -57,6 +59,15 @@ public class AssetDatabase {
 		return instance;
 	}
 
+	public void func() {
+		// Add all Assets in the /assets directory to the list.
+		Iterator<File> iter = FileUtils.iterateFiles(this.assetsFolder.toFile(), null, true);
+		while (iter.hasNext()) {
+			File file = iter.next();
+			this.addToDatabase(new AssetLocation(file));
+		}
+	}
+	
 	public AssetDatabase(Path projectFolder) {
 		if (instance != null) {
 			Debug.logError("An AssetDatabase has already been created!");

@@ -2,6 +2,7 @@ package com.codeshaper.jello.editor;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -12,7 +13,6 @@ import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
@@ -91,14 +91,13 @@ public final class GuiLayoutBuilder {
 		this.add(new JSeparator(orientation));
 	}
 
-	public void startHorizontal() {
+	public JPanel startHorizontal() {
 		if (this.isHorizontal()) {
 			// Don't do anything, already drawing in horizontal mode.
-			return;
+			return this.horizontalPanel;
 		}
-		this.horizontalPanel = new JPanel();
-		this.horizontalPanel.setLayout(new BoxLayout(this.horizontalPanel, BoxLayout.X_AXIS));
-
+		this.horizontalPanel = new JPanel(new GridLayout(1, 0));
+		return this.horizontalPanel;
 	}
 
 	public void endHorizontal() {
@@ -352,7 +351,7 @@ public final class GuiLayoutBuilder {
 	 * 
 	 * @return
 	 */
-	public JComponent getPanel() {
+	public JPanel getPanel() {
 		return this.panel;
 	}
 
