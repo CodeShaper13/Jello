@@ -22,6 +22,7 @@ builtin/shaders/scene.frag
 
 # Shaders
 builtin/shaders/error.shader
+builtin/shaders/ui.shader
 builtin/shaders/unlitTexture.shader
 builtin/shaders/standard.shader
 

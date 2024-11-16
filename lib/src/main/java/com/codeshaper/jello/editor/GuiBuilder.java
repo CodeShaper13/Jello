@@ -60,7 +60,9 @@ import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.MathHelper;
+import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
@@ -601,19 +603,70 @@ public final class GuiBuilder {
 			}
 		}
 
-		comboBox.addActionListener(e -> {
-			if (comboBox.getSelectedIndex() == 0) {
-				listener.onSubmit(null);
-			} else {
-				Path path = (Path) comboBox.getSelectedItem();
-				Asset asset = database.getAsset(new AssetLocation(path));
-				listener.onSubmit((T) asset);
-			}
-		});
+		if(listener != null) {
+			comboBox.addActionListener(e -> {
+				if (comboBox.getSelectedIndex() == 0) {
+					listener.onSubmit(null);
+				} else {
+					Path path = (Path) comboBox.getSelectedItem();
+					Asset asset = database.getAsset(new AssetLocation(path));
+					listener.onSubmit((T) asset);
+				}
+			});
+		}
 
 		return comboBox;
 	}
+	
+	private static void func(JComboBox<GameObject> list, GameObject obj) {
+		list.addItem(obj);
+		for(GameObject child : obj.getChildren()) {
+			func(list, child);
+		}
+	}
+	
+	public static JComboBox<GameObject> gameObjectField(GameObject value, OnSubmitListerer<GameObject> listener) {
+		JComboBox<GameObject> comboBox = new JComboBox<GameObject>();		
+		comboBox.setRenderer(new DefaultListCellRenderer() {
+			public Component getListCellRendererComponent(JList<?> list, Object v, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, v, index, isSelected, cellHasFocus);
 
+				if (v != null) {
+					GameObject obj = (GameObject)v;
+					this.setText(String.format("(%s) %s", obj.getScene().getAssetName(), obj.getPath(false)));
+				} else {
+					this.setText("None");
+				}
+
+				return this;
+			}
+		});
+
+		comboBox.addItem(null);
+		EditorSceneManager sceneManager = JelloEditor.instance.sceneManager;
+		for(int i = 0; i < sceneManager.getSceneCount(); i++) {
+			Scene scene = sceneManager.getScene(i);
+			for(GameObject obj : scene.getRootGameObjects()) {
+				func(comboBox, obj);
+			}
+		}
+
+		comboBox.setSelectedItem(value != null ? value : 0);
+
+		if(listener != null) {
+			comboBox.addActionListener(e -> {
+				if (comboBox.getSelectedIndex() == 0) {
+					listener.onSubmit(null);
+				} else {
+					listener.onSubmit((GameObject)comboBox.getSelectedItem());
+				}
+			});
+		}
+
+		return comboBox;
+	}
+	
 	public static JComponent field(IExposedField field) {
 		if (fieldDrawerRegistry == null) {
 			System.out.println("GuiBuilder#init() must be called before using GuiBuilder#field()");

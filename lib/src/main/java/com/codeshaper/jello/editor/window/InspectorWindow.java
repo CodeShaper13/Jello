@@ -10,8 +10,8 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetLocation;
+import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloObject;
-import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 
 public class InspectorWindow extends EditorWindow {
@@ -59,15 +59,9 @@ public class InspectorWindow extends EditorWindow {
 		if(s.startsWith("[Asset]")) {
 			return AssetDatabase.getInstance().getAsset(new AssetLocation(s.substring(7)));
 		} else if(s.startsWith("[GameObject]")) {
-			s = s.substring(12);
-			String[] strings = s.split(".jelobj", 2);
-			if(strings.length == 2) {
-				String sceneName = strings[0];				
-				Scene scene = JelloEditor.instance.sceneManager.getScene(sceneName);
-				if(scene != null) {
-					String gameObjPath = strings[1].substring(1);
-					this.setTarget(scene.getGameObject(gameObjPath));
-				}
+			GameObject obj = GameObject.fromPersistantPath(s);
+			if(obj != null) {
+				this.setTarget(obj);
 			}
 		}
 		

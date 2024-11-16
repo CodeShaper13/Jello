@@ -11,11 +11,13 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.inspector.GameObjectEditor;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.database.Serializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 
 public final class GameObject extends JelloObject {
 
@@ -45,7 +47,7 @@ public final class GameObject extends JelloObject {
 		if (scene == null) {
 			throw new IllegalArgumentException("scene may not be null.");
 		}
-		
+
 		this.setName(name);
 
 		scene.moveGameObjectTo(this);
@@ -66,7 +68,7 @@ public final class GameObject extends JelloObject {
 		if (parent == null) {
 			throw new IllegalArgumentException("parent may not be null.");
 		}
-		
+
 		this.setName(name);
 
 		Scene parentScene = parent.getScene();
@@ -76,34 +78,83 @@ public final class GameObject extends JelloObject {
 
 		this.invokeOnConstructIfInApplication();
 	}
-	
+
+	/**
+	 * Creates a {@link GameObject} from Json data. If {@code json} is null or
+	 * malformed, no GameObject will be created and an error will be logged.
+	 * 
+	 * @param json  the json to create the GameObject from
+	 * @param scene the Scene to place the GameObject in
+	 * @return the newly created GameObject or {@code null} on error
+	 */
 	public static GameObject fromJson(JsonElement json, Scene scene) {
-		Serializer serializer = AssetDatabase.getInstance().serializer;		
-		GameObject newGameObject = serializer.deserialize(json, GameObject.class);
-		scene.moveGameObjectTo(newGameObject);
-		scene.recursivelySetupObject(newGameObject);
-		
-		newGameObject.invokeOnConstructIfInApplication();
-		
-		return newGameObject;
+		Serializer serializer = AssetDatabase.getInstance().serializer;
+
+		try {
+			GameObject newGameObject = serializer.deserialize(json, GameObject.class);
+			scene.moveGameObjectTo(newGameObject);
+			scene.recursivelySetupObject(newGameObject);
+
+			newGameObject.invokeOnConstructIfInApplication();
+
+			return newGameObject;
+		} catch (JsonSyntaxException e) {
+			Debug.log(e);
+			return null;
+		}
 	}
-	
+
+	/**
+	 * Creates a {@link GameObject} from Json data. If {@code json} is null or
+	 * malformed, no GameObject will be created and an error will be logged.
+	 * 
+	 * @param json   the json to create the GameObject from
+	 * @param parent the GameObject to make the new GameObject a child of
+	 * @return the newly created GameObject or {@code null} on error
+	 */
 	public static GameObject fromJson(JsonElement json, GameObject parent) {
-		Serializer serializer = AssetDatabase.getInstance().serializer;		
+		Serializer serializer = AssetDatabase.getInstance().serializer;
 		GameObject newGameObject = serializer.deserialize(json, GameObject.class);
-		
+
 		Scene parentScene = parent.getScene();
 		newGameObject.scene = parentScene;
 		parentScene.moveGameObjectTo(newGameObject);
 		newGameObject.setParent(parent);
-		
+
 		parentScene.recursivelySetupObject(newGameObject);
-		
+
 		newGameObject.invokeOnConstructIfInApplication();
-		
+
 		return newGameObject;
 	}
-	
+
+	/**
+	 * Locates a {@link GameObject} from it's persistent path. If no GameObject can
+	 * be found at the path, {@code null} is returned.
+	 * 
+	 * @param path the path to the GameObject
+	 * @return the GameObject as this path
+	 * @see GameObject#getPersistencePath()
+	 */
+	public static GameObject fromPersistantPath(String path) {
+		if (path == null) {
+			return null;
+		}
+
+		path = path.substring(12);
+		String[] strings = path.split(".jelobj", 2);
+		if (strings.length == 2) {
+			String sceneName = strings[0];
+			Scene scene = JelloEditor.instance.sceneManager.getScene(sceneName);
+			if (scene != null) {
+				String gameObjPath = strings[1].substring(1);
+				return scene.getGameObject(gameObjPath);
+			}
+		}
+
+		return null;
+	}
+
 	private GameObject() {
 		this.isActive = true;
 		this.children = new ArrayList<GameObject>();
@@ -867,7 +918,7 @@ public final class GameObject extends JelloObject {
 			}
 		}
 	}
-	
+
 	interface ILogic {
 
 		void invoke(JelloComponent component);

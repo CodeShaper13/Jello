@@ -33,8 +33,6 @@ import com.codeshaper.jello.engine.JelloComponent;
 
 public class GameObjectEditor extends Editor<GameObject> {
 
-	private JCheckBox enabledToggle;
-	private JTextField objectName;
 	private JButton addComponentButton;
 	private JPanel componentListPanel;
 	private JScrollPane componentScrollPane;
@@ -95,10 +93,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 	@Override
 	public void onRefresh() {
 		super.onRefresh();
-		
-		this.enabledToggle.setSelected(this.target.isActive());
-		this.objectName.setText(this.target.getName());
-		
+				
 		this.createComponentListPanel();
 	}
 	
