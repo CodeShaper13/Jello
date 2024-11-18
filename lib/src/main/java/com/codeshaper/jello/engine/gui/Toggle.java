@@ -5,7 +5,7 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.GameObjectReference;
 import com.codeshaper.jello.engine.Input;
-import com.codeshaper.jello.engine.JelloEvent;
+import com.codeshaper.jello.engine.event.JelloEvent;
 
 @ComponentName("Ui/Element/Toggle")
 public class Toggle extends UiBase {
