@@ -407,7 +407,7 @@ public class Material extends SerializedJelloObject {
 		public void drawAsset(GuiLayoutBuilder builder) {
 			builder.assetField("Shader: ", this.target.shader, Shader.class, (v) -> {
 				this.target.setShader(v);
-				this.onRefresh();
+				this.refresh();
 			});
 			builder.intField("Render Order", this.target.renderOrder, (v) -> {
 				this.target.renderOrder = v;
