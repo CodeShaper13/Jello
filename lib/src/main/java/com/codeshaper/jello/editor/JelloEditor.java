@@ -196,7 +196,7 @@ public class JelloEditor {
 
 		SceneManagerSnapshot snapshot = new SceneManagerSnapshot(this.sceneManager);
 
-		this.application = new Application(this.sceneManager, () -> {
+		this.application = new Application(null, () -> {
 			this.application = null;
 			
 			snapshot.restore(this.sceneManager);

@@ -16,7 +16,6 @@ import org.lwjgl.system.windows.User32;
 
 import com.codeshaper.jello.editor.EditorAssetDatabase;
 import com.codeshaper.jello.editor.JelloEditor;
-import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.audio.SoundManager;
 import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.rendering.Camera;
@@ -32,7 +31,6 @@ public class Application {
 	private ApplicationSettings appSettings;
 	private GameRenderer renderer;
 	private boolean running;
-
 	/**
 	 * If not null, it is invoked when the Application stops. Used by the Editor to
 	 * know when the Application closes.
@@ -40,7 +38,7 @@ public class Application {
 	private Runnable onClose;
 
 	public static void main(String[] args) {
-		new Application(null, null).start();
+		new Application(args[0], null).start();
 	}
 
 	/**
@@ -66,16 +64,17 @@ public class Application {
 	}
 
 	/**
-	 * Checks if the Editor is running.
+	 * Checks if the Application is running along side the Editor.
 	 * 
-	 * @return {@code true} if the Editor is running.
+	 * @return {@code true} if the Application was launched from the Editor,
+	 *         {@code false} if it was launched as a build.
 	 */
 	public static boolean isInEditor() {
 		return JelloEditor.instance != null;
 	}
 
 	// Called from Editor.
-	public Application(SceneManager sceneManager, Runnable onClose) {
+	public Application(String pathToAssets, Runnable onClose) {
 		if (Application.instance != null) {
 			throw new Error("Multiple Application instances can not be created!");
 		}
@@ -87,12 +86,12 @@ public class Application {
 
 		this.window = new Window(this.appSettings);
 		
-		if(!this.isEditor()) {
+		if(!Application.isInEditor()) {
 			GL.createCapabilities();
 		}
 
 		if (AssetDatabase.getInstance() == null) { // null in builds.
-			Path projectFolder = Path.of("D:\\Jello\\Projects\\devProject\\assets"); // TODO what should this
+			Path projectFolder = Path.of(pathToAssets); // TODO what should this
 																								// be in a
 			EditorAssetDatabase database = new EditorAssetDatabase(projectFolder);
 			database.rebuild();
@@ -104,8 +103,21 @@ public class Application {
 		}
 
 		this.renderer = new GameRenderer();
-
-		if (sceneManager == null) { // null in builds.
+		
+		Input.initialize(this.window.windowHandle);
+		
+		if(Application.isInEditor()) {
+			// Use the SceneManager from the Editor.
+			this.sceneManager = JelloEditor.instance.sceneManager;
+			
+			for(int i = this.sceneManager.getSceneCount() - 1; i >= 0; i--) {
+				Scene scene = this.sceneManager.getScene(i);
+				for (int j = scene.getRootGameObjectCount() - 1; j >= 0; j--) {
+					this.sceneManager.recursiveCallOnConstruct(scene.getRootGameObject(j));
+				}
+			}
+		} else {
+			// Create a new SceneManager.
 			this.sceneManager = new SceneManager();
 			Scene startingScene = this.appSettings.startingScene;
 			if (startingScene != null) {
@@ -120,15 +132,9 @@ public class Application {
 					this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0)));
 				}
 			}
-		} else {
-			this.sceneManager = sceneManager;
-			
-			for(int i = sceneManager.getSceneCount() - 1; i >= 0; i--) {
-				Scene scene = sceneManager.getScene(i);
-				for (int j = scene.getRootGameObjectCount() - 1; j >= 0; j--) {
-					sceneManager.recursiveCallOnConstruct(scene.getRootGameObject(j));
-				}
-			}
+		}
+		
+		
 			
 			/*
 			 * if (launchArgs.startingScenes.size() > 0) { for (Path path :
@@ -141,9 +147,6 @@ public class Application {
 			 * database.getAllAssetsOfType(Scene.class, true); if (paths.size() >= 1) {
 			 * this.sceneManager.loadScene((Scene) database.getAsset(paths.get(0))); } } }
 			 */
-		}
-
-		Input.initialize(this.window.windowHandle);
 	}
 
 	/**
@@ -158,7 +161,7 @@ public class Application {
 
 		this.running = true;
 
-		if (this.isEditor()) {
+		if (Application.isInEditor()) {
 			SwingUtilities.invokeLater(new EditorLoop());
 		} else {
 			new BuildLoop().run();
@@ -173,20 +176,10 @@ public class Application {
 		this.running = false;
 	}
 
-	/**
-	 * Checks if the Application is running along side the Editor.
-	 * 
-	 * @return {@code true} if the Application was launched from the Editor,
-	 *         {@code false} if it was launched as a build.
-	 */
-	public boolean isEditor() {
-		return JelloEditor.instance != null;
-	}
-
 	private void shutdown() {
 		this.window.cleanup();
 
-		if (!isEditor() && SoundManager.isInitialized()) {
+		if (!Application.isInEditor() && SoundManager.isInitialized()) {
 			SoundManager.shutdown();
 		}
 		
