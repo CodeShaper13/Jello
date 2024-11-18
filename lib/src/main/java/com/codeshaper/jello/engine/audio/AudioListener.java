@@ -1,5 +1,6 @@
 package com.codeshaper.jello.engine.audio;
 
+import org.joml.Math;
 import org.joml.Vector3f;
 
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
@@ -17,6 +18,12 @@ import static org.lwjgl.openal.AL10.*;
 
 import javax.swing.JPanel;
 
+/**
+ * {@link AudioListener} Components acts as a microphone and picks up sounds in
+ * the Scene(s) to play in the devices' speakers . In most situation, this would
+ * be attached to the Player or Main Camera. There should only be 1 active Audio
+ * Listener Component at a time.
+ */
 @ComponentName("Audio/Audio Listener")
 @ComponentIcon("/editor/componentIcons/audioListener.png")
 public final class AudioListener extends JelloComponent {
@@ -24,80 +31,119 @@ public final class AudioListener extends JelloComponent {
 	/**
 	 * The number of Audio Listeners in the Scene.
 	 */
-	private static int audioListenerCount = 0;
-	
+	private static int enabledAudioListenerCount = 0;
+
 	@Range(min = 0f, max = 1f)
 	public float volume = 1f;
-	
+
+	private transient Vector3f vec;
 	private transient Vector3f worldPosLastFrame;
 	private transient float[] data;
-	
+
 	@Override
 	protected void onStart() {
 		super.onStart();
 
-		audioListenerCount++;
-		
+		this.vec = new Vector3f();
+		this.worldPosLastFrame = new Vector3f();
+		this.data = new float[6];
+
 		Vector3f pos = this.gameObject().getPosition(this.worldPosLastFrame);
 		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
 		alListener3f(AL_VELOCITY, 0, 0, 0);
-		
-		this.data = new float[6];
 	}
-	
+
+	@Override
+	protected void onEnable() {
+		super.onEnable();
+
+		AudioListener.enabledAudioListenerCount++;
+	}
+
+	@Override
+	protected void onDisable() {
+		super.onDisable();
+
+		AudioListener.enabledAudioListenerCount--;
+	}
+
 	@Override
 	protected void onUpdate(float deltaTime) {
 		super.onUpdate(deltaTime);
-		
-		if(audioListenerCount > 1) {
-			Debug.logWarning("There are %s Audio Listeners active, there should only be at most 1", audioListenerCount);
+
+		if (enabledAudioListenerCount > 1) {
+			Debug.logWarning("There are %s Audio Listeners active, there should only be at most 1",
+					enabledAudioListenerCount);
 		}
-		
-		GameObject owner = this.gameObject();
-		
-		Vector3f pos = owner.getPosition();
-		alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
-		
-		Vector3f up = owner.getUp();
-		Vector3f forward = owner.getForward();
-        this.data[0] = forward.x;
-        this.data[1] = forward.y;
-        this.data[2] = forward.z;
-        this.data[3] = up.x;
-        this.data[4] = up.y;
-        this.data[5] = up.z;        
-        alListenerfv(AL_ORIENTATION, data);
-		
-		Vector3f velocity = pos.sub(this.worldPosLastFrame).mul(deltaTime);
+
+		GameObject gameObj = this.gameObject();
+
+		// Update the rotation of the Audio Listener.
+		gameObj.getForward(this.vec);
+		this.data[0] = this.vec.x;
+		this.data[1] = this.vec.y;
+		this.data[2] = this.vec.z;
+		gameObj.getUp(this.vec);
+		this.data[3] = this.vec.x;
+		this.data[4] = this.vec.y;
+		this.data[5] = this.vec.z;
+		alListenerfv(AL_ORIENTATION, this.data);
+
+		// Update the position of the Audio Listener.
+		gameObj.getPosition(this.vec);
+		alListener3f(AL_POSITION, this.vec.x, this.vec.y, this.vec.z);
+
+		// Update the velocity of the Audio Listener.
+		Vector3f velocity = this.vec.sub(this.worldPosLastFrame).mul(deltaTime);
 		alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
-		
-		owner.getPosition(this.worldPosLastFrame);
+
+		gameObj.getPosition(this.worldPosLastFrame);
 	}
-	
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		
-		audioListenerCount--;
-	}
-	
+
 	@Override
 	public Editor<?> getInspectorDrawer(JPanel panel) {
 		return new AudioListenerDrawer(this, panel);
 	}
-	
-	public void setVolume(float v) {
-		this.volume = v;
-		
-		if(Application.isPlaying()) {
-			alListenerf(AL_GAIN, v);
+
+	/**
+	 * Sets the volume of the Audio Listener.
+	 * 
+	 * @param volume the volume of the listener, from 0 to 1.
+	 */
+	public void setVolume(float volume) {
+		volume = Math.clamp(0f, 1f, volume);
+
+		this.volume = volume;
+
+		if (Application.isPlaying()) {
+			alListenerf(AL_GAIN, volume);
 		}
 	}
 
+	/**
+	 * Gets the volume of the Audio Listener.
+	 * 
+	 * @return the volume, between 0 and 1.
+	 */
 	public float getVolume() {
-	    return alGetListenerf(AL_GAIN);
+		return alGetListenerf(AL_GAIN);
 	}
-	
+
+	/**
+	 * Gets the number of enabled {@link AudioListener} Components across all loaded
+	 * Scenes.
+	 * 
+	 * @return the number of active {@link AudioListener} Components.
+	 */
+	public static int getEnabledAudioListenerCount() {
+		return AudioListener.enabledAudioListenerCount;
+	}
+
+	/**
+	 * A custom editor for AudioListener components. A custom editor is necessary
+	 * because when the {@code volume} field is changed, OpenAL must be explicitly
+	 * notified of the change.
+	 */
 	private class AudioListenerDrawer extends ComponentEditor<AudioListener> {
 
 		public AudioListenerDrawer(AudioListener component, JPanel panel) {
@@ -106,7 +152,7 @@ public final class AudioListener extends JelloComponent {
 
 		@Override
 		public void drawComponent(GuiLayoutBuilder builder) {
-			builder.floatField("Volume", volume, (v) -> setVolume(v));
+			builder.floatSliderField("Volume", 0f, 1f, volume, (v) -> setVolume(v));
 		}
 	}
 }

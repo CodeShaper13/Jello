@@ -281,15 +281,15 @@ public final class GuiLayoutBuilder {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.colorField(color, listener)));
 	}
 
-	public void sliderField(String label, int min, int max, int value, OnSubmitListerer<Integer> listener) {
+	public void doubleSliderField(String label, int min, int max, int value, OnSubmitListerer<Integer> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.intSlider(min, max, value, listener)));
 	}
 
-	public void sliderField(String label, float min, float max, float value, OnSubmitListerer<Float> listener) {
+	public void floatSliderField(String label, float min, float max, float value, OnSubmitListerer<Float> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.floatSlider(min, max, value, listener)));
 	}
 
-	public void sliderField(String label, double min, double max, double value, OnSubmitListerer<Double> listener) {
+	public void intSliderField(String label, double min, double max, double value, OnSubmitListerer<Double> listener) {
 		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.doubleSlider(min, max, value, listener)));
 	}
 

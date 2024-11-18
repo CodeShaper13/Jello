@@ -29,14 +29,15 @@ public final class SoundManager {
 			return false;
 		}
 
-		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
-		context = alcCreateContext(device, (IntBuffer) null);
+		context = alcCreateContext (device, (IntBuffer) null);
 		if (context == NULL) {
 			Debug.logError("Failed to create OpenAL context.");
 			return false;
 		}
 
 		alcMakeContextCurrent(context);
+
+		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 		AL.createCapabilities(deviceCaps);
 
 		alDistanceModel(AL_EXPONENT_DISTANCE);
@@ -49,6 +50,8 @@ public final class SoundManager {
 	}
 
 	public static void shutdown() {
+		alcMakeContextCurrent(0);
+		
 		if (context != NULL) {
 			alcDestroyContext(context);
 			context = NULL;

@@ -2,6 +2,8 @@ package com.codeshaper.jello.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
 import javax.swing.JFrame;
@@ -15,6 +17,7 @@ import com.codeshaper.jello.editor.window.ConsoleWindow;
 import com.codeshaper.jello.editor.window.FileBrowserWindow;
 import com.codeshaper.jello.editor.window.HierarchyWindow;
 import com.codeshaper.jello.editor.window.InspectorWindow;
+import com.codeshaper.jello.engine.audio.SoundManager;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -92,6 +95,13 @@ public class EditorMainFrame extends JFrame {
 			}
 			AppState.setAutoPersist(true);
 		});
+		
+		this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                SoundManager.shutdown();
+            }
+        });
 	}
 	
 	public boolean isDarkMode() {

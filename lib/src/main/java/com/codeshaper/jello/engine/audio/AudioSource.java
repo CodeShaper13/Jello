@@ -3,8 +3,7 @@ package com.codeshaper.jello.engine.audio;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.ComponentEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
-import com.codeshaper.jello.editor.property.modifier.Range;
-import com.codeshaper.jello.editor.property.modifier.Space;
+import com.codeshaper.jello.editor.property.modifier.Button;
 import com.codeshaper.jello.editor.property.modifier.ToolTip;
 import com.codeshaper.jello.engine.Application;
 import com.codeshaper.jello.engine.ComponentIcon;
@@ -15,18 +14,20 @@ import static org.lwjgl.openal.AL10.*;
 
 import javax.swing.JPanel;
 
+import org.joml.Vector3f;
+
+/**
+ * {@link AudioSource} Components play sounds supplied from {@link AudioClip}s.
+ */
 @ComponentName("Audio/Audio Source")
 @ComponentIcon("/editor/componentIcons/audioSource.png")
 public final class AudioSource extends JelloComponent {
 
 	private AudioClip audioClip;
 	private float pitch = 1f;
-	@Range(min = 0f, max = 1f)
 	private float gain = 1f;
 	private boolean loop = false;
 	private boolean is3d = true;
-
-	@Space
 
 	@ToolTip("If checked, the audio clip will play itself in onStart()")
 	public boolean playOnStart = false;
@@ -54,11 +55,17 @@ public final class AudioSource extends JelloComponent {
 		}
 	}
 
+	@Button
+	public void btn() {
+		this.play();
+	}
+
 	@Override
 	protected void onUpdate(float deltaTime) {
 		super.onUpdate(deltaTime);
 
-		// alSource3f(sourceId, AL_POSITION, position.x, position.y, position.z);
+		Vector3f position = this.gameObject().getPosition();
+		alSource3f(sourceId, AL_POSITION, position.x, position.y, position.z);
 	}
 
 	@Override
@@ -68,7 +75,7 @@ public final class AudioSource extends JelloComponent {
 		this.stop();
 		alDeleteSources(this.sourceId);
 	}
-	
+
 	@Override
 	public Editor<?> getInspectorDrawer(JPanel panel) {
 		return new AudioSourceDrawer(this, panel);
@@ -116,7 +123,7 @@ public final class AudioSource extends JelloComponent {
 	public AudioClip getAudioClip() {
 		return this.audioClip;
 	}
-	
+
 	/**
 	 * Sets the {@link AudioClip} this Audio Source is playing. This will stop the
 	 * Audio Clip that is currently playing, even if the new clip is the same as the
@@ -126,14 +133,14 @@ public final class AudioSource extends JelloComponent {
 	 */
 	public void setAudioClip(AudioClip clip) {
 		boolean appIsPlaying = Application.isPlaying();
-		
-		if(appIsPlaying) {
+
+		if (appIsPlaying) {
 			this.stop();
 		}
-		
+
 		this.audioClip = clip;
 
-		if(appIsPlaying) {
+		if (appIsPlaying) {
 			alSourcei(this.sourceId, AL_BUFFER, clip == null ? 0 : clip.getBufferId());
 		}
 	}
@@ -141,11 +148,11 @@ public final class AudioSource extends JelloComponent {
 	public float getPitch() {
 		return this.pitch;
 	}
-	
+
 	public void setPitch(float pitch) {
 		this.pitch = pitch;
-		
-		if(Application.isPlaying()) {
+
+		if (Application.isPlaying()) {
 			alSourcef(this.sourceId, AL_PITCH, pitch);
 		}
 	}
@@ -153,11 +160,11 @@ public final class AudioSource extends JelloComponent {
 	public float getGain() {
 		return this.gain;
 	}
-	
+
 	public void setGain(float gain) {
 		this.gain = gain;
-		
-		if(Application.isPlaying()) {
+
+		if (Application.isPlaying()) {
 			alSourcef(this.sourceId, AL_GAIN, gain);
 		}
 	}
@@ -168,16 +175,16 @@ public final class AudioSource extends JelloComponent {
 
 	public void setLooping(boolean looping) {
 		this.loop = looping;
-		
-		if(Application.isPlaying()) {
+
+		if (Application.isPlaying()) {
 			alSourcei(this.sourceId, AL_LOOPING, looping ? AL_TRUE : AL_FALSE);
 		}
 	}
 
 	public void set3d(boolean is3d) {
 		this.is3d = is3d;
-		
-		if(Application.isPlaying()) {
+
+		if (Application.isPlaying()) {
 			alSourcei(this.sourceId, AL_SOURCE_RELATIVE, is3d ? AL_TRUE : AL_FALSE);
 		}
 	}
@@ -191,18 +198,18 @@ public final class AudioSource extends JelloComponent {
 		public AudioSourceDrawer(AudioSource component, JPanel panel) {
 			super(component, panel);
 		}
-		
+
 		@Override
-		public void drawComponent(GuiLayoutBuilder builder) {			
+		public void drawComponent(GuiLayoutBuilder builder) {
 			builder.assetField("Clip", getAudioClip(), AudioClip.class, (v) -> setAudioClip(v));
 			builder.space();
-			
+
 			builder.floatField("Gain", gain, (v) -> setGain(v));
-			builder.floatField("Pitch", AL_INVALID_VALUE, (v) -> setPitch(v));
-			builder.checkbox("Loop", loop, (v) -> setLooping(loop));
-			
+			builder.floatField("Pitch", pitch, (v) -> setPitch(v));
+			builder.checkbox("Loop", loop, (v) -> setLooping(v));
+
 			builder.space();
-			builder.checkbox("Play in onStart", playOnStart, (v) -> playOnStart = v);
-		}		
+			builder.checkbox("Play in onStart()", playOnStart, (v) -> playOnStart = v);
+		}
 	}
 }
