@@ -12,9 +12,9 @@ import com.codeshaper.jello.editor.scripts.ScriptCompiler;
 import com.codeshaper.jello.engine.JelloComponent;
 
 /**
- * Provides a list of all Components that exists in the project. This list
- * contains both the builtin components and the components defined in the
- * project.
+ * Provides a list of all {@link JelloComponent}s that exists in the project.
+ * This list contains both the builtin components and the components defined in
+ * the project.
  */
 public class ComponentList implements Iterable<Class<JelloComponent>> {
 
@@ -27,11 +27,11 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 		this.builtinComponents = this.getBuiltinComponents();
 		this.projectComponents = new ArrayList<Class<JelloComponent>>();
 	}
-	
+
 	public void compileProjectComponents(ScriptCompiler compiler) {
 		this.projectComponents.clear();
 
-		List<Class<JelloComponent>> classes = compiler.getAllScriptsOfType(JelloComponent.class);
+		List<Class<JelloComponent>> classes = compiler.getScriptsOfType(JelloComponent.class);
 		for (Class<JelloComponent> cls : classes) {
 			if (isValidComponentClass(cls)) {
 				this.projectComponents.add(cls);
@@ -40,14 +40,16 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 	}
 
 	/**
-	 * Gets an iterator that goes through all of the components.
+	 * Gets an {@code Iterator} that iterates through all of the components within
+	 * the project. This includes both the built-in Components and Components
+	 * defined in the project.
 	 */
 	public Iterator<Class<JelloComponent>> iterator() {
 		return new ComponentIterator();
 	}
 
 	/**
-	 * Gets a list of all of the builtin components.
+	 * Searches the project and gets a list of all of the builtin components.
 	 * 
 	 * @return a list of the builtin components.
 	 */
@@ -69,13 +71,22 @@ public class ComponentList implements Iterable<Class<JelloComponent>> {
 
 	/**
 	 * Checks if {@code cls} is a valid Component class. For a class to be a valid
-	 * component, it must be a public, not an interface, not abstract, and not a
-	 * native class.
+	 * component, it must inherit from {@link JelloComponent} it must be public, not
+	 * an interface, not abstract, and not a native class. If {@code null} is
+	 * passed, {@code false} is returned.
 	 * 
 	 * @param cls the cls to check.
 	 * @return {@code true} if the Class is a valid component class.
 	 */
 	private boolean isValidComponentClass(Class<?> cls) {
+		if (cls == null) {
+			return false;
+		}
+
+		if (!(JelloComponent.class.isAssignableFrom(cls))) {
+			return false;
+		}
+
 		int modifiers = cls.getModifiers();
 		if (Modifier.isInterface(modifiers)) {
 			return false;

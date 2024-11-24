@@ -26,7 +26,7 @@ import com.codeshaper.jello.engine.database.ComponentList;
 
 public class EditorAssetDatabase extends AssetDatabase {
 
-	private final ScriptCompiler compiler;
+	public final ScriptCompiler compiler;
 
 	public EditorAssetDatabase(Path projectFolder) {
 		super(projectFolder);

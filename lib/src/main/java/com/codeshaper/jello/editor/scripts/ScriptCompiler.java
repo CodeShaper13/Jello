@@ -27,14 +27,14 @@ public class ScriptCompiler {
 
 	private final EditorAssetDatabase database;
 	private final File compiledClassDirectory;
-	private final List<Class<?>> allCompiledClasses;
+	private final List<CompiledScript> allCompiledClasses;
 
 	private ClassLoader classLoader;
 
 	public ScriptCompiler(File rootProjectFolder, EditorAssetDatabase database) {
 		this.database = database;
 		this.compiledClassDirectory = new File(rootProjectFolder, "compiledSource");
-		this.allCompiledClasses = new ArrayList<Class<?>>();
+		this.allCompiledClasses = new ArrayList<CompiledScript>();
 	}
 
 	/**
@@ -81,7 +81,9 @@ public class ScriptCompiler {
 					}
 
 					Class<?> cls = Class.forName(fullName, false, this.classLoader);
-					this.allCompiledClasses.add(cls);
+					
+					CompiledScript cs = new CompiledScript(sourceFile, cls);					
+					this.allCompiledClasses.add(cs);
 				} catch (LinkageError e) {
 					e.printStackTrace();
 				} catch (ClassNotFoundException e) {
@@ -103,11 +105,11 @@ public class ScriptCompiler {
 	 * @return a {@link List} of classes with an annotation of type
 	 *         {@code annotation}
 	 */
-	public <T extends Annotation> List<Class<?>> getAllScriptsWithAnnotation(Class<T> annotation) {
+	public <T extends Annotation> List<Class<?>> getScriptsWithAnnotation(Class<T> annotation) {
 		List<Class<?>> classes = new ArrayList<Class<?>>();
-		for (Class<?> cls : this.allCompiledClasses) {
-			if (cls.getAnnotation(annotation) != null) {
-				classes.add(cls);
+		for (CompiledScript cs : this.allCompiledClasses) {
+			if (cs.compiledClass.getAnnotation(annotation) != null) {
+				classes.add(cs.compiledClass);
 			}
 		}
 		return classes;
@@ -123,18 +125,33 @@ public class ScriptCompiler {
 	 * @param type
 	 * @return a {@link List} of classes that are, or are a subtype of {@code type}
 	 */
-	public <T> List<Class<T>> getAllScriptsOfType(Class<T> type) {
+	public <T> List<Class<T>> getScriptsOfType(Class<T> type) {
 		List<Class<T>> classes = new ArrayList<Class<T>>();
-		for (Class<?> cls : this.allCompiledClasses) {
-			if (type.isAssignableFrom(cls)) {
+		for (CompiledScript cs : this.allCompiledClasses) {
+			if (type.isAssignableFrom(cs.compiledClass)) {
 				@SuppressWarnings("unchecked")
-				Class<T> castCls = (Class<T>) cls;
+				Class<T> castCls = (Class<T>) cs.compiledClass;
 				classes.add(castCls);
 			}
 		}
 		return classes;
 	}
-
+	
+	/**
+	 * 
+	 * @param cls
+	 * @return
+	 */
+	public File getSourceFile(Class<?> cls) {
+		for(CompiledScript cs : this.allCompiledClasses) {
+			if(cs.compiledClass.equals(cls)) {
+				return cs.sourceFile;
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Compiles a .java file into a .class file.
 	 * 
@@ -164,6 +181,17 @@ public class ScriptCompiler {
 			return this.compiledClassDirectory.toPath();
 		} else {
 			return this.compiledClassDirectory.toPath().resolve(pathToScriptFromAssets);
+		}
+	}
+	
+	private class CompiledScript {
+		
+		public final File sourceFile;
+		public final Class<?> compiledClass;
+		
+		public CompiledScript(File file, Class<?> cls) {
+			this.sourceFile = file;
+			this.compiledClass = cls;
 		}
 	}
 }

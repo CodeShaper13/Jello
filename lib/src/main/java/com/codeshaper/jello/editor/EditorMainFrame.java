@@ -14,6 +14,7 @@ import com.codeshaper.jello.editor.render.SceneViewPanel;
 import com.codeshaper.jello.editor.window.AppSettingsWindow;
 import com.codeshaper.jello.editor.window.AssetDatabaseViewer;
 import com.codeshaper.jello.editor.window.ConsoleWindow;
+import com.codeshaper.jello.editor.window.EditorSettingsWindow;
 import com.codeshaper.jello.editor.window.FileBrowserWindow;
 import com.codeshaper.jello.editor.window.HierarchyWindow;
 import com.codeshaper.jello.editor.window.InspectorWindow;
@@ -62,6 +63,7 @@ public class EditorMainFrame extends JFrame {
 		this.console = new ConsoleWindow();
 		this.hierarchy = new HierarchyWindow();
 		this.fileBrowser = new FileBrowserWindow();
+		new EditorSettingsWindow();
 		new AssetDatabaseViewer();
 		new AppSettingsWindow();
 

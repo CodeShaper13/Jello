@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
+import com.codeshaper.jello.editor.EditorAssetDatabase;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.window.InspectorWindow;
@@ -128,7 +130,20 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 			btn.setEnabled(help != null && help.value() != null);
 
 			this.addButton(editIcon, "Edit Component in IDE", e -> {
-				// TODO open in IDE.
+				EditorAssetDatabase database = JelloEditor.instance.assetDatabase;				
+				File file = database.compiler.getSourceFile(component.getClass());
+				if(file != null) {
+					String ideLocation = JelloEditor.instance.settings.ideLocation;					
+					try {						
+						Runtime.getRuntime().exec(new String[] {
+							    ideLocation,
+							    "--launcher.openFile",
+							    file.getPath()
+							});
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
 			});
 
 			this.addButton(removeIcon, "Remove Component", e -> {

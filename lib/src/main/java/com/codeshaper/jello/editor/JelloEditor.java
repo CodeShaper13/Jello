@@ -2,6 +2,8 @@ package com.codeshaper.jello.editor;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,11 +31,16 @@ import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.audio.AudioListener;
 import com.codeshaper.jello.engine.audio.SoundManager;
+import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.lighting.DirectionalLight;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.rendering.Camera;
 import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.MeshRenderer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;
@@ -96,15 +103,20 @@ public class JelloEditor {
 	 * The running instance of the application. Null if no instance is running.
 	 */
 	private Application application;
+	private File settingsFile;
+	public final EditorSettings settings;
 
 	private JelloEditor(Path projectFolder) {
 		JelloEditor.instance = this;
 
+		this.rootProjectFolder = projectFolder;
+		
+		this.settingsFile = new File(JelloEditor.instance.rootProjectFolder.toFile(), "editorSettings.json");
+		this.settings = this.loadSettings();
+
 		GLFWErrorCallback.createPrint().set();
 
 		boolean isInitialLoad = false;
-
-		this.rootProjectFolder = projectFolder;
 
 		// Create the /assets folder if it doesn't exist.
 		this.assetsFolder = this.rootProjectFolder.resolve("assets");
@@ -133,7 +145,7 @@ public class JelloEditor {
 		this.logHandler = this.window.console;
 
 		this.window.sceneView.createContext();
-		
+
 		this.renderer = new GameRenderer();
 
 		if (isInitialLoad) {
@@ -144,6 +156,40 @@ public class JelloEditor {
 			}
 		} else {
 			this.sceneManager.readOpenScenesFromPreferences();
+		}
+	}
+
+	/**
+	 * 
+	 */
+	public EditorSettings loadSettings() {
+		if (!this.settingsFile.exists()) {
+			return new EditorSettings();
+		}
+
+		GsonBuilder builder = new GsonBuilder();
+		Gson gson = builder.create();
+
+		try (FileReader reader = new FileReader(this.settingsFile)) {
+			return gson.fromJson(reader, EditorSettings.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new EditorSettings();
+		}
+	}
+
+	/**
+	 * 
+	 */
+	public void saveSettings() {
+		GsonBuilder builder = new GsonBuilder();
+		builder.setPrettyPrinting();
+		Gson gson = builder.create();
+
+		try (FileWriter writer = new FileWriter(this.settingsFile)) {
+			gson.toJson(this.settings, writer);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -198,9 +244,9 @@ public class JelloEditor {
 
 		this.application = new Application(null, () -> {
 			this.application = null;
-			
+
 			snapshot.restore(this.sceneManager);
-			
+
 			this.raiseEvent(PlayModeListener.class, (listener) -> {
 				listener.onPlaymodeChange(State.STOPPED);
 			});
