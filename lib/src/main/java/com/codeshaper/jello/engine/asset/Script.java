@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 import org.apache.commons.io.IOUtils;
 
@@ -23,7 +24,7 @@ public final class Script extends Asset {
 		super(location);
 
 		try (InputStream stream = location.getInputSteam()) {
-			this.source = String.join(IOUtils.toString(stream, StandardCharsets.UTF_8));
+			this.source = IOUtils.toString(stream, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -43,9 +44,11 @@ public final class Script extends Asset {
 		@Override
 		protected void drawAsset(GuiLayoutBuilder drawer) {
 			super.drawAsset(drawer); // Draws default inspector
-
-			drawer.label("Compilation Errors:");
-			drawer.textBox(null, "No Errors", 10);
+			
+			JTextArea textArea = new JTextArea(source);
+			textArea.setLineWrap(true);
+			
+			drawer.add(textArea);
 		}
 	}
 }
