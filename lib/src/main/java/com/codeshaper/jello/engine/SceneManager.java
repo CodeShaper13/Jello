@@ -15,7 +15,7 @@ public class SceneManager {
 	 * Loads a Scene. If the Scene is already loaded, nothing happens.
 	 * 
 	 * @param scene the Scene to load.
-	 * @return {code true} if the Scene was loaded.
+	 * @return {@code true} if the Scene was loaded.
 	 * @throws IllegalArgumentException if scene is {@code null}
 	 */
 	public boolean loadScene(Scene scene) {

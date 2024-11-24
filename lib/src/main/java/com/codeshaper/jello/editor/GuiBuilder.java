@@ -54,6 +54,7 @@ import com.codeshaper.jello.editor.property.modifier.MaxValue;
 import com.codeshaper.jello.editor.property.modifier.MinValue;
 import com.codeshaper.jello.editor.property.modifier.Range;
 import com.codeshaper.jello.editor.property.modifier.ToolTip;
+import com.codeshaper.jello.editor.scene.EditorSceneManager;
 import com.codeshaper.jello.editor.swing.JNumberField;
 import com.codeshaper.jello.editor.swing.JNumberField.EnumNumberType;
 import com.codeshaper.jello.editor.window.InspectorWindow;

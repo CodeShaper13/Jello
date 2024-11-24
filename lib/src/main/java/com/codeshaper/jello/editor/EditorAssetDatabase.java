@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.codeshaper.jello.editor.event.ProjectReloadListener;
 import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
+import com.codeshaper.jello.editor.scene.SceneManagerSnapshot;
 import com.codeshaper.jello.editor.scripts.ScriptCompiler;
 import com.codeshaper.jello.editor.utils.JelloFileUtils;
 import com.codeshaper.jello.engine.AssetLocation;
