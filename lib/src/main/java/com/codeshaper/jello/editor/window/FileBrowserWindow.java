@@ -199,7 +199,7 @@ public class FileBrowserWindow extends EditorWindow {
 
 		@Override
 		public boolean isLeaf(Object node) {
-			return !((File) node).isDirectory();
+			return ((File)node).listFiles((FileFilter) FileFilterUtils.directoryFileFilter()).length == 0;
 		}
 
 		@Override
