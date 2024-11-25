@@ -3,6 +3,7 @@ package com.codeshaper.jello.editor.property.drawer;
 import java.awt.Component;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
@@ -25,83 +26,93 @@ import com.codeshaper.jello.engine.event.ListenerJavaMethod;
 
 @FieldDrawerType(JelloEvent.class)
 public class JelloEventDrawer extends FieldDrawer {
-	
+
 	@Override
 	public JPanel draw(IExposedField field) {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
-		
+
 		boolean isEnabled = !field.isReadOnly();
-		
+
 		JLabel label = GuiBuilder.label(field);
 		builder.setBorder(label.getText() + "()");
 		builder.getPanel().setToolTipText(label.getToolTipText());
 		builder.getPanel().setEnabled(isEnabled);
-				
+
+		IExposedField f = field.getSubProperty("javaMethods");
 		@SuppressWarnings("unchecked")
-		List<ListenerJavaMethod> callbacks = (List<ListenerJavaMethod>) field.getSubProperty("javaMethods").get();
+		List<ListenerJavaMethod> c1 = (List<ListenerJavaMethod>) f.get();
+
+		if(c1 == null) {
+			c1 = new ArrayList<ListenerJavaMethod>();
+			f.set(c1);
+		}
 		
-		for(int i = 0; i < callbacks.size(); i++) {
-			ListenerJavaMethod callback = callbacks.get(i);
-			JPopupMenu menu = new JPopupMenu();
-			JMenuItem item = new JMenuItem("Remove Listener");
-			item.addActionListener((e1) -> {
-				callbacks.remove(callback);
-				this.refreshInspector();
-			});
-			menu.add(item);
-			
-			builder.startHorizontal().setComponentPopupMenu(menu);
-			JComboBox<GameObject> c = GuiBuilder.gameObjectField(callback.getGameObject(), (v) -> {
-				callback.setGameObject(v);
-				this.refreshInspector();
-			});
-			c.setComponentPopupMenu(menu);
-			builder.add(c);
-			
-			JComboBox<Method> methodListComboBox = this.createMethodComboBox();
-						
-			if(callback.getGameObject() != null) {
-				for(JelloComponent component : callback.getGameObject().getAllComponents()) {
-					for(Method method : component.getClass().getMethods()) {
-						if(method.getParameterCount() == 0) {
-							methodListComboBox.addItem(method);
+		List<ListenerJavaMethod> callbacks = c1;
+		
+		if (callbacks != null) {
+			for (int i = 0; i < callbacks.size(); i++) {
+
+				ListenerJavaMethod callback = callbacks.get(i);
+				JPopupMenu menu = new JPopupMenu();
+				JMenuItem item = new JMenuItem("Remove Listener");
+				item.addActionListener((e1) -> {
+					callbacks.remove(callback);
+					this.refreshInspector();
+				});
+				menu.add(item);
+
+				builder.startHorizontal().setComponentPopupMenu(menu);
+				JComboBox<GameObject> c = GuiBuilder.gameObjectField(callback.getGameObject(), (v) -> {
+					callback.setGameObject(v);
+					this.refreshInspector();
+				});
+				c.setComponentPopupMenu(menu);
+				builder.add(c);
+
+				JComboBox<Method> methodListComboBox = this.createMethodComboBox();
+
+				if (callback.getGameObject() != null) {
+					for (JelloComponent component : callback.getGameObject().getAllComponents()) {
+						for (Method method : component.getClass().getMethods()) {
+							if (method.getParameterCount() == 0) {
+								methodListComboBox.addItem(method);
+							}
 						}
 					}
 				}
-			}
 
-			methodListComboBox.setSelectedItem(callback.method);
-			methodListComboBox.setComponentPopupMenu(menu);
-			methodListComboBox.addActionListener(e -> {
-				if (methodListComboBox.getSelectedIndex() == 0) {
-					callback.method = null;
-				} else {
-					callback.method = (Method) methodListComboBox.getSelectedItem();
+				methodListComboBox.setSelectedItem(callback.method);
+				methodListComboBox.setComponentPopupMenu(menu);
+				methodListComboBox.addActionListener(e -> {
+					if (methodListComboBox.getSelectedIndex() == 0) {
+						callback.method = null;
+					} else {
+						callback.method = (Method) methodListComboBox.getSelectedItem();
+					}
+				});
+
+				builder.add(methodListComboBox);
+				builder.endHorizontal();
+
+				if (i < (callbacks.size() - 1)) {
+					builder.space(8);
+
 				}
-			});
-			
-			builder.add(methodListComboBox);
-			builder.endHorizontal();
-			
-			if(i < (callbacks.size() - 1)) {
-				builder.space(8);
 			}
 		}
-		
+
 		builder.startHorizontal();
 		builder.space();
 		builder.button("Add Listener", null, () -> {
 			callbacks.add(new ListenerJavaMethod());
 			this.refreshInspector();
-			
-			System.out.println(callbacks.size());
 		});
 		builder.space();
 		builder.endHorizontal();
-		
+
 		return (JPanel) builder.getPanel();
 	}
-	
+
 	public JComboBox<Method> createMethodComboBox() {
 		JComboBox<Method> methodComboBox = new JComboBox<Method>();
 		methodComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -109,15 +120,15 @@ public class JelloEventDrawer extends FieldDrawer {
 					boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, v, index, isSelected, cellHasFocus);
 
-				if(v == null) {
+				if (v == null) {
 					this.setText("None");
-				} else if(v instanceof Method) {
-					Method method = (Method)v;
+				} else if (v instanceof Method) {
+					Method method = (Method) v;
 					String s = "";
-					Parameter[] params = method.getParameters();						
-					for(int i = 0; i < params.length; i++) {
+					Parameter[] params = method.getParameters();
+					for (int i = 0; i < params.length; i++) {
 						s += params[i].getType().getSimpleName();
-						if(i != params.length - 1) {
+						if (i != params.length - 1) {
 							s += ", ";
 						}
 					}
@@ -131,12 +142,12 @@ public class JelloEventDrawer extends FieldDrawer {
 				return this;
 			}
 		});
-		
+
 		methodComboBox.addItem(null);
-		
+
 		return methodComboBox;
 	}
-	
+
 	private void refreshInspector() {
 		JelloEditor.getWindow(InspectorWindow.class).refresh();
 	}
