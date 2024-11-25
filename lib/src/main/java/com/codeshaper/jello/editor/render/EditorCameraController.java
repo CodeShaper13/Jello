@@ -14,10 +14,16 @@ import com.codeshaper.jello.editor.EditorProperties;
 import com.codeshaper.jello.editor.JelloEditor;
 
 /**
- * Provides controls for moving the scene view camera.
- * 
- * Controls: Scroll Wheel: Zooms in and out. MMB + Move Cursor: Pan camera. RMB
- * + Move Cursor: Rotate camera.
+ * Provides controls for moving the scene view camera. No actual "camera"
+ * exists, a {@link Matrix4f} is manipulated that can be gotten with {@link EditorCameraController#getViewMatrix()} and
+ * applied to any type of "camera" implementation.
+ * <p>
+ * The "position" and "rotation" of the camera are loaded fromthe Editor preferences and saved
+ * <p>
+ * Controls: <br>
+ * Scroll Wheel: Move forward and back <br>
+ * MMB + Cursor: Pan camera <br>
+ * RMB + Cursor: Rotate camera
  */
 public class EditorCameraController implements MouseListener, MouseMotionListener, MouseWheelListener {
 
@@ -49,11 +55,11 @@ public class EditorCameraController implements MouseListener, MouseMotionListene
 				props.getFloat("camera.position.z", 0));
 		this.xRot = props.getFloat("camera.rotation.x", 0);
 		this.yRot = props.getFloat("camera.rotation.y", 0);
-		
+
 		this.viewMatrix = new Matrix4f();
-		
+
 		this.recalculate();
-		
+
 		JelloEditor.instance.addProjectSaveListener(() -> this.saveToProperties());
 	}
 
@@ -83,7 +89,7 @@ public class EditorCameraController implements MouseListener, MouseMotionListene
 		if (this.isMMBDown) {
 			// Pan.
 			Vector3f vec = new Vector3f();
-			
+
 			// Up/down.
 			this.viewMatrix.positiveY(vec).mul(motion.y * PAN_SPEED);
 			this.position.add(vec);
@@ -145,7 +151,7 @@ public class EditorCameraController implements MouseListener, MouseMotionListene
 	}
 
 	/**
-	 * Recalculates the controllers view matrix. This should be called whenever the
+	 * Recalculates the controller's view matrix. This should be called whenever the
 	 * {@link CameraController#position}, {@link CameraController#xRot}, or
 	 * {@link CameraController#yRot} is changed.
 	 */
@@ -153,7 +159,7 @@ public class EditorCameraController implements MouseListener, MouseMotionListene
 		this.viewMatrix.identity().rotateX(this.xRot).rotateY(this.yRot);
 		this.viewMatrix.translate(-this.position.x, -this.position.y, -this.position.z);
 	}
-	
+
 	private void saveToProperties() {
 		EditorProperties props = JelloEditor.instance.properties;
 		props.setFloat("camera.position.x", this.position.x);
