@@ -359,7 +359,9 @@ public class HierarchyWindow extends EditorWindow {
 			paste.setEnabled(coppiedGameObject != null);
 			paste.addActionListener(e -> {
 				if (coppiedGameObject != null) {
+					System.out.println("!!!");
 					this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
+					model.reload(tree.getSelectionPath().getParentPath());
 				}
 			});
 			this.add(paste);
@@ -369,6 +371,7 @@ public class HierarchyWindow extends EditorWindow {
 			pasteAsChild.addActionListener(e -> {
 				if (coppiedGameObject != null) {
 					this.addGameObjFromJson(coppiedGameObject, gameObject);
+					model.reload(tree.getSelectionPath());
 				}
 			});
 			this.add(pasteAsChild);
