@@ -10,7 +10,6 @@ import java.util.EventObject;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.event.TreeModelEvent;
@@ -53,7 +52,7 @@ public class HierarchyWindow extends EditorWindow {
 		this.model = new HierarchyTreeModel(JelloEditor.instance.sceneManager);
 		this.tree = new HierarchyTree(this.model);
 
-		this.add(new JScrollPane(this.tree), BorderLayout.CENTER);
+		this.add(this.tree, BorderLayout.CENTER);
 
 		JelloEditor.instance.addSceneChangeListener((oldScene, newScene) -> {
 			this.model.reload();
@@ -71,9 +70,9 @@ public class HierarchyWindow extends EditorWindow {
 
 	/**
 	 * Gets the {@link GameObject} that is selected. If no GameObject is selected,
-	 * or a Scene is selected, {@code null} is returned.
+	 * or a {@link Scene} is selected, {@code null} is returned.
 	 * 
-	 * @return
+	 * @return the selected GameObject
 	 */
 	public GameObject getSelected() {
 		Object selected = this.tree.getLastSelectedPathComponent();
@@ -300,8 +299,11 @@ public class HierarchyWindow extends EditorWindow {
 			Component component = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
 			// This fixes the text being cut off with "..." when a GameObjects name changes.
+			// getPreferedSize adds 3 to the width, so we take that away. Otherwise the
+			// label expands every time it redraws and creates a horizontal scroll bar that
+			// get wider and wider and wider...
 			Dimension size = this.getPreferredSize();
-			component.setMinimumSize(size);
+			size.width -= 3;
 			component.setPreferredSize(size);
 
 			if (value instanceof Scene) {
@@ -344,11 +346,11 @@ public class HierarchyWindow extends EditorWindow {
 	private class GameObjectMenu extends JPopupMenu {
 
 		private final GameObject gameObject;
-		
+
 		public GameObjectMenu(GameObject gameObject) {
 			this.gameObject = gameObject;
 			Serializer serializer = AssetDatabase.getInstance().serializer;
-			
+
 			JMenuItem copy = new JMenuItem("Copy");
 			copy.addActionListener(e -> {
 				coppiedGameObject = serializer.serializeToJsonElement(gameObject);
@@ -359,7 +361,6 @@ public class HierarchyWindow extends EditorWindow {
 			paste.setEnabled(coppiedGameObject != null);
 			paste.addActionListener(e -> {
 				if (coppiedGameObject != null) {
-					System.out.println("!!!");
 					this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
 					model.reload(tree.getSelectionPath().getParentPath());
 				}
@@ -375,7 +376,7 @@ public class HierarchyWindow extends EditorWindow {
 				}
 			});
 			this.add(pasteAsChild);
-			
+
 			this.addSeparator();
 
 			JMenuItem rename = new JMenuItem("Rename");
@@ -413,11 +414,11 @@ public class HierarchyWindow extends EditorWindow {
 			});
 			this.add(newChild);
 		}
-		
+
 		private void addGameObjFromJson(JsonElement json, GameObject parent) {
 			GameObject newGameObject = GameObject.fromJson(json, this.gameObject.getScene());
 			newGameObject.setName(newGameObject.getName() + "-Copy");
-			if(parent != null) {
+			if (parent != null) {
 				newGameObject.setParent(parent);
 			}
 		}
