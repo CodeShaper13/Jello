@@ -14,8 +14,6 @@ import java.nio.file.Path;
 
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
-import com.codeshaper.jello.engine.GameObject;
-import com.codeshaper.jello.engine.GameObjectReference;
 import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
@@ -249,41 +247,6 @@ public class Serializer {
 		}
 	}
 
-	private class Clazz extends TypeAdapter<GameObjectReference> {
-
-		@Override
-		public void write(JsonWriter out, GameObjectReference value) throws IOException {
-			if (value == null) {
-				out.nullValue();
-				return;
-			}
-			
-			GameObject obj = value.get();
-			if (obj == null) {
-				out.nullValue();
-			} else {
-				out.value(obj.getPersistencePath());
-			}
-		}
-
-		@Override
-		public GameObjectReference read(JsonReader in) throws IOException {
-			GameObjectReference ref = new GameObjectReference();
-			
-			JsonToken token = in.peek();
-			if (token == JsonToken.STRING) {
-				String persistantPath = in.nextString();
-				GameObject obj = GameObject.fromPersistantPath(persistantPath);
-				if(obj != null) {
-					ref.set(obj);
-				}
-				return ref;
-			}
-			
-			return ref;
-		}		
-	}
-	
 	private class SerializedJelloObjectInstanceCreator implements InstanceCreator<Asset> {
 
 		private final Class<? extends Asset> clazz;
