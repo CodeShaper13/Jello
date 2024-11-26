@@ -266,11 +266,11 @@ public final class RuntimeTypeAdapterFactory<T> implements TypeAdapterFactory {
       public R read(JsonReader in) throws IOException {
         JsonElement jsonElement = jsonElementAdapter.read(in);
         JsonElement labelJsonElement;
-        if (maintainType) {
+        //if (maintainType) {
           labelJsonElement = jsonElement.getAsJsonObject().get(typeFieldName);
-        } else {
-          labelJsonElement = jsonElement.getAsJsonObject().remove(typeFieldName);
-        }
+        //} else {
+        //  labelJsonElement = jsonElement.getAsJsonObject().remove(typeFieldName);
+        //}
 
         if (labelJsonElement == null) {
           throw new JsonParseException(
