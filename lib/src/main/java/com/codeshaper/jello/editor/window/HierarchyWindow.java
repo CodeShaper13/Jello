@@ -418,9 +418,7 @@ public class HierarchyWindow extends EditorWindow {
 		private void addGameObjFromJson(JsonElement json, GameObject parent) {
 			GameObject newGameObject = GameObject.fromJson(json, this.gameObject.getScene());
 			newGameObject.setName(newGameObject.getName() + "-Copy");
-			if (parent != null) {
-				newGameObject.setParent(parent);
-			}
+			newGameObject.setParent(parent);
 		}
 	}
 }
