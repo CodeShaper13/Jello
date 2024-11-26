@@ -74,7 +74,7 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			this.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
 			
-			this.label = new JLabel(target.getAssetName());
+			this.label = new JLabel(target.getAssetName() + " (" + target.getClass().getSimpleName() + ")");
 			this.add(label);
 		}
 	}
