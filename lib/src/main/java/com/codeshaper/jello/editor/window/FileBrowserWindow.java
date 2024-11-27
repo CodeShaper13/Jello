@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.EventObject;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -40,6 +41,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Asset;
@@ -301,11 +303,22 @@ public class FileBrowserWindow extends EditorWindow {
 	}
 
 	private class FolderHierarchy extends JTree {
+		
+		private static final ImageIcon FOLDER_CLOSED_ICON = new ImageIcon(
+				ComponentEditor.class.getResource("/editor/icons/folder_closed.png"));
+		private static final ImageIcon FOLDER_OPEN_ICON = new ImageIcon(
+				ComponentEditor.class.getResource("/editor/icons/folder_open.png"));
 
 		public FolderHierarchy(FolderHierarchyModel fileTreeModel) {
 			super(fileTreeModel);
+			
+			DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) this.getCellRenderer();
+		    renderer.setLeafIcon(FOLDER_CLOSED_ICON);
+		    renderer.setClosedIcon(FOLDER_CLOSED_ICON);
+		    renderer.setOpenIcon(FOLDER_OPEN_ICON);
 
-			this.setCellEditor(new MyTreeCellEditor(folderTree, (DefaultTreeCellRenderer) this.getCellRenderer()));
+			this.setCellEditor(new MyTreeCellEditor(folderTree, renderer));
+			this.setShowsRootHandles(true);
 			this.setEditable(true);
 			this.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "startEditing");
 			this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -317,7 +330,7 @@ public class FileBrowserWindow extends EditorWindow {
 						fileList.setTargetDirectory(selected);
 					}
 				}
-			});
+			});	    
 		}
 
 		@Override
