@@ -28,7 +28,6 @@ public class MethodSerializer implements JsonSerializer<Method>, JsonDeserialize
 		try {
 			Class<?> cls = Class.forName(clsName);
 			Method method = cls.getMethod(methodName);
-			System.out.println(method);
 			return method;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();

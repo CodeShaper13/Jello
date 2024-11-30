@@ -18,7 +18,6 @@ public class EditorSettingsWindow extends EditorWindow {
 		
 		JButton saveBtn = new JButton("Save");
 		saveBtn.addActionListener((e) -> {
-			System.out.println(JelloEditor.instance.settings.ideLocation);
 			JelloEditor.instance.saveSettings();
 		});
 		this.add(saveBtn, BorderLayout.SOUTH);
