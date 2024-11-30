@@ -3,17 +3,27 @@ package com.codeshaper.jello.editor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.property.modifier.DisableIf;
 import com.codeshaper.jello.editor.property.modifier.HideIf;
+import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.Debug;
+import com.codeshaper.jello.engine.JelloComponent;
 
 public class EditorUtils {
+	
+	private static ImageIcon defaultComponentIcon = new ImageIcon(
+			ComponentEditor.class.getResource(ComponentIcon.DEFAULT_ICON_PATH));
 
 	private EditorUtils() {
 	}
@@ -115,7 +125,28 @@ public class EditorUtils {
 
 		return false;
 	}
-
+	
+	public static Icon getComponentIcon(Class<JelloComponent> componentClass) {
+		ComponentIcon annotation = componentClass.getAnnotation(ComponentIcon.class);
+		if (annotation != null) {
+			String path = annotation.value();
+			URL url = ComponentEditor.class.getResource(path);
+			if (url != null) {
+				return new ImageIcon(url);
+			} else {
+				Debug.logError("Couldn't load component icon at ", path);
+				return defaultComponentIcon;
+			}
+		} else {
+			return defaultComponentIcon;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Icon getComponentIcon(JelloComponent component) {
+		return getComponentIcon((Class<JelloComponent>) component.getClass());
+	}
+	
 	private static String func(IExposedField field) {
 		return field.getType().getSimpleName() + "#" + field.getFieldName();
 	}

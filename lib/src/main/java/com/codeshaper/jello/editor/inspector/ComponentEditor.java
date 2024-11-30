@@ -6,7 +6,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
 
 import javax.swing.Box;
 import javax.swing.Icon;
@@ -19,12 +18,11 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 import com.codeshaper.jello.editor.EditorAssetDatabase;
+import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.ComponentHelpUrl;
-import com.codeshaper.jello.engine.ComponentIcon;
-import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.JelloComponent;
 
 public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
@@ -83,8 +81,6 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 				ComponentEditor.class.getResource("/editor/icons/component_edit.png"));
 		public static ImageIcon removeIcon = new ImageIcon(
 				ComponentEditor.class.getResource("/editor/icons/component_remove.png"));
-		public static ImageIcon defaultComponentIcon = new ImageIcon(
-				ComponentEditor.class.getResource(ComponentIcon.DEFAULT_ICON_PATH));
 
 		public ComponentHeader(T component) {
 			this.setLayout(new GridBagLayout());
@@ -96,7 +92,7 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 			});
 
 			String label = component.getClass().getSimpleName();
-			Icon icon = this.getComponentIcon(component);
+			Icon icon = EditorUtils.getComponentIcon(component);
 			JLabel componentName = new JLabel(label, icon, SwingConstants.RIGHT);
 
 			GridBagConstraints labelConstraint = new GridBagConstraints();
@@ -169,22 +165,6 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 			this.add(Box.createHorizontalStrut(5));
 
 			return btn;
-		}
-
-		private Icon getComponentIcon(JelloComponent component) {
-			ComponentIcon annotation = component.getClass().getAnnotation(ComponentIcon.class);
-			if (annotation != null) {
-				String path = annotation.value();
-				URL url = ComponentEditor.class.getResource(path);
-				if (url != null) {
-					return new ImageIcon(url);
-				} else {
-					Debug.logError("Couldn't load component icon at ", path);
-					return defaultComponentIcon;
-				}
-			} else {
-				return defaultComponentIcon;
-			}
 		}
 	}
 }
