@@ -363,7 +363,6 @@ public class Material extends SerializedJelloObject {
 			program.setUniform(entry.getKey(), entry.getValue());
 		}
 		for (Entry<String, Float> entry : this.floats.entrySet()) {
-			System.out.println("setting float");
 			program.setUniform(entry.getKey(), entry.getValue());
 		}
 		for (Entry<String, Vector2f> entry : this.vec2s.entrySet()) {
