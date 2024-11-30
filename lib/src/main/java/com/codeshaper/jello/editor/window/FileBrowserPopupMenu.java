@@ -136,10 +136,11 @@ public abstract class FileBrowserPopupMenu extends JPopupMenu {
 	 * called before showing the toolbar.
 	 * 
 	 * @param file
-	 * @param allowDeletingAndRenaming are the delete and rename items enabled.
 	 */
-	public void setTargetFile(File file, boolean allowDeletingAndRenaming) {
+	public void setTargetFile(File file) {
 		this.file = file;
+		
+		boolean allowDeletingAndRenaming = !file.equals(JelloEditor.instance.assetsFolder.toFile());
 
 		this.delete.setEnabled(allowDeletingAndRenaming);
 		this.rename.setEnabled(allowDeletingAndRenaming);
