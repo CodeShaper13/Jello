@@ -20,6 +20,10 @@ public abstract class InlineClassDrawer extends FieldDrawer {
 		JPanel horizontalArea = GuiBuilder.horizontalArea();
 		boolean isReadOnly = field.isReadOnly();
 		
+		if(field.get() == null) {
+			field.set(this.createDefaultInstance());
+		}
+		
 		for(String s : this.fieldNames) {
 			IExposedField subField = field.getSubProperty(s);
 			if(subField == null) {
@@ -41,4 +45,6 @@ public abstract class InlineClassDrawer extends FieldDrawer {
 
 		return GuiBuilder.combine(GuiBuilder.label(field), horizontalArea);
 	}
+	
+	public abstract Object createDefaultInstance();
 }

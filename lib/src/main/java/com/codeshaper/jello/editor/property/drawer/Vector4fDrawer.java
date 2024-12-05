@@ -8,4 +8,9 @@ public class Vector4fDrawer extends InlineClassDrawer {
 	public Vector4fDrawer() {
 		super("w", "x", "y", "z");
 	}
+
+	@Override
+	public Object createDefaultInstance() {
+		return new Vector4f(0, 0, 0, 0);
+	}
 }
