@@ -246,8 +246,11 @@ public class EditorMenuBar extends JMenuBar {
 			});
 			this.add(reload);
 
-			JCheckBoxMenuItem autoReload = new JCheckBoxMenuItem("Auto-Reload");
+			JCheckBoxMenuItem autoReload = new JCheckBoxMenuItem("Auto-Reload", JelloEditor.instance.properties.getBoolean("toolbar.auto_reload", true));
 			autoReload.setToolTipText("If enabled, the project is reloaded whenever the application regains focus.");
+			autoReload.addActionListener((e) -> {
+				JelloEditor.instance.properties.setBoolean("toolbar.auto_reload", autoReload.isSelected());
+			});
 			this.add(autoReload);
 
 			window.addWindowFocusListener(new WindowAdapter() {
