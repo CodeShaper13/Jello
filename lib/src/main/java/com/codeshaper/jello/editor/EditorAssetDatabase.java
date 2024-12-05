@@ -55,9 +55,6 @@ public class EditorAssetDatabase extends AssetDatabase {
 	public void rebuild() {
 		boolean verboseMode = true;
 		boolean isInEditor = JelloEditor.instance != null;
-		
-		Debug.log("[Editor] Building Database...");
-
 
 		if(isInEditor) {
 			this.invokeEvent(Phase.PRE_REBUILD);
@@ -128,7 +125,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			this.invokeEvent(Phase.POST_REBUILD);
 		}
 		
-		Debug.log("[Editor] Database rebuilt!");
+		Debug.log("[Editor] Rebuilt Database");
 	}
 
 	/**
