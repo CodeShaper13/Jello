@@ -16,6 +16,8 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL41;
 import org.lwjgl.system.MemoryStack;
 
+import com.codeshaper.jello.engine.Debug;
+
 public class ShaderProgram {
 
 	public final int programId;
@@ -117,7 +119,7 @@ public class ShaderProgram {
 		int shaderId = glCreateShader(shaderType.type);
 
 		if (shaderId == 0) {
-			System.out.println("Error creating shader. Type: " + shaderType);
+			Debug.logError("Shader Error in \"%s\": Could not create Shader.", "TODO");
 			return 0;
 		}
 
@@ -125,7 +127,7 @@ public class ShaderProgram {
 		glCompileShader(shaderId);
 
 		if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
-			System.out.println("Error compiling Shader code: " + glGetShaderInfoLog(shaderId, 1024));
+			Debug.logError("Shader Error in \"%s\": Could not compile Shader: %s", "TODO", glGetShaderInfoLog(shaderId, 1024));
 		}
 
 		glAttachShader(programId, shaderId);
@@ -136,7 +138,7 @@ public class ShaderProgram {
 	private void link(List<Integer> shaderModules) {
 		glLinkProgram(programId);
 		if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
-			System.out.println("Error linking Shader code: " + glGetProgramInfoLog(programId, 1024));
+			Debug.logError("Shader Error in \"%s\": Linking error: %s", "TODO", glGetProgramInfoLog(programId, 1024));
 		}
 
 		shaderModules.forEach(s -> glDetachShader(programId, s));
