@@ -96,7 +96,11 @@ public class Shader extends Asset {
 	 * @see Shader#isInvalid()
 	 */
 	public ShaderData getData() {
-		return this.data;
+		if(this.data != null) {
+			return this.data;
+		} else {
+			return new ShaderData();
+		}
 	}
 
 	public ShaderProgram getProgram() {

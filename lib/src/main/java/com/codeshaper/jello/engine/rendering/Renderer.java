@@ -9,9 +9,9 @@ import com.codeshaper.jello.engine.asset.Material;
 public abstract class Renderer extends JelloComponent {
 
 	/**
-	 * Gets the {@link Material} to render this object with. If no material is returned,
-	 * this object will not get rendered and {@link Renderer#onRender()} will not be
-	 * called.
+	 * Gets the {@link Material} to render this object with. If no material is
+	 * returned, this object will not get rendered and {@link Renderer#onRender()}
+	 * will not be called.
 	 * 
 	 * @return the {@link Material} to render with.
 	 */
@@ -19,6 +19,10 @@ public abstract class Renderer extends JelloComponent {
 
 	/**
 	 * Called to actually render the component.
+	 * 
+	 * @param camera
+	 * @param width
+	 * @param height
 	 */
-	public abstract void onRender();
+	public abstract void onRender(Camera camera, float width, float height);
 }
