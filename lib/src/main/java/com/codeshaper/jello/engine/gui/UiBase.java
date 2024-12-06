@@ -35,7 +35,7 @@ public class UiBase extends Renderer {
 	}
 
 	@Override
-	public void onRender(Camera camera) {
+	public void onRender(Camera camera, float width, float height) {
 		if (UiBase.uiMesh == null) {
 			UiBase.createUiMesh();
 		}
@@ -45,8 +45,6 @@ public class UiBase extends Renderer {
 		}
 
 		ShaderProgram program = this.material.getShader().getProgram();
-		int width = camera.getWidth();
-		int height = camera.getHeight();
 
 		float aspect = width / height;
 		Matrix4f mat = new Matrix4f();

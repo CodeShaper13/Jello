@@ -21,6 +21,8 @@ public abstract class Renderer extends JelloComponent {
 	 * Called to actually render the component.
 	 * 
 	 * @param camera
+	 * @param width
+	 * @param height
 	 */
-	public abstract void onRender(Camera camera);
+	public abstract void onRender(Camera camera, float width, float height);
 }

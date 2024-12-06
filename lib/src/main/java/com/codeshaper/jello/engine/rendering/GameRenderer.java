@@ -136,7 +136,7 @@ public class GameRenderer {
 			for (Renderer renderer : renderers) {
 				program.setUniform(GAME_OBJECT_MATRIX, renderer.gameObject().getWorldMatrix());
 
-				renderer.onRender(camera);
+				renderer.onRender(camera, viewportWidth, viewportHeight);
 			}
 
 			program.unbind();
