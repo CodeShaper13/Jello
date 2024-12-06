@@ -16,7 +16,9 @@ public class Toggle extends UiBase {
 	private boolean isOn;
 	@ExposeField
 	private ToggleGroup toggleGroup;
-	public JelloEvent onToggle = new JelloEvent();
+	public ToggleEvent onToggle = new ToggleEvent();
+	public GameObject gameObject;
+	public GameObjectReference gameObjRef = new GameObjectReference();
 	
 	@Override
 	protected void onStart() {
@@ -87,4 +89,6 @@ public class Toggle extends UiBase {
 			group.toggles.add(this);
 		}
 	}
+
+	public class ToggleEvent extends JelloEvent { }
 }

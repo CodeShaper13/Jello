@@ -23,7 +23,7 @@ public final class MeshRenderer extends Renderer {
 	}
 	
 	@Override
-	public void onRender(Camera camera, float width, float height) {
+	public void onRender() {
 		if (this.mesh != null) {
 			glBindVertexArray(mesh.getVaoId());
 			glDrawElements(GL_TRIANGLES, mesh.getVerticeCount(), GL_UNSIGNED_INT, 0);
