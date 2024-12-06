@@ -77,14 +77,16 @@ public final class Camera extends JelloComponent {
 	 * depths will be rendered on top of Cameras with lower depths.
 	 */
 	public int depth;
-	
+
 	@Space
-	
+
 	public Color fogColor = Color.gray;
 	@MinValue(0)
 	public float fogDensity = 0;
 
 	private transient Matrix4f projectionMatrix = new Matrix4f();
+	private transient int width;
+	private transient int height;
 
 	@Override
 	protected void onStart() {
@@ -118,23 +120,32 @@ public final class Camera extends JelloComponent {
 	}
 
 	/**
-	 * Gets the Camera's field of view.
+	 * Gets the Camera's field of view in degrees. The returned value will always be
+	 * between {@code 0} and {@code 180}.
 	 * 
 	 * @return the Camera's field of view.
+	 * @see Camera#setFieldOfView(float)
 	 */
 	public float getFieldOfView() {
 		return this.fov;
 	}
 
 	/**
-	 * Sets the Camera's field of view. {@code fov} is clamped between 0 and 180.
+	 * Sets the Camera's field of view. {@code fov} is clamped between {@code 0} and
+	 * {@code 180}.
 	 * 
-	 * @param fov the field of view.
+	 * @param fov the field of view in degrees
+	 * @see Camera#getFieldOfView()
 	 */
 	public void setFieldOfView(float fov) {
 		this.fov = Math.clamp(0, 180, fov);
 	}
 
+	/**
+	 * Gets the distance of the near plane of the Camera.
+	 * 
+	 * @return the distance of the near plane
+	 */
 	public float getNearPlane() {
 		return this.nearPlane;
 	}
@@ -143,6 +154,11 @@ public final class Camera extends JelloComponent {
 		this.nearPlane = Math.max(0, distance);
 	}
 
+	/**
+	 * Gets the distance of the far plane of the Camera.
+	 * 
+	 * @return the distance of the far plane
+	 */
 	public float getFarPlane() {
 		return this.farPlane;
 	}
@@ -152,16 +168,41 @@ public final class Camera extends JelloComponent {
 	}
 
 	/**
-	 * @param width  the width in pixels.
-	 * @param height the heght in pixels.
+	 * Gets the width of the Camera in pixels.
+	 * 
+	 * @return the width of the Camera in pixels
+	 * @see Camera#setSize(float, float)
 	 */
-	public void refreshProjectionMatrix(float width, float height) {
-		if (this.perspective == Perspective.PERSPECTVE) {
-			this.projectionMatrix.setPerspective(Math.toRadians(this.fov), width / height, this.nearPlane,
-					this.farPlane);
-		} else {
-			this.projectionMatrix.setOrtho(-this.zoom, this.zoom, -this.zoom, this.zoom, this.nearPlane, this.farPlane);
+	public int getWidth() {
+		return this.width;
+	}
+
+	/**
+	 * Gets the height of the Camera in pixels.
+	 * 
+	 * @return the height of the Camera in pixels
+	 * @see Camera#setSize(float, float)
+	 */
+	public int getHeight() {
+		return this.height;
+	}
+
+	/**
+	 * 
+	 * @param width  the width of the Camera in pixels
+	 * @param height the height of the Camera in pixels
+	 * @see Camera#getWidth()
+	 * @see Camera#getHeight()
+	 */
+	public void setSize(float width, float height) {
+		if (this.width == width && this.height == height) {
+			// return;
 		}
+
+		this.width = (int) width;
+		this.height = (int) height;
+
+		this.refreshPerspectiveMatric();
 	}
 
 	/**
@@ -172,5 +213,15 @@ public final class Camera extends JelloComponent {
 	 */
 	public Matrix4f getProjectionMatrix() {
 		return this.projectionMatrix;
+	}
+
+	private void refreshPerspectiveMatric() {
+		if (this.perspective == Perspective.PERSPECTVE) {
+			this.projectionMatrix.setPerspective(Math.toRadians(this.fov), (float) this.width / this.height,
+					this.nearPlane,
+					this.farPlane);
+		} else {
+			this.projectionMatrix.setOrtho(-this.zoom, this.zoom, -this.zoom, this.zoom, this.nearPlane, this.farPlane);
+		}
 	}
 }

@@ -69,7 +69,7 @@ public class GameRenderer {
 				Math.round(viewportPos.y * windowHeight),
 				Math.round(viewportWidth),
 				Math.round(viewportHeight));
-		camera.refreshProjectionMatrix(viewportWidth, viewportHeight);
+		camera.setSize(viewportWidth, viewportHeight);
 
 		Color clearColor = camera.backgroundColor;
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
