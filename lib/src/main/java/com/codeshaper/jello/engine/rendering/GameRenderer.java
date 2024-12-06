@@ -59,7 +59,7 @@ public class GameRenderer {
 	}
 
 	public void render(SceneManager sceneManager, Camera camera, Matrix4f viewMatrix, int windowWidth,
-			int windowHeight) {
+			int windowHeight) {		
 		Vector2f viewportPos = camera.viewportPosition;
 		Vector2f viewportSize = camera.viewportSize;
 		float viewportWidth = windowWidth * viewportSize.x;
@@ -136,7 +136,7 @@ public class GameRenderer {
 			for (Renderer renderer : renderers) {
 				program.setUniform(GAME_OBJECT_MATRIX, renderer.gameObject().getWorldMatrix());
 
-				renderer.onRender();
+				renderer.onRender(camera);
 			}
 
 			program.unbind();

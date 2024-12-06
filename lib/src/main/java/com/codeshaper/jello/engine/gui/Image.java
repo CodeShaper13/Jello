@@ -5,6 +5,6 @@ import com.codeshaper.jello.engine.ComponentName;
 
 @ComponentName("Ui/Element/Image")
 @ComponentIcon("/editor/componentIcons/image.png")
-public class Image extends Canvas {
+public class Image extends UiBase {
 
 }

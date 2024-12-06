@@ -85,8 +85,8 @@ public final class Camera extends JelloComponent {
 	public float fogDensity = 0;
 
 	private transient Matrix4f projectionMatrix = new Matrix4f();
-	private transient int width;
-	private transient int height;
+	private transient float width;
+	private transient float height;
 
 	@Override
 	protected void onStart() {
@@ -174,7 +174,7 @@ public final class Camera extends JelloComponent {
 	 * @see Camera#setSize(float, float)
 	 */
 	public int getWidth() {
-		return this.width;
+		return (int)this.width;
 	}
 
 	/**
@@ -184,7 +184,7 @@ public final class Camera extends JelloComponent {
 	 * @see Camera#setSize(float, float)
 	 */
 	public int getHeight() {
-		return this.height;
+		return (int)this.height;
 	}
 
 	/**
@@ -195,12 +195,8 @@ public final class Camera extends JelloComponent {
 	 * @see Camera#getHeight()
 	 */
 	public void setSize(float width, float height) {
-		if (this.width == width && this.height == height) {
-			// return;
-		}
-
-		this.width = (int) width;
-		this.height = (int) height;
+		this.width = width;
+		this.height = height;
 
 		this.refreshPerspectiveMatric();
 	}

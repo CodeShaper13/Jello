@@ -212,6 +212,9 @@ public class Material extends SerializedJelloObject {
 	 * @throws IllegalArgumentException if {@code value} is null.
 	 */
 	public void setColor(String uniform, Color value) {
+		if(value == null) {
+			value = Color.black;
+		}
 		this.setVec4(uniform, value.toVector4f());
 	}
 
