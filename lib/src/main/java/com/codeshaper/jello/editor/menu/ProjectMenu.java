@@ -7,11 +7,12 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import com.codeshaper.jello.editor.EditorMainFrame;
 import com.codeshaper.jello.editor.JelloEditor;
 
 public class ProjectMenu extends JMenu {
 
-	public ProjectMenu() {
+	public ProjectMenu(EditorMainFrame editorMainFrame) {
 		super("Project");
 
 		JMenuItem reload = new JMenuItem("Reload Project");
@@ -27,7 +28,7 @@ public class ProjectMenu extends JMenu {
 		});
 		this.add(autoReload);
 
-		JelloEditor.instance.window.addWindowFocusListener(new WindowAdapter() {
+		editorMainFrame.addWindowFocusListener(new WindowAdapter() {
 			@Override
 			public void windowGainedFocus(WindowEvent e) {
 				if (autoReload.isSelected()) {

@@ -85,7 +85,7 @@ public class EditorMainFrame extends JFrame {
 		DockingState.restoreWindowLayout(this, defaultLayout);
 		DockingLayouts.addLayout("Default", new ApplicationLayout(defaultLayout));
 
-		this.setJMenuBar(new EditorMenuBar());
+		this.setJMenuBar(new EditorMenuBar(this));
 		this.pack();
 		this.setVisible(true);
 		this.transferFocus();
