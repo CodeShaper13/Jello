@@ -51,22 +51,24 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * imported will be re-imported.
 	 * <li>{@link ProjectReloadListener} with the {@link Phase#POST_REBUILD} phase
 	 * is fired.
+	 * 
+	 * @param verboseMode controls if messages a logged when Assets are added and
+	 *                    removed from the database
 	 */
-	public void rebuild() {
-		boolean verboseMode = true;
+	public void rebuild(boolean verboseMode) {
 		boolean isInEditor = JelloEditor.instance != null;
 
-		if(isInEditor) {
+		if (isInEditor) {
 			this.invokeEvent(Phase.PRE_REBUILD);
 		}
 
 		SceneManager sceneManager = null;
 		SceneManagerSnapshot snapshot = null;
-		if(isInEditor) {
+		if (isInEditor) {
 			sceneManager = JelloEditor.instance.sceneManager;
 			snapshot = new SceneManagerSnapshot(sceneManager);
 		}
-		
+
 		// Check all the Assets and if the file that provides them no longer exists,
 		// remove the Asset from the Database.
 		for (int i = this.assets.size() - 1; i >= 0; --i) {
@@ -116,15 +118,15 @@ public class EditorAssetDatabase extends AssetDatabase {
 			}
 		}
 
-		if(isInEditor) {
+		if (isInEditor) {
 			snapshot.restore(sceneManager);
 		}
-		
-		if(isInEditor) {
+
+		if (isInEditor) {
 			this.invokeEvent(Phase.REBUILD);
 			this.invokeEvent(Phase.POST_REBUILD);
 		}
-		
+
 		Debug.log("[Editor] Rebuilt Database");
 	}
 
@@ -278,7 +280,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 	 * @param assetPath
 	 */
 	public void reload(AssetLocation location) {
-		if(this.isLoaded(location)) {
+		if (this.isLoaded(location)) {
 			this.unload(location);
 		}
 		this.getAsset(location); // Reloads the Asset.
@@ -289,7 +291,7 @@ public class EditorAssetDatabase extends AssetDatabase {
 			listener.onProjectReload(phase);
 		});
 	}
-	
+
 	/**
 	 * Takes a full path and converts it to a relative path. If the path is already
 	 * a relative path, nothing happens.

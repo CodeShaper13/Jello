@@ -2,7 +2,6 @@ package com.codeshaper.jello.editor;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,7 +32,6 @@ import com.codeshaper.jello.engine.Scene;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 import com.codeshaper.jello.engine.audio.AudioListener;
 import com.codeshaper.jello.engine.audio.SoundManager;
-import com.codeshaper.jello.engine.database.AssetDatabase;
 import com.codeshaper.jello.engine.lighting.DirectionalLight;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.rendering.Camera;
@@ -41,8 +39,6 @@ import com.codeshaper.jello.engine.rendering.GameRenderer;
 import com.codeshaper.jello.engine.rendering.MeshRenderer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 
 import ModernDocking.Dockable;
 import ModernDocking.app.Docking;
@@ -141,7 +137,7 @@ public class JelloEditor {
 
 		this.sceneManager = new EditorSceneManager(this);
 
-		this.assetDatabase.rebuild();
+		this.assetDatabase.rebuild(false);
 
 		this.window = new EditorMainFrame(this);
 		this.logHandler = this.window.console;
@@ -224,7 +220,7 @@ public class JelloEditor {
 	}
 
 	public void reloadProject() {
-		this.assetDatabase.rebuild();
+		this.assetDatabase.rebuild(false);
 	}
 
 	/**

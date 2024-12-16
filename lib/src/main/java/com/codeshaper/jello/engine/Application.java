@@ -94,7 +94,7 @@ public class Application {
 			Path projectFolder = Path.of(pathToAssets); // TODO what should this
 																								// be in a
 			EditorAssetDatabase database = new EditorAssetDatabase(projectFolder);
-			database.rebuild();
+			database.rebuild(false);
 			// TODO load assets into database
 		}
 
