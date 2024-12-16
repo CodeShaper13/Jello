@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
+import com.codeshaper.jello.editor.menu.EditorMenuBar;
 import com.codeshaper.jello.editor.render.SceneViewPanel;
 import com.codeshaper.jello.editor.window.AppSettingsWindow;
 import com.codeshaper.jello.editor.window.AssetDatabaseViewer;
@@ -84,7 +85,7 @@ public class EditorMainFrame extends JFrame {
 		DockingState.restoreWindowLayout(this, defaultLayout);
 		DockingLayouts.addLayout("Default", new ApplicationLayout(defaultLayout));
 
-		this.setJMenuBar(new EditorMenuBar(this, JelloEditor.REPORT_ISSUE_URL, JelloEditor.DOCUMENTAION_URL));
+		this.setJMenuBar(new EditorMenuBar());
 		this.pack();
 		this.setVisible(true);
 		this.transferFocus();
