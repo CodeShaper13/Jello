@@ -18,9 +18,11 @@ public abstract class Renderer extends JelloComponent {
 	public abstract Material getMaterial();
 
 	/**
-	 * Called to actually render the component.
+	 * Called to render this Component. Implementing classes will define this
+	 * behavior. In situations where there are multiple Cameras, this method will be
+	 * called multiple times on the same Component instance, once for each Camera.
 	 * 
-	 * @param camera
+	 * @param camera the {@link Camera} that is rendering this Component
 	 */
 	public abstract void onRender(Camera camera);
 }
