@@ -80,12 +80,24 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
+	 * Creates a {@link JsonElement} representing the GameObject.
+	 * 
+	 * @return a JsonElement representing the GameObject.
+	 * @see GameObject#fromJson(JsonElement, GameObject)
+	 * @see GameObject#fromJson(JsonElement, Scene)
+	 */
+	public JsonElement toJson() {
+		return AssetDatabase.getInstance().serializer.serializeToJsonElement(this);
+	}
+
+	/**
 	 * Creates a {@link GameObject} from Json data. If {@code json} is null or
 	 * malformed, no GameObject will be created and an error will be logged.
 	 * 
 	 * @param json  the json to create the GameObject from
 	 * @param scene the Scene to place the GameObject in
 	 * @return the newly created GameObject or {@code null} on error
+	 * @see GameObject#toJson()
 	 */
 	public static GameObject fromJson(JsonElement json, Scene scene) {
 		Serializer serializer = AssetDatabase.getInstance().serializer;
