@@ -220,6 +220,8 @@ public class JelloEditor {
 	}
 
 	public void reloadProject() {
+		EditorUtils.componentIcons.clearCache();
+		
 		this.assetDatabase.rebuild(false);
 	}
 
