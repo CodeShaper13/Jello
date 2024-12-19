@@ -20,7 +20,7 @@ import org.joml.Vector3f;
  * {@link AudioSource} Components play sounds supplied from {@link AudioClip}s.
  */
 @ComponentName("Audio/Audio Source")
-@ComponentIcon("/editor/componentIcons/audioSource.png")
+@ComponentIcon("/_editor/componentIcons/audioSource.png")
 public final class AudioSource extends JelloComponent {
 
 	private AudioClip audioClip;

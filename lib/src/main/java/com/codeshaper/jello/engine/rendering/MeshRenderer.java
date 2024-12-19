@@ -11,7 +11,7 @@ import com.codeshaper.jello.engine.asset.Mesh;
  * MeshRenderer components render meshes to the display.
  */
 @ComponentName("Rendering/Mesh Renderer")
-@ComponentIcon("/editor/componentIcons/meshRenderer.png")
+@ComponentIcon("/_editor/componentIcons/meshRenderer.png")
 public final class MeshRenderer extends Renderer {
 
 	public Mesh mesh;

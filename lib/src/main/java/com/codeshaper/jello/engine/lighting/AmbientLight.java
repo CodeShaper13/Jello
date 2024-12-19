@@ -13,7 +13,7 @@ import com.codeshaper.jello.engine.ComponentName;
  * light if your scene takes place at sunset.
  */
 @ComponentName("Light/Ambient Light")
-@ComponentIcon("/editor/componentIcons/light.png")
+@ComponentIcon("/_editor/componentIcons/light.png")
 public final class AmbientLight extends AbstractLight {
 
 	@Override

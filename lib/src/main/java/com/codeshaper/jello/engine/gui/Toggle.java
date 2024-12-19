@@ -9,7 +9,7 @@ import com.codeshaper.jello.engine.Input;
 import com.codeshaper.jello.engine.event.JelloEvent;
 
 @ComponentName("Ui/Element/Toggle")
-@ComponentIcon("/editor/componentIcons/toggle.png")
+@ComponentIcon("/_editor/componentIcons/toggle.png")
 public class Toggle extends UiBase {
 
 	@ExposeField

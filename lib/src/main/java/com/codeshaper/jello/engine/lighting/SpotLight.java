@@ -21,7 +21,7 @@ import com.codeshaper.jello.engine.GameObject;
  * like a flashlight or car head light.
  */
 @ComponentName("Light/Spot Light")
-@ComponentIcon("/editor/componentIcons/light.png")
+@ComponentIcon("/_editor/componentIcons/light.png")
 public final class SpotLight extends AbstractLight {
 
 	@ExposeField

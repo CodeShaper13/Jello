@@ -9,7 +9,7 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.JelloComponent;
 
 @ComponentName("Ui/Toggle Group")
-@ComponentIcon("/editor/componentIcons/toggleGroup.png")
+@ComponentIcon("/_editor/componentIcons/toggleGroup.png")
 public class ToggleGroup extends JelloComponent {
 
 	public boolean allowAllOff;

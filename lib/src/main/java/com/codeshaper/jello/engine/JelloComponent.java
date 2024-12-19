@@ -16,7 +16,7 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  * Component's constructs should never be invoked, instead you should use
  * {@link GameObject#addComponent(Class)} to create a new Component.
  * Initialization should be done through {@link JelloComponent#onConstruct()}
- * and @link {@link JelloComponent#onStart()}
+ * and @link {@link JelloComponent#onStart()}.
  * <p>
  * Components can customize their presentation in the Editor through annotations
  * and a custom {@link ComponentEditor}.
@@ -26,8 +26,8 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  * The {@link ComponentName} specifies the name of the component in the Add
  * Component popup.
  * <p>
- * {@link JelloComponent#getComponentDrawer()} can be overridden to provide a
- * custom Component Drawer. The default Component Drawer simply draws all fields
+ * {@link JelloComponent#getInspectorDrawer()} can be overridden to provide a
+ * custom Component Editor. The default Component Editor simply draws all fields
  * that are either public or have the {@link ExposedField} annotations, and
  * buttons for all methods that have the {@link Button} annotation.
  */

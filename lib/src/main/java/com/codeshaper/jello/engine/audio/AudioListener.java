@@ -25,7 +25,7 @@ import javax.swing.JPanel;
  * Listener Component at a time.
  */
 @ComponentName("Audio/Audio Listener")
-@ComponentIcon("/editor/componentIcons/audioListener.png")
+@ComponentIcon("/_editor/componentIcons/audioListener.png")
 public final class AudioListener extends JelloComponent {
 
 	/**

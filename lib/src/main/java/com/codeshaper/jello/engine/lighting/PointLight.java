@@ -16,7 +16,7 @@ import com.codeshaper.jello.engine.ComponentName;
  * like light bulbs, fire and explosions.
  */
 @ComponentName("Light/Point Light")
-@ComponentIcon("/editor/componentIcons/light.png")
+@ComponentIcon("/_editor/componentIcons/light.png")
 public final class PointLight extends AbstractLight {
 
 	@ExposeField

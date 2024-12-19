@@ -5,7 +5,7 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.JelloComponent;
 
 @ComponentName("Ui/Canvas")
-@ComponentIcon("/editor/componentIcons/canvas.png")
+@ComponentIcon("/_editor/componentIcons/canvas.png")
 public class Canvas extends JelloComponent {
 
 }

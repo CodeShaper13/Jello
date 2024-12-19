@@ -16,7 +16,7 @@ import com.codeshaper.jello.engine.GameObject;
  * moon.
  */
 @ComponentName("Light/Directional Light")
-@ComponentIcon("/editor/componentIcons/light.png")
+@ComponentIcon("/_editor/componentIcons/light.png")
 public final class DirectionalLight extends AbstractLight {
 
 	@Override

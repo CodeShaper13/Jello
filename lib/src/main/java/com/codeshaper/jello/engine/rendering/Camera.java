@@ -25,7 +25,7 @@ import com.codeshaper.jello.engine.JelloComponent;
  * camera are rendered is controlled by the {@link Camera#depth} field.
  */
 @ComponentName("Rendering/Camera")
-@ComponentIcon("/editor/componentIcons/camera.png")
+@ComponentIcon("/_editor/componentIcons/camera.png")
 public final class Camera extends JelloComponent {
 
 	private static List<Camera> cameras = new ArrayList<Camera>();

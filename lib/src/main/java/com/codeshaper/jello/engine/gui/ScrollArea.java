@@ -4,7 +4,7 @@ import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.ComponentName;
 
 @ComponentName("Ui/Element/Scroll Area")
-@ComponentIcon("/editor/componentIcons/scrollArea.png")
+@ComponentIcon("/_editor/componentIcons/scrollArea.png")
 public class ScrollArea extends UiBase {
 
 }

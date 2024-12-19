@@ -6,7 +6,7 @@ import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.event.JelloEvent;
 
 @ComponentName("Ui/Element/Button")
-@ComponentIcon("/editor/componentIcons/button.png")
+@ComponentIcon("/_editor/componentIcons/button.png")
 public class Button extends UiBase {
 
 	
