@@ -14,7 +14,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
@@ -55,7 +54,6 @@ public class FileBrowserWindow extends EditorWindow {
 	private final FileBrowserPopupMenu popupMenu;
 	private final JSplitPane splitPane;
 	private JCheckBoxMenuItem showExtensions;
-	private JRadioButtonMenuItem viewMode;
 
 	public FileBrowserWindow() {
 		super("Project", "fileViewer");
@@ -164,10 +162,6 @@ public class FileBrowserWindow extends EditorWindow {
 			JelloEditor.instance.properties.setBoolean(PROP_SHOW_EXTENSIONS, show1);
 			this.fileList.setShowExtensions(show1);
 		});
-		
-		//this.viewMode = new JRadioButtonMenuItem("View");
-		//this.viewMode.add(new JRadioButtonMenuItem("Icons"));
-		//this.viewMode.add(new JRadioButtonMenuItem("List"));
 	}
 
 	@Override
@@ -179,7 +173,6 @@ public class FileBrowserWindow extends EditorWindow {
 		menu.add(refresh);
 		
 		menu.add(this.showExtensions);
-		//menu.add(this.viewMode);
 	}
 
 	@Override
