@@ -339,6 +339,7 @@ public class FileBrowserWindow extends EditorWindow {
 				public void valueChanged(TreeSelectionEvent e) {
 					File selected = getSelectedDirectory();
 					if (selected != null) {
+						searchBar.setSearchText(null);
 						fileList.setTarget(selected);
 					}
 				}
