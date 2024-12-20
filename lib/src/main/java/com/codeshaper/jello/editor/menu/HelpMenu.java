@@ -30,7 +30,7 @@ public class HelpMenu extends JMenu {
 
 		JMenuItem about = new JMenuItem("About");
 		about.addActionListener((e) -> {
-			String message = String.format("Version: {0}", JelloEditor.EDITOR_VERSION);
+			String message = String.format("Version: %s", JelloEditor.EDITOR_VERSION);
 			JOptionPane.showMessageDialog(getParent(), message, "Version", JOptionPane.INFORMATION_MESSAGE);
 		});
 		this.add(about);
