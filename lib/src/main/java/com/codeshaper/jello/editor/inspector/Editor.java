@@ -37,6 +37,8 @@ public abstract class Editor<T extends JelloObject> {
 	public void refresh() {
 		this.onRefresh();
 		this.onDraw(false);
+
+		this.panel.repaint();
 	}
 
 	/**
