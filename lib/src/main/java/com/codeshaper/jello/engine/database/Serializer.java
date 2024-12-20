@@ -195,6 +195,9 @@ public class Serializer {
 			}
 
 			return newInstance;
+		} catch (Exception e) {
+			System.out.println("Error deserializing Asset at " + location.toString());
+			throw e;
 		}
 	}
 
@@ -272,13 +275,12 @@ public class Serializer {
 				return null;
 			}
 
-			TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
-
 			return new TypeAdapter<T>() {
 
 				public void write(JsonWriter out, T value) throws IOException {
 					if (!wroteRoot) {
 						wroteRoot = true;
+						TypeAdapter<T> delegate = gson.getDelegateAdapter(AssetTypeAdapterFactory.this, type);
 						delegate.write(out, value);
 					} else {
 						Asset asset = (Asset) value;
@@ -306,6 +308,7 @@ public class Serializer {
 						in.nextNull();
 						return null;
 					} else {
+						TypeAdapter<T> delegate = gson.getDelegateAdapter(AssetTypeAdapterFactory.this, type);
 						return delegate.read(in);
 					}
 				}
