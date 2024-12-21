@@ -101,6 +101,24 @@ public abstract class JelloComponent extends JelloObject {
 		return this.enabled && this.owner.isActiveInScene();
 	}
 
+	@Override
+	public void destroy() {
+		if(this.isDestroyed()) {
+			return; // Already destroyed, don't do anything.
+		}
+		
+		super.destroy();
+		
+		if(Application.isPlaying()) {
+			if(this.isEnabled()) {
+				this.invokeOnDisable();
+			}
+			this.invokeOnDestroy();
+		}
+		
+		this.gameObject().removeComponent(this);
+	}
+	
 	/**
 	 * {@code onConstruct} is called when a Component is first created. This is
 	 * where initialization happens that you would normally do in the constructor.

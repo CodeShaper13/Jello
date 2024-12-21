@@ -3,6 +3,7 @@ package com.codeshaper.jello.engine;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.JPanel;
 
@@ -184,7 +185,7 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Gets the GameObject's name. It will never be null.
+	 * Gets the {@link GameObject}'s name. It will never be {@code null}.
 	 * 
 	 * @return
 	 */
@@ -193,8 +194,10 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Sets the GameObject's name. Passing {@code null} will set the name to a blank
-	 * String.
+	 * Sets the {@link GameObject}'s name. Passing {@code null} will set the name to
+	 * a blank String.
+	 * 
+	 * @param name the {@link GameObject}'s new name
 	 */
 	public void setName(String name) {
 		this.name = name != null ? name : StringUtils.EMPTY;
@@ -230,9 +233,9 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Gets the Scene that this GameObject resides in.
+	 * Gets the {@link Scene} this {@link GameObject} resides in.
 	 * 
-	 * @return the {@link Scene} this GameObject is in.
+	 * @return the {@link Scene} this GameObject is in
 	 */
 	public Scene getScene() {
 		return this.scene;
@@ -372,7 +375,7 @@ public final class GameObject extends JelloObject {
 	 * GameObject. A new vector is returned so it is safe to modify. If you don't
 	 * want to allocate a new vector, use {@link GameObject#getRight(Vector3f)}.
 	 * 
-	 * @return a vector pointing to the right.
+	 * @return a vector pointing to the right
 	 */
 	public Vector3f getRight() {
 		return this.getRight(new Vector3f());
@@ -387,7 +390,7 @@ public final class GameObject extends JelloObject {
 	 * GameObject. A new vector is returned so it is safe to modify. If you don't
 	 * want to allocate a new vector, use {@link GameObject#getUp(Vector3f)}.
 	 * 
-	 * @return a vector pointing up.
+	 * @return a vector pointing up
 	 */
 	public Vector3f getUp() {
 		return this.getUp(new Vector3f());
@@ -402,7 +405,7 @@ public final class GameObject extends JelloObject {
 	 * GameObject. A new vector is returned so it is safe to modify. If you don't
 	 * want to allocate a new vector, use {@link GameObject#getForward(Vector3f)}.
 	 * 
-	 * @return a vector pointing forward.
+	 * @return a vector pointing forward
 	 */
 	public Vector3f getForward() {
 		return this.getForward(new Vector3f());
@@ -451,26 +454,37 @@ public final class GameObject extends JelloObject {
 	 * Destroys the GameObject and all of it's children.
 	 */
 	public void destroy() {
-		if (Application.isPlaying()) {
-			this.invokeRecursively(this, (c) -> {
-				c.gameObject().removeComponent(c);
-
-			});
+		if (this.isDestroyed()) {
+			Debug.logError("trying to destroy %s but it has already been destroyed", this.getName());
+			//return; // GameObject has already been destroyed, don't do anything.
+		}
+		
+		for (int i = this.getChildCount() - 1; i >= 0; i--) {
+			GameObject child = this.getChild(i);
+			child.destroy();
+		}
+		
+		for (int i = this.getComponentCount() - 1; i >= 0; i--) {
+			JelloComponent component = this.getComponentAtIndex(i);
+			component.destroy();
 		}
 
 		if (this.isRoot()) {
-			this.scene.remove(this);
+			// Remove the GameObject from it's Scene.
+			this.scene.rootGameObjects.remove(this);
 		} else {
+			// Remove the GameObject from it's parents child list.
 			int index = this.getIndexOf();
 			this.parent.children.remove(index);
 		}
-
+		
+		super.destroy(); // Set's the isDestroyed flag
 	}
 
 	/**
 	 * Gets the GameObject's parent. If it has no parent, {@code null} is returned.
 	 * 
-	 * @return this GameObject's parent.
+	 * @return this GameObject's parent
 	 */
 	public GameObject getParent() {
 		return this.parent;
@@ -481,7 +495,7 @@ public final class GameObject extends JelloObject {
 	 * GameObject in the same Scene. Pass {@code null} to make the GameObject a root
 	 * GameObject.
 	 * 
-	 * @param newParent the GameObject's parent, or null.
+	 * @param newParent the GameObject's parent, or {@code null}
 	 * 
 	 * @see GameObject#scene
 	 * @see Scene#moveGameObjectTo(GameObject)
@@ -505,6 +519,10 @@ public final class GameObject extends JelloObject {
 			this.parent = null;
 			this.scene.moveGameObjectTo(this);
 		} else {
+			if(this.isRoot()) {
+				this.scene.rootGameObjects.remove(this);	
+			}
+			
 			this.parent = parent;
 			this.parent.children.add(this);
 		}
@@ -519,7 +537,7 @@ public final class GameObject extends JelloObject {
 	 * Note: a GameObject is considerer an descendant of itself.
 	 * 
 	 * @param parent
-	 * @return true if this is a child of, or a child of a child, ect., of
+	 * @return {@code true} if this is a child of, or a child of a child, ect., of
 	 *         {@code parent}
 	 */
 	public boolean isDescendantOf(GameObject other) {
@@ -537,8 +555,8 @@ public final class GameObject extends JelloObject {
 	 * <p>
 	 * Note: a GameObject is considerer an ancestor of itself.
 	 * 
-	 * @param other GameObject to check if it's an ancestor of this.
-	 * @return {@code true} if other is an ancestor of this GameObject.
+	 * @param other GameObject to check if it's an ancestor of this
+	 * @return {@code true} if other is an ancestor of this GameObject
 	 */
 	public boolean isAncestorOf(GameObject other) {
 		if (other == null) {
@@ -562,7 +580,7 @@ public final class GameObject extends JelloObject {
 	 * siblings if both of them are root GameObjects, meaning they have no parent.
 	 * 
 	 * @param other
-	 * @return {@code true} if {@code other} and this GameObject are siblings.
+	 * @return {@code true} if {@code other} and this GameObject are siblings
 	 */
 	public boolean isSiblingOf(GameObject other) {
 		if (other == null) {
@@ -576,7 +594,7 @@ public final class GameObject extends JelloObject {
 	 * Checks if this GameObject is a root GameObject. Root GameObjects have no
 	 * parents.
 	 * 
-	 * @return true if this is a root GameObject.
+	 * @return {@code true} if this is a root GameObject
 	 */
 	public boolean isRoot() {
 		return this.parent == null;
@@ -585,7 +603,7 @@ public final class GameObject extends JelloObject {
 	/**
 	 * Gets the number of children this GameObject has.
 	 * 
-	 * @return the number of children.
+	 * @return the number of children
 	 */
 	public int getChildCount() {
 		return this.children.size();
@@ -612,7 +630,7 @@ public final class GameObject extends JelloObject {
 	 * 
 	 * @param name the name of the child
 	 * @return the first child with name {@code name}, or {@code null} if there are
-	 *         no children with that name
+	 *         no child with that name
 	 */
 	public GameObject getChild(String name) {
 		GameObject child;
@@ -629,11 +647,11 @@ public final class GameObject extends JelloObject {
 	 * Gets the order in the hierarchy of this GameObject in it's parent. If this is
 	 * a root GameObject, -1 is returned.
 	 * 
-	 * @return this GameObject's order in the hierarchy.
+	 * @return this GameObject's order in the hierarchy
 	 */
 	public int getIndexOf() {
 		GameObject parent = this.getParent();
-		if (parent == this) {
+		if (parent == null) {
 			return -1; // This is a root GameObject.
 		}
 
@@ -681,9 +699,8 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Gets a {@link JelloComponent} of a specific type.
+	 * Gets a {@link JelloComponent} of the specific type.
 	 * 
-	 * @param <T>
 	 * @param type
 	 * @return
 	 */
@@ -701,19 +718,17 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Gets a {@link List} of {@link JelloComponent}s of a matching type on this
-	 * GameObject.
+	 * Gets a {@link ArrayList} of {@link JelloComponent}s of a matching type on
+	 * this GameObject. Child types of the passed type are also gotten.
 	 * 
-	 * @param <T>
-	 * @param type
-	 * @return a {@link List} of components.
+	 * @param type the type of {@link JelloComponent} to get
+	 * @return a {@link List} of Components
+	 * @throws IllegalArgumentException if type is null
 	 */
-	public <T extends JelloComponent> List<T> getComponents(Class<T> type) {
-		ArrayList<T> components = new ArrayList<T>();
+	public <T extends JelloComponent> ArrayList<T> getComponents(Class<T> type) {
+		Objects.requireNonNull(type, "type must not be null");
 
-		if (type == null) {
-			return components;
-		}
+		ArrayList<T> components = new ArrayList<T>();
 
 		for (JelloComponent component : this.components) {
 			if (type.isInstance(component)) {
@@ -727,11 +742,13 @@ public final class GameObject extends JelloObject {
 	/**
 	 * Checks if the GameObject has a {@link JelloComponent} of a specific type.
 	 * 
-	 * @param <T>
-	 * @param type
-	 * @return {@code true} if this GameObject has a component.
+	 * @param type the type of {@link JelloComponent} to check for
+	 * @return {@code true} if this GameObject has a component
+	 * @throws IllegalArgumentException if type is null
 	 */
 	public <T extends JelloComponent> boolean hasComponent(Class<T> type) {
+		Objects.requireNonNull(type, "type must not be null");
+
 		for (JelloComponent component : this.components) {
 			if (type.isInstance(component)) {
 				return true;
@@ -742,45 +759,66 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
+	 * Checks to see how many {@link JelloComponent} of a type exist on a
+	 * GameObject. Child types of the passed type are also counted.
 	 * 
-	 * @param <T>
-	 * @param type
-	 * @return {@code true} if the component was removed.
+	 * @param type the type of {@link JelloComponent} to count
+	 * @return the number of Components of the passed type on this GameObject
+	 * @throws IllegalArgumentException if type is null
 	 */
-	public <T extends JelloComponent> boolean removeComponent(Class<T> type) {
-		for (int i = 0; i < this.components.size(); i++) {
-			JelloComponent component = this.components.get(i);
-			if (type.isInstance(component)) {
-				if (Application.isPlaying()) {
-					component.invokeOnDisable();
-					component.invokeOnDestroy();
-				}
+	public <T extends JelloComponent> int getComponentCount(Class<T> type) {
+		Objects.requireNonNull(type, "type must not be null");
 
-				this.components.remove(i);
-				return true;
+		int count = 0;
+		for (JelloComponent component : this.components) {
+			if (type.isInstance(component)) {
+				count++;
 			}
 		}
 
-		return false;
+		return count;
+	}
+
+	/**
+	 * Removes all Components of the specified type from the GameObject.
+	 * 
+	 * @param type the type of {@link JelloComponent} to remove
+	 * @return {@code true} if at least one Component was removed
+	 * @throws IllegalArgumentException if type is null
+	 */
+	public <T extends JelloComponent> boolean removeComponent(Class<T> type) {
+		Objects.requireNonNull(type, "type must not be null");
+
+		int removedComponentCount = 0;
+		for (int i = 0; i < this.components.size(); i++) {
+			JelloComponent component = this.components.get(i);
+			if (type.isInstance(component)) {
+				component.destroy();
+				this.components.remove(i);
+				removedComponentCount++;
+			}
+		}
+
+		return removedComponentCount > 0;
 	}
 
 	/**
 	 * Removes a {@link JelloComponent} from the GameObject. If the
 	 * {@link JelloComponent} is not on this GameObject, nothing happens.
 	 * 
-	 * @param component the {@link JelloComponent} to remove.
-	 * @return {@code true} if the component was removed.
+	 * @param component the {@link JelloComponent} to remove
+	 * @return {@code true} if the component was removed
+	 * @throws IllegalArgumentException if component is null
 	 */
 	public boolean removeComponent(JelloComponent component) {
+		Objects.requireNonNull(component, "component must not be null");
+
 		int index = this.components.indexOf(component);
 		if (index == -1) {
 			return false;
 		}
 
-		if (Application.isPlaying()) {
-			component.invokeOnDisable();
-			component.invokeOnDestroy();
-		}
+		component.destroy();
 
 		this.components.remove(index);
 		return true;
@@ -789,18 +827,20 @@ public final class GameObject extends JelloObject {
 	/**
 	 * Gets the number of {@link JelloComponent} attached to this GameObject.
 	 * 
-	 * @return the number of attached components.
+	 * @return the number of attached Components
 	 */
 	public int getComponentCount() {
 		return this.components.size();
 	}
 
 	/**
-	 * Gets the {@link JelloComponent} at a index.
+	 * Gets the {@link JelloComponent} at an index.
 	 * 
-	 * @param index
-	 * @return
+	 * @param index the index to get the {@link JelloComponent} at
+	 * @return the {@link JelloComponent} at the index
 	 * @see GameObject#getComponentCount()
+	 * @throws IndexOutOfBoundsException if the index is out of range
+	 *                                   ({@code index < 0 || index >= getComponentCount()})
 	 */
 	public JelloComponent getComponentAtIndex(int index) {
 		return this.components.get(index);
@@ -808,15 +848,19 @@ public final class GameObject extends JelloObject {
 
 	/**
 	 * Moves a {@link JelloComponent} up or down in the list of components. If the
-	 * component can't be moved up or down because it is already at the front or
-	 * back respectively, nothing happens.
+	 * component can't be moved up or down because it is already at the front or end
+	 * of the list respectively, nothing happens.
 	 * 
 	 * @param component the component to move
-	 * @param direction the direction to move the component, -1 = closer to the
-	 *                  front of the list, 1 = closer to the back of the list.
-	 * @return {@code true} if the component was moved in the list.
+	 * @param direction the direction to move the component, -1 = toward the front
+	 *                  of the list, 1 = toward the back of the list. Any other
+	 *                  value does nothing
+	 * @return {@code true} if the component was moved
+	 * @throws IllegalArgumentException if component is null
 	 */
 	public boolean moveComponent(JelloComponent component, int direction) {
+		Objects.requireNonNull(component, "type must not be null");
+
 		if (!(direction == -1 || direction == 1)) {
 			return false;
 		}
@@ -844,7 +888,7 @@ public final class GameObject extends JelloObject {
 	}
 
 	public Iterable<JelloComponent> getAllComponents() {
-		return this.components;
+		return this.components; // TODO document and protect return value
 	}
 
 	/**
@@ -852,7 +896,7 @@ public final class GameObject extends JelloObject {
 	 * Component's may not receive callbacks if this GameObject is not active within
 	 * the Scene.
 	 * 
-	 * @return {@code true} if the GameObject is active.
+	 * @return {@code true} if the GameObject is active
 	 * @see GameObject#isActiveInScene()
 	 */
 	public boolean isActive() {
@@ -864,7 +908,7 @@ public final class GameObject extends JelloObject {
 	 * active in it's Scene, it must be active itself and all of it's ancestors must
 	 * be active as well.
 	 * 
-	 * @return {@code true} if the GameObject is active in it's Scene.
+	 * @return {@code true} if the GameObject is active in it's Scene
 	 */
 	public boolean isActiveInScene() {
 		if (this.parent != null) {
@@ -877,7 +921,7 @@ public final class GameObject extends JelloObject {
 	/**
 	 * Activates or deactivates the GameObject.
 	 * 
-	 * @param active should the GameObject active.
+	 * @param active should the GameObject be active
 	 */
 	public void setActive(boolean active) {
 		if (this.isActive == active) {
@@ -935,4 +979,5 @@ public final class GameObject extends JelloObject {
 
 		void invoke(JelloComponent component);
 	}
+
 }

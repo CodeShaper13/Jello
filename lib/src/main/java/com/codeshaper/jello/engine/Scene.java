@@ -12,9 +12,9 @@ import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;
 
 @CreateAssetEntry(fileName = "scene", location = "Scene")
-public class Scene extends SerializedJelloObject {
+public final class Scene extends SerializedJelloObject {
 
-	private List<GameObject> rootGameObjects;
+	List<GameObject> rootGameObjects;
 
 	public Scene(AssetLocation location) {
 		super(location);
@@ -56,7 +56,7 @@ public class Scene extends SerializedJelloObject {
 		if (previousScene != null) {
 			previousScene.rootGameObjects.remove(gameObject);
 		}
-
+				
 		this.rootGameObjects.add(gameObject);
 		gameObject.scene = this;
 	}
@@ -111,14 +111,6 @@ public class Scene extends SerializedJelloObject {
 	 */
 	public Iterable<GameObject> getRootGameObjects() {
 		return this.rootGameObjects;
-	}
-	
-	void add(GameObject gameObject) {
-		this.rootGameObjects.add(gameObject);
-	}
-	
-	void remove(GameObject gameObject) {
-		this.rootGameObjects.remove(gameObject);
 	}
 	
 	void recursivelySetupObject(GameObject gameObject) {
