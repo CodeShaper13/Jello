@@ -336,8 +336,9 @@ public class HierarchyWindow extends EditorWindow {
 
 			JMenuItem add = new JMenuItem("New GameObject");
 			add.addActionListener(e -> {
-				new GameObject("New GameObject", scene);
-				model.reloadSelected();
+				GameObject newObj = new GameObject("New GameObject", scene);
+				model.reload(tree.getSelectionPath());
+				tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(newObj));
 			});
 			this.add(add);
 		}
@@ -361,8 +362,10 @@ public class HierarchyWindow extends EditorWindow {
 			paste.setEnabled(coppiedGameObject != null);
 			paste.addActionListener(e -> {
 				if (coppiedGameObject != null) {
-					this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
-					model.reload(tree.getSelectionPath().getParentPath());
+					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
+					TreePath parentPath = tree.getSelectionPath().getParentPath();
+					model.reload(parentPath);
+					tree.setSelectionPath(parentPath.pathByAddingChild(newObj));
 				}
 			});
 			this.add(paste);
@@ -371,8 +374,9 @@ public class HierarchyWindow extends EditorWindow {
 			pasteAsChild.setEnabled(coppiedGameObject != null);
 			pasteAsChild.addActionListener(e -> {
 				if (coppiedGameObject != null) {
-					this.addGameObjFromJson(coppiedGameObject, gameObject);
+					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject);
 					model.reload(tree.getSelectionPath());
+					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(newObj));
 				}
 			});
 			this.add(pasteAsChild);
@@ -388,8 +392,10 @@ public class HierarchyWindow extends EditorWindow {
 			JMenuItem duplicate = new JMenuItem("Duplicate");
 			duplicate.addActionListener(e -> {
 				JsonElement json = serializer.serializeToJsonElement(gameObject);
-				this.addGameObjFromJson(json, gameObject.getParent());
-				model.reload(tree.getSelectionPath().getParentPath());
+				GameObject newObj = this.addGameObjFromJson(json, gameObject.getParent());
+				TreePath parentPath = tree.getSelectionPath().getParentPath();
+				model.reload(parentPath);
+				tree.setSelectionPath(parentPath.pathByAddingChild(newObj));
 			});
 			this.add(duplicate);
 
@@ -408,17 +414,19 @@ public class HierarchyWindow extends EditorWindow {
 
 			JMenuItem newChild = new JMenuItem("New Child");
 			newChild.addActionListener(e -> {
-				new GameObject("New GameObject", gameObject);
-				model.reloadSelected();
-				// TODO tree.expandPath(new TreePath(defaultMutableTreeNode.getPath()));
+				GameObject newObj = new GameObject("New GameObject", gameObject);				
+				model.reload(tree.getSelectionPath());
+				tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(newObj));
 			});
 			this.add(newChild);
 		}
 
-		private void addGameObjFromJson(JsonElement json, GameObject parent) {
+		private GameObject addGameObjFromJson(JsonElement json, GameObject parent) {
 			GameObject newGameObject = GameObject.fromJson(json, this.gameObject.getScene());
 			newGameObject.setName(newGameObject.getName() + "-Copy");
 			newGameObject.setParent(parent);
+			
+			return newGameObject;
 		}
 	}
 }
