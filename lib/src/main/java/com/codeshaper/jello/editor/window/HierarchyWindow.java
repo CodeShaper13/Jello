@@ -19,7 +19,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -55,7 +54,7 @@ public class HierarchyWindow extends EditorWindow {
 		this.add(this.tree, BorderLayout.CENTER);
 
 		JelloEditor.instance.addSceneChangeListener((oldScene, newScene) -> {
-			this.model.reload();
+			this.refreshEntireTree();
 		});
 	}
 
@@ -63,7 +62,7 @@ public class HierarchyWindow extends EditorWindow {
 	public void addMoreOptions(JPopupMenu menu) {
 		JMenuItem refresh = new JMenuItem("Refresh");
 		refresh.addActionListener(e -> {
-			this.model.reload();
+			this.refreshEntireTree();
 		});
 		menu.add(refresh);
 	}
@@ -82,7 +81,11 @@ public class HierarchyWindow extends EditorWindow {
 
 		return null;
 	}
-
+	
+	private void refreshEntireTree() {
+		this.model.notifyOfStructureChange(new TreePath(this.tree.getModel().getRoot()));
+	}
+	
 	private class HierarchyTree extends JTree {
 
 		public HierarchyTree(TreeModel model) {
@@ -216,66 +219,29 @@ public class HierarchyWindow extends EditorWindow {
 			this.listeners.remove(l);
 		}
 
-		public void reloadSelected() {
-			this.reload(tree.getSelectionPath());
-		}
-
-		public void reload(TreePath path) {
-			this.raiseEvent(new TreeModelEvent(this, path));
-		}
-
-		/**
-		 * stolen from
-		 * http://developer.classpath.org/doc/javax/swing/tree/DefaultTreeModel-source.html
-		 *
-		 * <p>
-		 * Invoke this method if you've modified the TreeNodes upon which this model
-		 * depends. The model will notify all of its listeners that the model has
-		 * changed. It will fire the events, necessary to update the layout caches and
-		 * repaint the tree. The tree will <i>not</i> be properly refreshed if you call
-		 * the JTree.repaint instead.
-		 * </p>
-		 * <p>
-		 * This method will refresh the information about whole tree from the root. If
-		 * only part of the tree should be refreshed, it is more effective to call
-		 * {@link #reload(TreeNode)}.
-		 * </p>
-		 */
-		public void reload() {
-			// Need to duplicate the code because the root can formally be
-			// no an instance of the TreeNode.
-			int n = this.getChildCount(getRoot());
-			int[] childIdx = new int[n];
-			Object[] children = new Object[n];
-
-			for (int i = 0; i < n; i++) {
-				childIdx[i] = i;
-				children[i] = getChild(getRoot(), i);
+		public void notifyOfNew(TreePath parentPath, GameObject newObj) {
+			TreeModelEvent event = this.constructEvent(parentPath, newObj);
+			for (TreeModelListener listener : this.listeners) {
+				listener.treeNodesInserted(event);
 			}
-
-			this.fireTreeStructureChanged(this, new Object[] { getRoot() }, childIdx, children);
 		}
-
-		/**
-		 * stolen from
-		 * http://developer.classpath.org/doc/javax/swing/tree/DefaultTreeModel-source.html
-		 *
-		 * fireTreeStructureChanged
-		 *
-		 * @param source       the node where the model has changed
-		 * @param path         the path to the root node
-		 * @param childIndices the indices of the affected elements
-		 * @param children     the affected elements
-		 */
-		protected void fireTreeStructureChanged(Object source, Object[] path, int[] childIndices, Object[] children) {
-			TreeModelEvent event = new TreeModelEvent(source, path, childIndices, children);
-			this.raiseEvent(event);
+		
+		public void notifyOfRemoval(TreePath parentPath, GameObject removedObj) {
+			TreeModelEvent event = this.constructEvent(parentPath, removedObj);
+			for (TreeModelListener listener : this.listeners) {
+				listener.treeNodesRemoved(event);
+			}
 		}
-
-		private void raiseEvent(TreeModelEvent event) {
+		
+		public void notifyOfStructureChange(TreePath path) {
+			TreeModelEvent event = new TreeModelEvent(this, path);
 			for (TreeModelListener listener : this.listeners) {
 				listener.treeStructureChanged(event);
 			}
+		}
+		
+		private TreeModelEvent constructEvent(TreePath parentPath, GameObject obj) {
+			return new TreeModelEvent(this, parentPath, new int[] { obj.getIndexOf() }, new Object[] { obj });
 		}
 	}
 
@@ -337,7 +303,7 @@ public class HierarchyWindow extends EditorWindow {
 			JMenuItem add = new JMenuItem("New GameObject");
 			add.addActionListener(e -> {
 				GameObject newObj = new GameObject("New GameObject", scene);
-				model.reload(tree.getSelectionPath());
+				model.notifyOfNew(tree.getSelectionPath(), newObj);
 				tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(newObj));
 			});
 			this.add(add);
@@ -348,6 +314,11 @@ public class HierarchyWindow extends EditorWindow {
 
 		private final GameObject gameObject;
 
+		private void func(GameObject newObj, TreePath pathToParent) {
+			model.notifyOfNew(pathToParent, newObj);
+			tree.setSelectionPath(pathToParent.pathByAddingChild(newObj));
+		}
+		
 		public GameObjectMenu(GameObject gameObject) {
 			this.gameObject = gameObject;
 			Serializer serializer = AssetDatabase.getInstance().serializer;
@@ -362,10 +333,8 @@ public class HierarchyWindow extends EditorWindow {
 			paste.setEnabled(coppiedGameObject != null);
 			paste.addActionListener(e -> {
 				if (coppiedGameObject != null) {
-					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
-					TreePath parentPath = tree.getSelectionPath().getParentPath();
-					model.reload(parentPath);
-					tree.setSelectionPath(parentPath.pathByAddingChild(newObj));
+					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());					
+					this.func(newObj, tree.getSelectionPath().getParentPath());
 				}
 			});
 			this.add(paste);
@@ -375,8 +344,7 @@ public class HierarchyWindow extends EditorWindow {
 			pasteAsChild.addActionListener(e -> {
 				if (coppiedGameObject != null) {
 					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject);
-					model.reload(tree.getSelectionPath());
-					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(newObj));
+					this.func(newObj, tree.getSelectionPath());
 				}
 			});
 			this.add(pasteAsChild);
@@ -393,9 +361,7 @@ public class HierarchyWindow extends EditorWindow {
 			duplicate.addActionListener(e -> {
 				JsonElement json = serializer.serializeToJsonElement(gameObject);
 				GameObject newObj = this.addGameObjFromJson(json, gameObject.getParent());
-				TreePath parentPath = tree.getSelectionPath().getParentPath();
-				model.reload(parentPath);
-				tree.setSelectionPath(parentPath.pathByAddingChild(newObj));
+				this.func(newObj, tree.getSelectionPath().getParentPath());
 			});
 			this.add(duplicate);
 
@@ -405,8 +371,8 @@ public class HierarchyWindow extends EditorWindow {
 				if (inspector.getTarget() == gameObject) {
 					inspector.setTarget(null);
 				}
+				model.notifyOfRemoval(tree.getSelectionPath().getParentPath(), gameObject);
 				gameObject.destroy();
-				model.reload(tree.getSelectionPath().getParentPath());
 			});
 			this.add(delete);
 
@@ -414,9 +380,8 @@ public class HierarchyWindow extends EditorWindow {
 
 			JMenuItem newChild = new JMenuItem("New Child");
 			newChild.addActionListener(e -> {
-				GameObject newObj = new GameObject("New GameObject", gameObject);				
-				model.reload(tree.getSelectionPath());
-				tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(newObj));
+				GameObject newObj = new GameObject("New GameObject", gameObject);
+				this.func(newObj, tree.getSelectionPath());
 			});
 			this.add(newChild);
 		}
@@ -425,7 +390,7 @@ public class HierarchyWindow extends EditorWindow {
 			GameObject newGameObject = GameObject.fromJson(json, this.gameObject.getScene());
 			newGameObject.setName(newGameObject.getName() + "-Copy");
 			newGameObject.setParent(parent);
-			
+
 			return newGameObject;
 		}
 	}

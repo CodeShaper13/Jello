@@ -74,6 +74,16 @@ public final class Scene extends SerializedJelloObject {
 		return this.rootGameObjects.get(index);
 	}
 	
+	public int getIndexOfRootGameObject(GameObject obj) {
+		for(int i = 0; i < this.rootGameObjects.size(); i++) {
+			if(this.rootGameObjects.get(i) == obj) {
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
 	public GameObject getGameObject(String path) {
 		String[] names = path.split("/");
 		if(names.length == 0) {

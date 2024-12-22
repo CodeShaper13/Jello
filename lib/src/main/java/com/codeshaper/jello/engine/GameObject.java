@@ -644,25 +644,23 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Gets the order in the hierarchy of this GameObject in it's parent. If this is
-	 * a root GameObject, -1 is returned.
+	 * Gets the order of this GameObject in the hierarchy.
 	 * 
 	 * @return this GameObject's order in the hierarchy
 	 */
 	public int getIndexOf() {
-		GameObject parent = this.getParent();
-		if (parent == null) {
-			return -1; // This is a root GameObject.
-		}
-
-		int childCount = parent.getChildCount();
-		for (int i = 0; i < childCount; i++) {
-			if (parent.children.get(i) == this) {
-				return i;
+		if(this.isRoot()) {
+			return this.scene.getIndexOfRootGameObject(this);
+		} else {
+			int childCount = parent.getChildCount();
+			for (int i = 0; i < childCount; i++) {
+				if (parent.children.get(i) == this) {
+					return i;
+				}
 			}
-		}
 
-		return -1;
+			return -1; // This should NEVER happen.
+		}
 	}
 
 	/**
