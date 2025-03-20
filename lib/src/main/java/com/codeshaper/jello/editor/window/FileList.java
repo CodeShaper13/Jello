@@ -180,15 +180,8 @@ public class FileList extends JPanel {
 		public Component getListCellRendererComponent(JList<? extends File> list, File file, int index,
 				boolean isSelected, boolean cellHasFocus) {
 
-			// Remove the extension on SerializedJelloObjects.
 			String fileName = file.getName();
-			// if
-			// (FilenameUtils.getExtension(fileName).equals(SerializedJelloObject.EXTENSION))
-			// {
 			this.setText(showExtensions ? fileName : FilenameUtils.removeExtension(fileName));
-			// } else {
-			// this.setText(fileName);
-			// }
 
 			if (isSelected) {
 				this.setBackground(list.getSelectionBackground());
