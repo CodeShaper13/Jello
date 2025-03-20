@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.Collection;
 
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -14,6 +15,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileSystemView;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -166,7 +168,7 @@ public class FileList extends JPanel {
 	private class ListFileRenderer extends JLabel implements ListCellRenderer<File> {
 
 		public ListFileRenderer() {
-			this.setIcon(UIManager.getIcon("FileView.fileIcon"));
+			this.setIcon(UIManager.getIcon("FileView.fileIcon"));			
 			this.setHorizontalAlignment(JLabel.CENTER);
 			this.setHorizontalTextPosition(JLabel.CENTER);
 			this.setVerticalTextPosition(JLabel.BOTTOM);
@@ -196,6 +198,10 @@ public class FileList extends JPanel {
 				this.setForeground(list.getForeground());
 			}
 
+			FileSystemView fileSystemView = FileSystemView.getFileSystemView();
+		    Icon icon = fileSystemView.getSystemIcon(file);
+	        this.setIcon(icon);
+			
 			return this;
 		}
 	}
