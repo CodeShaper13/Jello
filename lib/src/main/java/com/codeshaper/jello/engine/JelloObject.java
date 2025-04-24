@@ -18,7 +18,7 @@ public abstract class JelloObject {
 	 * <P>
 	 * the rest of the bits are unused.
 	 */
-	public int editorState; // TODO make protected
+	protected int editorState; // TODO make protected
 
 	/**
 	 * Destroys the {@link JelloObject}.
