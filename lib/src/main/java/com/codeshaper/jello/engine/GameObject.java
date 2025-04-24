@@ -179,9 +179,11 @@ public final class GameObject extends JelloObject {
 		this.localMatrix = new Matrix4f();
 	}
 
+
+
 	@Override
 	public String toString() {
-		return this.getName();
+		return "GameObject [name=" + name + "]";
 	}
 
 	/**
@@ -456,14 +458,14 @@ public final class GameObject extends JelloObject {
 	public void destroy() {
 		if (this.isDestroyed()) {
 			Debug.logError("trying to destroy %s but it has already been destroyed", this.getName());
-			//return; // GameObject has already been destroyed, don't do anything.
+			// return; // GameObject has already been destroyed, don't do anything.
 		}
-		
+
 		for (int i = this.getChildCount() - 1; i >= 0; i--) {
 			GameObject child = this.getChild(i);
 			child.destroy();
 		}
-		
+
 		for (int i = this.getComponentCount() - 1; i >= 0; i--) {
 			JelloComponent component = this.getComponentAtIndex(i);
 			component.destroy();
@@ -477,7 +479,7 @@ public final class GameObject extends JelloObject {
 			int index = this.getIndexOf();
 			this.parent.children.remove(index);
 		}
-		
+
 		super.destroy(); // Set's the isDestroyed flag
 	}
 
@@ -519,10 +521,10 @@ public final class GameObject extends JelloObject {
 			this.parent = null;
 			this.scene.moveGameObjectTo(this);
 		} else {
-			if(this.isRoot()) {
-				this.scene.rootGameObjects.remove(this);	
+			if (this.isRoot()) {
+				this.scene.rootGameObjects.remove(this);
 			}
-			
+
 			this.parent = parent;
 			this.parent.children.add(this);
 		}
@@ -649,7 +651,7 @@ public final class GameObject extends JelloObject {
 	 * @return this GameObject's order in the hierarchy
 	 */
 	public int getIndexOf() {
-		if(this.isRoot()) {
+		if (this.isRoot()) {
 			return this.scene.getIndexOfRootGameObject(this);
 		} else {
 			int childCount = parent.getChildCount();
@@ -973,7 +975,7 @@ public final class GameObject extends JelloObject {
 		}
 	}
 
-	interface ILogic {
+	public interface ILogic {
 
 		void invoke(JelloComponent component);
 	}

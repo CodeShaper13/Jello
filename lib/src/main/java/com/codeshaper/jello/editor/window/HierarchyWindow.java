@@ -81,9 +81,24 @@ public class HierarchyWindow extends EditorWindow {
 
 		return null;
 	}
-	
+
 	private void refreshEntireTree() {
 		this.model.notifyOfStructureChange(new TreePath(this.tree.getModel().getRoot()));
+		
+		this.func(new TreePath(this.model.getRoot()));
+	}
+	
+	private void func(TreePath path) {
+		Object obj = path.getLastPathComponent();
+		if(obj instanceof JelloObject && ((JelloObject)obj).isExpandedInHierarchy()) {
+			this.tree.expandPath(path);			
+		}
+		
+		int childCount = this.model.getChildCount(path.getLastPathComponent());
+	    for (int i = 0; i < childCount; i++) {
+	        Object childNode = this.model.getChild(path.getLastPathComponent(), i);
+	        this.func(path.pathByAddingChild(childNode));
+	    }
 	}
 	
 	private class HierarchyTree extends JTree {
@@ -123,6 +138,17 @@ public class HierarchyWindow extends EditorWindow {
 				return new GameObjectMenu((GameObject) node);
 			} else {
 				return null;
+			}
+		}
+
+
+		@Override
+		protected void setExpandedState(TreePath path, boolean state) {
+			super.setExpandedState(path, state);
+
+			Object obj = path.getLastPathComponent();
+			if(obj instanceof JelloObject) {
+				((JelloObject) obj).setExpandedInHierarchy(state);
 			}
 		}
 	}
@@ -225,21 +251,21 @@ public class HierarchyWindow extends EditorWindow {
 				listener.treeNodesInserted(event);
 			}
 		}
-		
+
 		public void notifyOfRemoval(TreePath parentPath, GameObject removedObj) {
 			TreeModelEvent event = this.constructEvent(parentPath, removedObj);
 			for (TreeModelListener listener : this.listeners) {
 				listener.treeNodesRemoved(event);
 			}
 		}
-		
+
 		public void notifyOfStructureChange(TreePath path) {
 			TreeModelEvent event = new TreeModelEvent(this, path);
 			for (TreeModelListener listener : this.listeners) {
 				listener.treeStructureChanged(event);
 			}
 		}
-		
+
 		private TreeModelEvent constructEvent(TreePath parentPath, GameObject obj) {
 			return new TreeModelEvent(this, parentPath, new int[] { obj.getIndexOf() }, new Object[] { obj });
 		}
@@ -318,7 +344,7 @@ public class HierarchyWindow extends EditorWindow {
 			model.notifyOfNew(pathToParent, newObj);
 			tree.setSelectionPath(pathToParent.pathByAddingChild(newObj));
 		}
-		
+
 		public GameObjectMenu(GameObject gameObject) {
 			this.gameObject = gameObject;
 			Serializer serializer = AssetDatabase.getInstance().serializer;
@@ -333,7 +359,7 @@ public class HierarchyWindow extends EditorWindow {
 			paste.setEnabled(coppiedGameObject != null);
 			paste.addActionListener(e -> {
 				if (coppiedGameObject != null) {
-					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());					
+					GameObject newObj = this.addGameObjFromJson(coppiedGameObject, gameObject.getParent());
 					this.func(newObj, tree.getSelectionPath().getParentPath());
 				}
 			});

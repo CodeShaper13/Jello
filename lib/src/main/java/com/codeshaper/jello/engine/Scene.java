@@ -23,6 +23,11 @@ public final class Scene extends SerializedJelloObject {
 	}
 	
 	@Override
+	public String toString() {
+		return "Scene [name=" + this.getAssetName() + "]";
+	}
+
+	@Override
 	public void onDeserialize() {
 		super.onDeserialize();
 		

@@ -10,6 +10,15 @@ import com.codeshaper.jello.editor.inspector.Editor;
 public abstract class JelloObject {
 
 	private boolean isDestroyed = false;
+	/**
+	 * An integer that is treated as an array of boolean values, that keep track of
+	 * the GameObject's state in the Editor.
+	 * <p>
+	 * Bit 0: Stores if the Object is expanded in the hierarchy.
+	 * <P>
+	 * the rest of the bits are unused.
+	 */
+	public int editorState; // TODO make protected
 
 	/**
 	 * Destroys the {@link JelloObject}.
@@ -39,4 +48,36 @@ public abstract class JelloObject {
 	 * @return
 	 */
 	public abstract Editor<?> getInspectorDrawer(JPanel panel);
+	
+	////////////////////////////////////////////////////
+	// Methods intended to be used in the Editor only //
+	////////////////////////////////////////////////////
+
+	/**
+	 * Checks if the Object is expanded in the Hierarchy.
+	 * <p>
+	 * This method is only intended to be used in the Editor, though calling it in
+	 * builds is completely safe.
+	 * 
+	 * @return
+	 */
+	public boolean isExpandedInHierarchy() {
+		return ((this.editorState >> 0) & 1) == 1;
+	}
+
+	/**
+	 * Sets if the Object is expanded in the Editor or not.
+	 * <p>
+	 * This method is only intended to be used in the Editor, though calling it in
+	 * builds is completely safe.
+	 * 
+	 * @param isExpanded
+	 */
+	public void setExpandedInHierarchy(boolean isExpanded) {
+		if(isExpanded) {
+			this.editorState |= (1 << 0);			
+		} else {
+			this.editorState &= ~(1 << 0);  
+		}
+	}
 }
