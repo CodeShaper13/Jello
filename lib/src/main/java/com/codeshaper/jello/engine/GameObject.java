@@ -183,7 +183,7 @@ public final class GameObject extends JelloObject {
 
 	@Override
 	public String toString() {
-		return "GameObject [name=" + name + "]";
+		return this.name;
 	}
 
 	/**
