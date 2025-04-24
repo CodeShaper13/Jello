@@ -143,7 +143,7 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 			});
 
 			this.addButton(removeIcon, "Remove Component", e -> {
-				component.gameObject().removeComponent(component);
+				component.destroy();
 				JelloEditor.getWindow(InspectorWindow.class).refresh();
 			});
 		}

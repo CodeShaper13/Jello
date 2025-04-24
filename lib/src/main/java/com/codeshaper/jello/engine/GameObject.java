@@ -810,15 +810,13 @@ public final class GameObject extends JelloObject {
 	 * @return {@code true} if the component was removed
 	 * @throws IllegalArgumentException if component is null
 	 */
-	public boolean removeComponent(JelloComponent component) {
+	protected boolean removeComponent(JelloComponent component) {
 		Objects.requireNonNull(component, "component must not be null");
 
 		int index = this.components.indexOf(component);
 		if (index == -1) {
 			return false;
 		}
-
-		component.destroy();
 
 		this.components.remove(index);
 		return true;
