@@ -19,6 +19,7 @@ import javax.swing.SwingConstants;
 
 import com.codeshaper.jello.editor.EditorAssetDatabase;
 import com.codeshaper.jello.editor.EditorUtils;
+import com.codeshaper.jello.editor.GuiBuilder;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.window.InspectorWindow;
@@ -33,20 +34,13 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 	}
 	
 	@Override
-	protected void onDraw(boolean isInitialDraw) {
+	protected void onDraw() {
 		this.panel.add(this.getHeader());
 		this.panel.add(new JSeparator());
 		
 		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawComponent(drawer);
 		this.panel.add(drawer.getPanel());
-	}
-	
-	@Override
-	protected void onRefresh() {
-		super.onRefresh();
-		
-		this.panel.removeAll();
 	}
 	
 	/**

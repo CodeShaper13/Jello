@@ -2,7 +2,7 @@ package com.codeshaper.jello.editor.inspector;
 
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.window.InspectorWindow;
+import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.JelloObject;
 
 /**
@@ -16,8 +16,12 @@ public abstract class Editor<T extends JelloObject> {
 	 */
 	protected final T target;
 	protected final JPanel panel;
+	protected final GuiLayoutBuilder builder;
 	
 	/**
+	 * Creates a new Editor.
+	 * 
+	 * All heavy lifting and memory allocations should be performed here.
 	 * 
 	 * @param target
 	 * @param panel
@@ -28,33 +32,19 @@ public abstract class Editor<T extends JelloObject> {
 		}
 		this.target = target;
 		this.panel = panel;
+		this.builder = new GuiLayoutBuilder();
 	}
 	
-	public void draw() {
-		this.onDraw(true);
+	public final void draw() {
+		this.onDraw();
 	}
 	
-	public void refresh() {
-		this.onRefresh();
-		this.onDraw(false);
-
-		this.panel.repaint();
-	}
-
 	/**
 	 * 
 	 * @param isInitialDraw
 	 */
-	protected void onDraw(boolean isInitialDraw) {
+	protected void onDraw() {
 
-	}
-
-	/**
-	 * Called when the Editor is refreshed. An Editor refresh can occur from the
-	 * project being reloaded, the "Refresh" button being clicked, or a call to
-	 * {@link InspectorWindow#refresh()}
-	 */
-	protected void onRefresh() {
 	}
 
 	/**

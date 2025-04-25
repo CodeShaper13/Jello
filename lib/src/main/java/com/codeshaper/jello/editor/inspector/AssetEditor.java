@@ -46,20 +46,13 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 	}
 	
 	@Override
-	public void onDraw(boolean isInitialDraw) {
+	public void onDraw() {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 		this.drawAsset(builder);
 				
 		this.gridBagPanel.add(builder.getPanel(), this.constraints);		
 		
 		this.panel.revalidate();
-	}
-	
-	@Override
-	public void onRefresh() {
-		super.onRefresh();
-		
-		this.gridBagPanel.removeAll();
 	}
 	
 	protected void drawAsset(GuiLayoutBuilder builder) {

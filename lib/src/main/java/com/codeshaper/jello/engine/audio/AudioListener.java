@@ -101,7 +101,7 @@ public final class AudioListener extends JelloComponent {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new AudioListenerDrawer(this, panel);
 	}
 

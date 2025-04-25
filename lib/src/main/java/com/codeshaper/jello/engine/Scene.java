@@ -37,7 +37,7 @@ public final class Scene extends SerializedJelloObject {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new CustomEditor(this, panel);
 	}
 

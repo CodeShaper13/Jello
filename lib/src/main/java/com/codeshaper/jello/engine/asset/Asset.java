@@ -65,7 +65,7 @@ public abstract class Asset extends JelloObject {
 	}
 	
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new AssetEditor<Asset>(this, panel);
 	}
 }

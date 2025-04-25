@@ -30,7 +30,7 @@ public final class Script extends Asset {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new ScriptEditor(this, panel);
 	}
 

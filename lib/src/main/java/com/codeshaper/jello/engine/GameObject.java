@@ -230,7 +230,7 @@ public final class GameObject extends JelloObject {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new GameObjectEditor(this, panel);
 	}
 

@@ -55,7 +55,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 	
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new ComponentEditor<JelloComponent>(this, panel);
 	}
 

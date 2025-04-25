@@ -14,8 +14,10 @@ import org.joml.Vector4f;
 
 import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
+import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.Color;
 import com.codeshaper.jello.engine.rendering.shader.ShaderProgram;
@@ -60,7 +62,7 @@ public class Material extends SerializedJelloObject {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new MaterialEditor(this, panel);
 	}
 
@@ -409,7 +411,7 @@ public class Material extends SerializedJelloObject {
 		public void drawAsset(GuiLayoutBuilder builder) {
 			builder.assetField("Shader: ", this.target.shader, Shader.class, (v) -> {
 				this.target.setShader(v);
-				this.refresh();
+				JelloEditor.getWindow(InspectorWindow.class).refresh();
 			});
 			builder.intField("Render Order", this.target.renderOrder, (v) -> {
 				this.target.renderOrder = v;

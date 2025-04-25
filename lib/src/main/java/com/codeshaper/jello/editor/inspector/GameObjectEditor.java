@@ -77,13 +77,6 @@ public class GameObjectEditor extends Editor<GameObject> {
 
 		this.createComponentListPanel();
 	}
-
-	@Override
-	public void onRefresh() {
-		super.onRefresh();
-				
-		this.createComponentListPanel();
-	}
 	
 	private void createComponentListPanel() {
 		this.componentListPanel.removeAll();
@@ -102,7 +95,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 			panel.setBorder(border);
 
-			Editor<?> editor = this.target.getComponentAtIndex(i).getInspectorDrawer(panel);
+			Editor<?> editor = this.target.getComponentAtIndex(i).getEditor(panel);
 			editor.draw();
 			
 			this.componentListPanel.add(panel);

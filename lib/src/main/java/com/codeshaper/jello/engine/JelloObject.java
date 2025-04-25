@@ -42,12 +42,12 @@ public abstract class JelloObject {
 	public abstract String getPersistencePath();
 
 	/**
-	 * Gets an {@link Editor} to use when drawing the JelloObject in the inspector.
+	 * Gets an {@link Editor} to use when drawing the JelloObject in the Inspector.
 	 * 
 	 * @param panel
 	 * @return
 	 */
-	public abstract Editor<?> getInspectorDrawer(JPanel panel);
+	public abstract Editor<?> getEditor(JPanel panel);
 	
 	////////////////////////////////////////////////////
 	// Methods intended to be used in the Editor only //

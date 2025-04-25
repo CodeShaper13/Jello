@@ -77,7 +77,7 @@ public final class AudioSource extends JelloComponent {
 	}
 
 	@Override
-	public Editor<?> getInspectorDrawer(JPanel panel) {
+	public Editor<?> getEditor(JPanel panel) {
 		return new AudioSourceDrawer(this, panel);
 	}
 
