@@ -11,6 +11,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -146,6 +147,10 @@ public final class GuiLayoutBuilder {
 	 */
 	public void label(String text, Icon icon, int alignment) {
 		this.add(GuiBuilder.label(text, icon, alignment));
+	}
+	
+	public void image(ImageIcon icon, int width, int height) {
+		this.add(GuiBuilder.image(icon, width, height));
 	}
 
 	/**

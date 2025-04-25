@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -18,6 +19,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -152,6 +154,16 @@ public final class GuiBuilder {
 		}
 		return label;
 	}
+	
+	public static JLabel image(ImageIcon icon, int width, int height) {
+		if(icon.getIconWidth() != width && icon.getIconHeight() != height) {
+			icon = new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));			
+		}
+		
+		JLabel label = new JLabel(icon);
+		label.setSize(width, height);
+		return label;
+	}
 
 	public static JTextField textField(String text, OnSubmitListerer<String> listener) {
 		JTextField textField = new JTextField(text);
@@ -164,6 +176,13 @@ public final class GuiBuilder {
 		return textField;
 	}
 
+	/**
+	 * 
+	 * @param text
+	 * @param lines
+	 * @param listener
+	 * @return
+	 */
 	public static JScrollPane textArea(String text, int lines, OnSubmitListerer<String> listener) {
 		JTextArea textArea = new JTextArea(lines, 0);
 		textArea.setText(text);
@@ -176,12 +195,26 @@ public final class GuiBuilder {
 		return scroll;
 	}
 
-	public static JScrollPane textBox(String text, int lines) {
+	/**
+	 * Creates a text box that can't be edited.
+	 * 
+	 * @param text  the text to display.
+	 * @param lines the number of lines to show. If {@code 0}, every line is shown.
+	 * @return
+	 */
+	public static JComponent textBox(String text, int lines) {
 		JTextArea textArea = new JTextArea(lines, 0);
 		textArea.setEnabled(false);
 		textArea.setText(text);
-		JScrollPane scroll = new JScrollPane(textArea);
-		return scroll;
+
+		if (lines == 0) {
+			return new JScrollPane(
+					textArea,
+					JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		} else {
+			return new JScrollPane(textArea);
+		}
 	}
 
 	public static JButton button(String label, Icon icon, Runnable onClick) {

@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 
 import org.apache.commons.io.IOUtils;
 
@@ -43,12 +42,10 @@ public final class Script extends Asset {
 
 		@Override
 		protected void drawAsset(GuiLayoutBuilder drawer) {
-			super.drawAsset(drawer); // Draws default inspector
+			super.drawAsset(drawer);
 			
-			JTextArea textArea = new JTextArea(source);
-			textArea.setLineWrap(true);
-			
-			drawer.add(textArea);
+			drawer.label("Source:");
+			drawer.textBox(null, source, 0);
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package com.codeshaper.jello.engine.asset;
 
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -248,20 +246,11 @@ public class Texture extends Asset {
 			File file = this.target.location.getFile();
 
 			ImageIcon image = new ImageIcon(file.toString());
-			int textureWidth = image.getIconWidth();
-			int textureHeight = image.getIconHeight();
-
-			int sizeX = 100;
-			int sizeY = 100;
-			image = new ImageIcon(image.getImage().getScaledInstance(sizeX, sizeY, Image.SCALE_DEFAULT));
-
-			JLabel label = new JLabel(image);
-			label.setSize(sizeX, sizeY);
-			builder.add(label);
-
+			
+			builder.image(image, 100, 100);
 			builder.label(String.format("Dimensions: %sx%s",
-					textureWidth,
-					textureHeight));
+					image.getIconWidth(),
+					image.getIconHeight()));
 		}
 	}
 }
