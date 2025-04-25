@@ -79,15 +79,14 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 		public ComponentHeader(T component) {
 			this.setLayout(new GridBagLayout());
 
-			JCheckBox toggle = new JCheckBox();
-			toggle.setSelected(component.isEnabled());
-			toggle.addActionListener(e -> {
-				component.setEnabled(toggle.isSelected());
+			JCheckBox toggle = GuiBuilder.checkBox(component.isEnabled(), e -> {
+				component.setEnabled(component.isEnabled());
 			});
 
-			String label = component.getClass().getSimpleName();
-			Icon icon = EditorUtils.getComponentIcon(component);
-			JLabel componentName = new JLabel(label, icon, SwingConstants.RIGHT);
+			JLabel componentName = GuiBuilder.label(
+					component.getClass().getSimpleName(),
+					 EditorUtils.getComponentIcon(component),
+					SwingConstants.RIGHT);
 
 			GridBagConstraints labelConstraint = new GridBagConstraints();
 			labelConstraint.weightx = 1;
