@@ -6,10 +6,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
+import com.codeshaper.jello.editor.inspector.ComponentEditor;
 import com.codeshaper.jello.editor.menu.EditorMenuBar;
 import com.codeshaper.jello.editor.render.SceneViewPanel;
 import com.codeshaper.jello.editor.window.AppSettingsWindow;
@@ -54,6 +56,8 @@ public class EditorMainFrame extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new BorderLayout());
 		this.setPreferredSize(new Dimension(1000, 800));
+		ImageIcon icon = new ImageIcon(EditorMainFrame.class.getResource("/jelloIcon.png"));
+		this.setIconImage(icon.getImage());
 
 		Docking.initialize(this);
 		AppState.setPersistFile(new File(editor.rootProjectFolder.toFile(), "layout.xml"));
