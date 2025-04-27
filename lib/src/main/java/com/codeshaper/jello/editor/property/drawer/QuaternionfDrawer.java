@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 
 import org.joml.Quaternionf;
 
-import com.codeshaper.jello.editor.GuiBuilder;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 
 @FieldDrawerType(Quaternionf.class)

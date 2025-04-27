@@ -10,7 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.asset.Asset;
 
 public class AssetEditor<T extends Asset> extends Editor<T> {

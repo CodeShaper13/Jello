@@ -3,7 +3,7 @@ package com.codeshaper.jello.editor.property.drawer;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiBuilder;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.engine.Color;
 

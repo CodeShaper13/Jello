@@ -4,7 +4,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiBuilder;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 
 public abstract class InlineClassDrawer extends FieldDrawer {

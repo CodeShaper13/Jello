@@ -10,7 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import com.codeshaper.jello.editor.GuiBuilder;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.property.modifier.TextBox;
 

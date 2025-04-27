@@ -5,8 +5,8 @@ import java.awt.BorderLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 
 public class EditorSettingsWindow extends EditorWindow {
 		

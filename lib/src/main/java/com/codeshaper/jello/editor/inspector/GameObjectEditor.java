@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.GameObject;
 
 public class GameObjectEditor extends Editor<GameObject> {

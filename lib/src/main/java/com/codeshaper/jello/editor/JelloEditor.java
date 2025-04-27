@@ -19,6 +19,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 
 import com.codeshaper.jello.editor.event.PlayModeListener;
 import com.codeshaper.jello.editor.event.PlayModeListener.State;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.scene.EditorSceneManager;
 import com.codeshaper.jello.editor.scene.SceneManagerSnapshot;
 import com.codeshaper.jello.editor.event.ProjectReloadListener;

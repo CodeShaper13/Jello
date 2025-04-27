@@ -1,6 +1,6 @@
 package com.codeshaper.jello.engine.audio;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.ComponentEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.Button;

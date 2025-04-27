@@ -13,8 +13,8 @@ import javax.swing.SwingUtilities;
 
 import org.joml.Math;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.ApplicationSettings;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.asset.Texture;

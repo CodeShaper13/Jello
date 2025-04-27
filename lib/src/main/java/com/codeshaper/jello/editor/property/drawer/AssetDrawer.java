@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiBuilder;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.engine.asset.Asset;
 

@@ -5,8 +5,8 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.engine.asset.SerializedJelloObject;

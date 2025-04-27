@@ -14,9 +14,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
-import com.codeshaper.jello.editor.GuiBuilder;
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.property.IExposedField;
 import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.GameObject;

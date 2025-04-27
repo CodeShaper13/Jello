@@ -2,7 +2,7 @@ package com.codeshaper.jello.editor.inspector;
 
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.JelloObject;
 
 /**

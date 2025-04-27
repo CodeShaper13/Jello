@@ -7,11 +7,12 @@ import java.io.Reader;
 
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
+import com.codeshaper.jello.engine.CustomEditor;
 import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.rendering.shader.ShaderData;
 import com.codeshaper.jello.engine.rendering.shader.ShaderProgram;
@@ -21,6 +22,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
 @AssetFileExtension(".shader")
+@CustomEditor(Shader.ShaderEditor.class)
 public class Shader extends Asset {
 
 	private ShaderData data;
@@ -68,10 +70,12 @@ public class Shader extends Asset {
 		}
 	}
 
+	/*
 	@Override
 	public Editor<?> getInspectorDrawer(JPanel panel) {
 		return new ShaderEditor(this, panel);
 	}
+	*/
 
 	/**
 	 * Gets the Shader's Shader Program Id. If this Shader is invalid, 0 is
@@ -132,7 +136,7 @@ public class Shader extends Asset {
 		return this.error;
 	}
 
-	private class ShaderEditor extends AssetEditor<Shader> {
+	public static class ShaderEditor extends AssetEditor<Shader> {
 
 		public ShaderEditor(Shader target, JPanel panel) {
 			super(target, panel);

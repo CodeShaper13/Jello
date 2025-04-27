@@ -14,7 +14,7 @@ import org.joml.Math;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;

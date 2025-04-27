@@ -1,8 +1,7 @@
-package com.codeshaper.jello.editor;
+package com.codeshaper.jello.editor.gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -61,6 +60,7 @@ public final class GuiLayoutBuilder {
 		this.panel.removeAll();
 		this.horizontalPanel = null;
 	}
+	
 
 	/**
 	 * Adds a space to the layout with a size of 14 pixels (the amount of space that
@@ -82,6 +82,14 @@ public final class GuiLayoutBuilder {
 			this.add(GuiBuilder.verticalSpace(size));
 		}
 	}
+	
+	public void glue() {
+		if(this.isHorizontal()) {
+			this.add(Box.createHorizontalGlue());
+		} else {
+			this.add(Box.createVerticalGlue());
+		}
+	}
 
 	/**
 	 * Adds a separator in the layout between the last added component and the next
@@ -97,7 +105,10 @@ public final class GuiLayoutBuilder {
 			// Don't do anything, already drawing in horizontal mode.
 			return this.horizontalPanel;
 		}
-		this.horizontalPanel = new JPanel(new GridLayout(1, 0));
+		this.horizontalPanel = new JPanel();		
+		//this.horizontalPanel.setLayout(new GridLayout(1, 0));
+		this.horizontalPanel.setLayout(new BoxLayout(this.horizontalPanel, BoxLayout.X_AXIS));
+		
 		return this.horizontalPanel;
 	}
 
@@ -186,9 +197,12 @@ public final class GuiLayoutBuilder {
 	 * @param label   the button's label. May be null.
 	 * @param icon    the button's icon. May be null.
 	 * @param onClick run when the button is clicked. May be null.
+	 * @return 
 	 */
-	public void button(String label, Icon icon, Runnable onClick) {
-		this.add(GuiBuilder.button(label, icon, onClick));
+	public GuiElement button(String label, Icon icon, Runnable onClick) {
+		GuiElement element = GuiBuilder.button(label, icon, onClick);
+		this.add(element);
+		return element;
 	}
 
 	/**
@@ -370,29 +384,16 @@ public final class GuiLayoutBuilder {
 			this.panel.add(component);
 		}
 	}
+	
+	public void add(GuiElement element) {
+		this.add(element.backingComponent);
+	}
 
 	private JComponent prefixLabelIfNecessary(String label, JComponent component) {
 		if (label != null) {
 			return GuiBuilder.combine(GuiBuilder.label(label), component);
 		} else {
 			return component;
-		}
-	}
-
-	public class Control {
-
-		private final JComponent component;
-
-		private Control(JComponent component) {
-			this.component = component;
-		}
-
-		public void setEnabled(boolean enabled) {
-			this.component.setEnabled(enabled);
-		}
-
-		public void setTooltip(String text) {
-			this.component.setToolTipText(text);
 		}
 	}
 

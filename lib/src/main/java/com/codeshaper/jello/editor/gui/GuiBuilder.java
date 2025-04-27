@@ -1,4 +1,4 @@
-package com.codeshaper.jello.editor;
+package com.codeshaper.jello.editor.gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -45,7 +45,9 @@ import org.joml.Vector3i;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder.OnSubmitListerer;
+import com.codeshaper.jello.editor.EditorUtils;
+import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder.OnSubmitListerer;
 import com.codeshaper.jello.editor.property.ExposedArrayField;
 import com.codeshaper.jello.editor.property.ExposedField;
 import com.codeshaper.jello.editor.property.IExposedField;
@@ -81,7 +83,7 @@ public final class GuiBuilder {
 	private static final int SLIDER_DECIMAL_PLACES = 1000;
 	private static FieldDrawerRegistry fieldDrawerRegistry;
 
-	static void init(JelloEditor editor) {
+	public static void init(JelloEditor editor) {
 		fieldDrawerRegistry = new FieldDrawerRegistry(editor);
 	}
 
@@ -217,18 +219,22 @@ public final class GuiBuilder {
 		}
 	}
 
-	public static JButton button(String label, Icon icon, Runnable onClick) {
-		JButton btn = new JButton(label, icon) {
+	public static GuiElement button(String label, Icon icon, Runnable onClick) {
+		JButton btn = new JButton(icon) {
 			@Override
 			public Dimension getMaximumSize() {
-				return new Dimension(Integer.MAX_VALUE, this.getPreferredSize().height);
+				if(label != null) {
+					return new Dimension(Integer.MAX_VALUE, this.getPreferredSize().height);
+				} else {
+					return super.getMaximumSize();
+				}
 			}
 		};
 		btn.setAlignmentX(SwingConstants.LEFT);
 		if (onClick != null) {
 			btn.addActionListener(e -> onClick.run());
 		}
-		return btn;
+		return new GuiElement(btn);
 	}
 
 	public static JButton button(Method method, Object instance) {

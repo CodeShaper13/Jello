@@ -1,55 +1,47 @@
 package com.codeshaper.jello.editor.inspector;
 
 import java.awt.Desktop;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URI;
 
-import javax.swing.Box;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-import com.codeshaper.jello.editor.EditorAssetDatabase;
 import com.codeshaper.jello.editor.EditorUtils;
-import com.codeshaper.jello.editor.GuiBuilder;
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.window.InspectorWindow;
 import com.codeshaper.jello.engine.ComponentHelpUrl;
+import com.codeshaper.jello.engine.Debug;
 import com.codeshaper.jello.engine.JelloComponent;
 
 public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 
-
+	public static final ImageIcon moveUpIcon = new ImageIcon(
+			ComponentEditor.class.getResource("/editor/icons/component_moveUp.png"));
+	public static final ImageIcon moveDownIcon = new ImageIcon(
+			ComponentEditor.class.getResource("/editor/icons/component_moveDown.png"));
+	public static final ImageIcon helpIcon = new ImageIcon(
+			ComponentEditor.class.getResource("/editor/icons/component_help.png"));
+	public static final ImageIcon editIcon = new ImageIcon(
+			ComponentEditor.class.getResource("/editor/icons/component_edit.png"));
+	public static final ImageIcon removeIcon = new ImageIcon(
+			ComponentEditor.class.getResource("/editor/icons/component_remove.png"));
+	
 	public ComponentEditor(T component, JPanel panel) {
 		super(component, panel);
 	}
 	
 	@Override
 	protected void onDraw() {
-		this.panel.add(this.getHeader());
+		this.panel.add(this.createHeader(target));
 		this.panel.add(new JSeparator());
 		
 		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
 		this.drawComponent(drawer);
 		this.panel.add(drawer.getPanel());
-	}
-	
-	/**
-	 * Gets the header for the component. Override to provide a custom header.
-	 * 
-	 * @return
-	 */
-	public ComponentHeader getHeader() {
-		return new ComponentHeader(this.target);
 	}
 
 	/**
@@ -62,102 +54,75 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 	protected void drawComponent(GuiLayoutBuilder builder) {
 		builder.addAll(this.target);
 	}
-
-	public class ComponentHeader extends JPanel {
-
-		public static ImageIcon moveUpIcon = new ImageIcon(
-				ComponentEditor.class.getResource("/editor/icons/component_moveUp.png"));
-		public static ImageIcon moveDownIcon = new ImageIcon(
-				ComponentEditor.class.getResource("/editor/icons/component_moveDown.png"));
-		public static ImageIcon helpIcon = new ImageIcon(
-				ComponentEditor.class.getResource("/editor/icons/component_help.png"));
-		public static ImageIcon editIcon = new ImageIcon(
-				ComponentEditor.class.getResource("/editor/icons/component_edit.png"));
-		public static ImageIcon removeIcon = new ImageIcon(
-				ComponentEditor.class.getResource("/editor/icons/component_remove.png"));
-
-		public ComponentHeader(T component) {
-			this.setLayout(new GridBagLayout());
-
-			JCheckBox toggle = GuiBuilder.checkBox(component.isEnabled(), e -> {
-				component.setEnabled(component.isEnabled());
-			});
-
-			JLabel componentName = GuiBuilder.label(
-					component.getClass().getSimpleName(),
-					 EditorUtils.getComponentIcon(component),
-					SwingConstants.RIGHT);
-
-			GridBagConstraints labelConstraint = new GridBagConstraints();
-			labelConstraint.weightx = 1;
-
-			this.add(toggle);
-			this.add(componentName, labelConstraint);
-
-			this.addButton(moveUpIcon, "Move component up", e -> {
-				if (component.gameObject().moveComponent(component, -1)) {
-					JelloEditor.getWindow(InspectorWindow.class).refresh();
-				}
-			});
-			this.addButton(moveDownIcon, "Move component down", e -> {
-				if(component.gameObject().moveComponent(component, 1)) {
-					JelloEditor.getWindow(InspectorWindow.class).refresh();
-				}
-			});
-
-			this.add(Box.createHorizontalStrut(10));
-
-			ComponentHelpUrl help = target.getClass().getAnnotation(ComponentHelpUrl.class);			
-			JButton btn = this.addButton(helpIcon, "Open Online Help", e -> {
-				if (help != null && help.value() != null) {
-					try {
-						Desktop.getDesktop().browse(new URI(help.value()));
-					} catch (Exception exception) {
-					}
-				}
-			});
-			btn.setEnabled(help != null && help.value() != null);
-
-			this.addButton(editIcon, "Edit Component in IDE", e -> {
-				EditorAssetDatabase database = JelloEditor.instance.assetDatabase;				
-				File file = database.compiler.getSourceFile(component.getClass());
-				if(file != null) {
-					String ideLocation = JelloEditor.instance.settings.ideLocation;					
-					try {						
-						Runtime.getRuntime().exec(new String[] {
-							    ideLocation,
-							    "--launcher.openFile",
-							    file.getPath()
-							});
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-				}
-			});
-
-			this.addButton(removeIcon, "Remove Component", e -> {
-				component.destroy();
+		
+	private JPanel createHeader(T component) {
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+		builder.startHorizontal();
+		
+		builder.checkbox(
+				null,
+				component.isEnabled(),
+				(b) -> {component.setEnabled(component.isEnabled());});
+		builder.glue();
+		builder.label(component.getClass().getSimpleName(),
+				 EditorUtils.getComponentIcon(component),
+				SwingConstants.RIGHT);
+		builder.glue();
+		
+		builder.button(null, moveUpIcon, () -> {
+			if (component.gameObject().moveComponent(component, -1)) {
 				JelloEditor.getWindow(InspectorWindow.class).refresh();
-			});
-		}
+			}
+		}).setTooltip("Move Component Up").setDisabled(component.gameObject().getComponentAtIndex(0) == component);
+		
+		builder.space(5);
+		
+		builder.button(null, moveDownIcon, () -> {
+			if(component.gameObject().moveComponent(component, 1)) {
+				JelloEditor.getWindow(InspectorWindow.class).refresh();
+			}
+		}).setTooltip("Move Component Down").setDisabled(component.gameObject().getComponentAtIndex(component.gameObject().getComponentCount() - 1) == component);
 
-		/**
-		 * Adds a button to the header.
-		 * 
-		 * @param icon    the buttons icon.
-		 * @param tooltip the buttons tooltip.
-		 * @param l       the event callback for when the button is clicked.
-		 * @return
-		 */
-		protected JButton addButton(Icon icon, String tooltip, ActionListener l) {
-			JButton btn = new JButton(icon);
-			btn.addActionListener(l);
-			btn.setToolTipText(tooltip);
+		builder.space(10);
 
-			this.add(btn);
-			this.add(Box.createHorizontalStrut(5));
+		ComponentHelpUrl help = target.getClass().getAnnotation(ComponentHelpUrl.class);			
+		builder.button(null, helpIcon, () -> {
+			if (help != null && help.value() != null) {
+				try {
+					Desktop.getDesktop().browse(new URI(help.value()));
+				} catch (Exception exception) {
+					Debug.logError("Unable to open online help");
+				}
+			}
+		}).setTooltip("Open Online Help").setDisabled(!(help != null && help.value() != null));
 
-			return btn;
-		}
+		builder.space(5);
+		
+		File file = JelloEditor.instance.assetDatabase.compiler.getSourceFile(component.getClass());
+		builder.button(null, editIcon, () -> {
+			if(file != null) {
+				String ideLocation = JelloEditor.instance.settings.ideLocation;					
+				try {						
+					Runtime.getRuntime().exec(new String[] {
+						    ideLocation,
+						    "--launcher.openFile",
+						    file.getPath()
+						});
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		}).setTooltip("Edit Component in IDE").setDisabled(file == null);
+		
+		builder.space(5);
+		
+		builder.button(null, removeIcon, () -> {
+			component.destroy();
+			JelloEditor.getWindow(InspectorWindow.class).refresh();
+		}).setTooltip("Remove Componenet");
+					
+		builder.endHorizontal();
+		
+		return builder.getPanel();
 	}
 }

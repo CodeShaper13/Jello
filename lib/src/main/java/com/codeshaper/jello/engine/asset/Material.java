@@ -13,8 +13,8 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import com.codeshaper.jello.editor.EditorUtils;
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.editor.property.modifier.CreateAssetEntry;
 import com.codeshaper.jello.editor.window.InspectorWindow;

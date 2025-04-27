@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.io.IOUtils;
 
-import com.codeshaper.jello.editor.GuiLayoutBuilder;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
