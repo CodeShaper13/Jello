@@ -96,7 +96,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 			panel.setBorder(border);
 
 			Editor<?> editor = this.target.getComponentAtIndex(i).getEditor(panel);
-			editor.draw();
+			editor.create();
 			
 			this.componentListPanel.add(panel);
 

@@ -34,7 +34,7 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 	}
 	
 	@Override
-	protected void onDraw() {
+	public void create() {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 		this.createHeader(builder, target);
 		builder.separator();

@@ -46,7 +46,7 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 	}
 	
 	@Override
-	public void onDraw() {
+	public void create() {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 		this.drawAsset(builder);
 				

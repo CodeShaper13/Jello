@@ -69,8 +69,8 @@ public class SerializedJelloObject extends Asset {
 		}
 
 		@Override
-		public void onCleanup() {
-			super.onCleanup();
+		public void cleanup() {
+			super.cleanup();
 
 			if(this.autoSaveToggle.isSelected()) {
 				this.saveAsset();

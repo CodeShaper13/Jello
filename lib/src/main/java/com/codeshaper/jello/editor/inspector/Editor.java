@@ -35,23 +35,15 @@ public abstract class Editor<T extends JelloObject> {
 		this.builder = new GuiLayoutBuilder();
 	}
 	
-	public final void draw() {
-		this.onDraw();
-	}
-	
 	/**
-	 * 
-	 * @param isInitialDraw
+	 * Creates the Editor.
 	 */
-	protected void onDraw() {
-
-	}
+	public void create() { }
 
 	/**
 	 * Called when the Editor goes away when the Inspector prepares to show a new
 	 * Editor. Any cleanup should be performed here, like closing files or freeing
 	 * native resources.
 	 */
-	public void onCleanup() {
-	}
+	public void cleanup() { }
 }
