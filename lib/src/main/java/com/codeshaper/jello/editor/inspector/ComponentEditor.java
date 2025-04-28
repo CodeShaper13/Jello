@@ -6,7 +6,6 @@ import java.net.URI;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 import com.codeshaper.jello.editor.EditorUtils;
@@ -36,12 +35,12 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 	
 	@Override
 	protected void onDraw() {
-		this.panel.add(this.createHeader(target));
-		this.panel.add(new JSeparator());
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+		this.createHeader(builder, target);
+		builder.separator();
+		this.drawComponent(builder);
 		
-		GuiLayoutBuilder drawer = new GuiLayoutBuilder();
-		this.drawComponent(drawer);
-		this.panel.add(drawer.getPanel());
+		this.panel.add(builder.getPanel());
 	}
 
 	/**
@@ -55,8 +54,7 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 		builder.addAll(this.target);
 	}
 		
-	private JPanel createHeader(T component) {
-		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+	private void createHeader(GuiLayoutBuilder builder, T component) {
 		builder.startHorizontal();
 		
 		builder.checkbox(
@@ -122,7 +120,5 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 		}).setTooltip("Remove Componenet");
 					
 		builder.endHorizontal();
-		
-		return builder.getPanel();
 	}
 }
