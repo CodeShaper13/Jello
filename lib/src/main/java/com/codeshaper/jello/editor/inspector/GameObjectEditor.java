@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 
+import com.codeshaper.jello.editor.gui.GuiBuilder;
 import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.GameObject;
 
@@ -25,7 +26,7 @@ public class GameObjectEditor extends Editor<GameObject> {
 		super(target, panel);
 
 		panel.setLayout(new BorderLayout());
-
+		
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 		
 		// Header
@@ -50,22 +51,21 @@ public class GameObjectEditor extends Editor<GameObject> {
 			this.target.setLocalScale(v);
 		});
 		
-		this.addComponentButton = new JButton("Add Component");
-		this.addComponentButton.addActionListener(e -> {
+		this.addComponentButton = GuiBuilder.button("Add Component", null, () -> {
 			JDialog dialog = new AddComponentDialog((componentClass) -> {
 				target.addComponent(componentClass);
 				createComponentListPanel();
 
 			});
 			dialog.setVisible(true);
-
 		});
 
 		// Component List:
 		this.componentListPanel = new JPanel();
 		this.componentListPanel.setLayout(new BoxLayout(this.componentListPanel, BoxLayout.Y_AXIS));
 
-		this.componentScrollPane = new JScrollPane(this.componentListPanel,
+		this.componentScrollPane = new JScrollPane(
+				this.componentListPanel,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		this.componentScrollPane.setBorder(BorderFactory.createCompoundBorder(

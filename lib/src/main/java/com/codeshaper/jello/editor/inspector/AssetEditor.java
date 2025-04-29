@@ -5,8 +5,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -14,8 +12,6 @@ import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.asset.Asset;
 
 public class AssetEditor<T extends Asset> extends Editor<T> {
-
-	protected Header header;
 	
 	private JPanel gridBagPanel;
 	private GridBagConstraints constraints;
@@ -25,7 +21,12 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 		
 		this.panel.setLayout(new BorderLayout());
 		
-		this.panel.add(this.header = new Header(), BorderLayout.NORTH);
+		GuiLayoutBuilder builder = new GuiLayoutBuilder();
+		builder.pad(5);
+		builder.startHorizontal();
+		this.createHeader(builder);
+		builder.endHorizontal();
+		this.panel.add(builder.getPanel(), BorderLayout.NORTH);
 				
 		this.gridBagPanel = new JPanel(new GridBagLayout());
 		
@@ -45,6 +46,11 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 		this.panel.add(scrollPane, BorderLayout.CENTER);
 	}
 	
+	protected void createHeader(GuiLayoutBuilder builder) {
+		builder.label(target.getAssetName() + " (" + target.getClass().getSimpleName() + ")");
+		builder.glue();
+	}
+
 	@Override
 	public void create() {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
@@ -57,18 +63,5 @@ public class AssetEditor<T extends Asset> extends Editor<T> {
 	
 	protected void drawAsset(GuiLayoutBuilder builder) {
 		builder.addAll(this.target);
-	}
-	
-	private class Header extends JPanel {
-		
-		public JLabel label;
-		
-		public Header() {
-			this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-			this.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
-			
-			this.label = new JLabel(target.getAssetName() + " (" + target.getClass().getSimpleName() + ")");
-			this.add(label);
-		}
 	}
 }

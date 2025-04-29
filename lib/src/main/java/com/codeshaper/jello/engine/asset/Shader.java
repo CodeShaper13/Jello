@@ -9,7 +9,6 @@ import javax.swing.JPanel;
 
 import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
-import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
 import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.CustomEditor;

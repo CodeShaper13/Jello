@@ -6,7 +6,6 @@ import java.net.URI;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 import com.codeshaper.jello.editor.EditorUtils;
 import com.codeshaper.jello.editor.JelloEditor;
@@ -38,6 +37,7 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 		GuiLayoutBuilder builder = new GuiLayoutBuilder();
 		this.createHeader(builder, target);
 		builder.separator();
+
 		this.drawComponent(builder);
 		
 		this.panel.add(builder.getPanel());
@@ -64,7 +64,7 @@ public class ComponentEditor<T extends JelloComponent> extends Editor<T> {
 		builder.glue();
 		builder.label(component.getClass().getSimpleName(),
 				 EditorUtils.getComponentIcon(component),
-				SwingConstants.RIGHT);
+				0);
 		builder.glue();
 		
 		builder.button(null, moveUpIcon, () -> {

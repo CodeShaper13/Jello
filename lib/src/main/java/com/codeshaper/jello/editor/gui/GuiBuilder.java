@@ -1,7 +1,6 @@
 package com.codeshaper.jello.editor.gui;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -87,8 +86,7 @@ public final class GuiBuilder {
 		fieldDrawerRegistry = new FieldDrawerRegistry(editor);
 	}
 
-	private GuiBuilder() {
-	}
+	private GuiBuilder() { }
 
 	/**
 	 * Combines 2 or more components into the same horizontal space. All components
@@ -219,22 +217,22 @@ public final class GuiBuilder {
 		}
 	}
 
-	public static GuiElement button(String label, Icon icon, Runnable onClick) {
-		JButton btn = new JButton(icon) {
-			@Override
+	public static JButton button(String label, Icon icon, Runnable onClick) {
+		JButton btn = new JButton(label, icon) {
+			/*@Override
 			public Dimension getMaximumSize() {
 				if(label != null) {
 					return new Dimension(Integer.MAX_VALUE, this.getPreferredSize().height);
 				} else {
 					return super.getMaximumSize();
 				}
-			}
+			}*/
 		};
 		btn.setAlignmentX(SwingConstants.LEFT);
 		if (onClick != null) {
 			btn.addActionListener(e -> onClick.run());
 		}
-		return new GuiElement(btn);
+		return btn;
 	}
 
 	public static JButton button(Method method, Object instance) {

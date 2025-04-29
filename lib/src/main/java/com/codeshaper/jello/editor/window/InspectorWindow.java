@@ -1,6 +1,7 @@
 package com.codeshaper.jello.editor.window;
 
 import java.awt.BorderLayout;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -10,6 +11,7 @@ import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.event.ProjectReloadListener.Phase;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetLocation;
+import com.codeshaper.jello.engine.CustomEditor;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloObject;
 import com.codeshaper.jello.engine.database.AssetDatabase;
@@ -94,7 +96,7 @@ public class InspectorWindow extends EditorWindow {
 	public void setTarget(JelloObject object) {
 		// Let the previous editor perform any cleanup that it needs to do.
 		if (this.editor != null) {
-			this.editor.onCleanup();
+			this.editor.cleanup();
 			this.editor = null;
 		}
 
@@ -105,8 +107,23 @@ public class InspectorWindow extends EditorWindow {
 		this.target = object;
 		if (this.target != null) {
 			// Create a new editor.
-			this.editor = this.target.getInspectorDrawer(this.panel);
-			this.editor.draw();
+			
+
+			CustomEditor annotation = this.target.getClass().getAnnotation(CustomEditor.class);
+			if(annotation != null) {
+				Class<? extends Editor> cls = annotation.value();
+				try {					
+					this.editor = cls.getDeclaredConstructor(this.target.getClass(), JPanel.class).newInstance(this.target, this.panel);
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+					e.printStackTrace();
+				}
+			} else {
+				this.editor = this.target.getEditor(this.panel);
+			}
+			
+			//this.editor = this.target.getInspectorDrawer(this.panel);
+			this.editor.create();
 			JelloEditor.instance.properties.setString(SELECTED_ASSET_KEY, this.target.getPersistencePath());
 		}
 
@@ -127,8 +144,8 @@ public class InspectorWindow extends EditorWindow {
 	 * target, or the target did not provide an Editor, nothing happens.
 	 */
 	public void refresh() {
-		if (this.editor != null) {
-			this.editor.refresh();
+		if(this.target != null) {
+			this.setTarget(this.target);
 		}
 	}
 }

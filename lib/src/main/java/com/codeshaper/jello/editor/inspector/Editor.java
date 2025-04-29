@@ -2,7 +2,6 @@ package com.codeshaper.jello.editor.inspector;
 
 import javax.swing.JPanel;
 
-import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.engine.JelloObject;
 
 /**
@@ -16,7 +15,6 @@ public abstract class Editor<T extends JelloObject> {
 	 */
 	protected final T target;
 	protected final JPanel panel;
-	protected final GuiLayoutBuilder builder;
 	
 	/**
 	 * Creates a new Editor.
@@ -32,7 +30,6 @@ public abstract class Editor<T extends JelloObject> {
 		}
 		this.target = target;
 		this.panel = panel;
-		this.builder = new GuiLayoutBuilder();
 	}
 	
 	/**

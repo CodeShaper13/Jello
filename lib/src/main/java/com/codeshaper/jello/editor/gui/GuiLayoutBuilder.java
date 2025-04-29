@@ -44,7 +44,7 @@ import com.codeshaper.jello.engine.asset.Asset;
 public final class GuiLayoutBuilder {
 
 	private JPanel panel;
-	private JPanel horizontalPanel;
+	public JPanel horizontalPanel;
 
 	public GuiLayoutBuilder() {
 		this.panel = new JPanel() {
@@ -199,8 +199,8 @@ public final class GuiLayoutBuilder {
 	 * @param onClick run when the button is clicked. May be null.
 	 * @return 
 	 */
-	public GuiElement button(String label, Icon icon, Runnable onClick) {
-		GuiElement element = GuiBuilder.button(label, icon, onClick);
+	public GuiElementButton button(String label, Icon icon, Runnable onClick) {
+		GuiElementButton element = new GuiElementButton(GuiBuilder.button(label, icon, onClick));
 		this.add(element);
 		return element;
 	}
@@ -212,8 +212,11 @@ public final class GuiLayoutBuilder {
 	 * @param isOn
 	 * @param onClick
 	 */
-	public void checkbox(String label, boolean isOn, OnSubmitListerer<Boolean> listener) {
-		this.add(this.prefixLabelIfNecessary(label, GuiBuilder.checkBox(isOn, listener)));
+	public GuiElementToggle checkbox(String label, boolean isOn, OnSubmitListerer<Boolean> listener) {
+		GuiElementToggle element = new GuiElementToggle(GuiBuilder.checkBox(isOn, listener));
+		this.prefixLabelIfNecessary(label, element.backingComponent);
+		this.add(element);
+		return element;
 	}
 
 	/**
@@ -365,6 +368,14 @@ public final class GuiLayoutBuilder {
 		}
 	}
 
+	public void pad(int pad) {
+		this.pad(pad, pad, pad, pad);
+	}
+	
+	public void pad(int left, int irght, int top, int bottom) {
+		this.panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+	}
+	
 	/**
 	 * Provides access to the JPanel that is being drawn on for low level access.
 	 * 
@@ -385,7 +396,7 @@ public final class GuiLayoutBuilder {
 		}
 	}
 	
-	public void add(GuiElement element) {
+	public void add(GuiElement<?> element) {
 		this.add(element.backingComponent);
 	}
 

@@ -1,11 +1,11 @@
 package com.codeshaper.jello.engine.asset;
 
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import com.codeshaper.jello.editor.JelloEditor;
+import com.codeshaper.jello.editor.gui.GuiElementButton;
+import com.codeshaper.jello.editor.gui.GuiElementToggle;
+import com.codeshaper.jello.editor.gui.GuiLayoutBuilder;
 import com.codeshaper.jello.editor.inspector.AssetEditor;
 import com.codeshaper.jello.editor.inspector.Editor;
 import com.codeshaper.jello.engine.AssetFileExtension;
@@ -42,30 +42,28 @@ public class SerializedJelloObject extends Asset {
 	public class SerializedJelloObjectEditor<T extends SerializedJelloObject> extends AssetEditor<T> {
 
 		private final String KEY = "auto_save_serialized_jello_object";
-		
-		private JButton saveBtn;
-		private JCheckBox autoSaveToggle;
+
+		private GuiElementButton saveBtn;
+		private GuiElementToggle autoSaveToggle;
 
 		public SerializedJelloObjectEditor(T target, JPanel panel) {
 			super(target, panel);
+		}
+		
+		@Override
+		protected void createHeader(GuiLayoutBuilder builder) {
+			super.createHeader(builder);
 
-			this.saveBtn = new JButton("Save");
-			this.saveBtn.addActionListener(e -> {
+			this.saveBtn = builder.button("Save", null, () -> {
 				this.saveAsset();
 			});
-			
-			this.autoSaveToggle = new JCheckBox("Auto-Save");
-			this.autoSaveToggle.setSelected(JelloEditor.instance.properties.getBoolean(KEY, true));
-			this.autoSaveToggle.addActionListener(e -> {
-				boolean isOn = this.autoSaveToggle.isSelected();
-				saveBtn.setEnabled(!isOn);
+			builder.space(5);
+			builder.label("Auto-Save");
+			builder.space(5);
+			this.autoSaveToggle = builder.checkbox(null, JelloEditor.instance.properties.getBoolean(KEY, true), (isOn) -> {
+				this.saveBtn.setDisabled(isOn);
 				JelloEditor.instance.properties.setBoolean(KEY, isOn);
 			});
-			
-			JPanel header = this.header;
-			header.add(Box.createHorizontalGlue());
-			header.add(this.autoSaveToggle);
-			header.add(this.saveBtn);
 		}
 
 		@Override
@@ -76,13 +74,12 @@ public class SerializedJelloObject extends Asset {
 				this.saveAsset();
 			}
 		}
-		
+
 		/**
 		 * Saves the SerializedJelloObject to disk.
 		 */
 		protected void saveAsset() {
 			JelloEditor.instance.assetDatabase.saveAsset(target);
-
 		}
 	}
 }
