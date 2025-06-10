@@ -3,12 +3,12 @@ package com.codeshaper.jello.engine;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Used by {@link Input#setCursorState(CursorState)} to set the mouse's mode.
+ * Used by {@link Input#setCursorState(CursorState)} to set the mouse's state.
  */
 public enum CursorState {
 
 	/**
-	 * The cursor is visible and unrestricted. This is the default mode.
+	 * The cursor is visible and unrestricted. This is the default state.
 	 */
 	NORMAL(GLFW.GLFW_CURSOR_NORMAL),
 	/**
@@ -18,6 +18,8 @@ public enum CursorState {
 	/**
 	 * The cursor is invisible when it is over the window, but free to leave the
 	 * window.
+	 * <p>
+	 * This is useful if you have a custom cursor and you don't want the normal cursor to be visible.
 	 */
 	HIDDEN(GLFW.GLFW_CURSOR_HIDDEN),
 	/**
