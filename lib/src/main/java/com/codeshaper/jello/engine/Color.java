@@ -13,8 +13,8 @@ import org.joml.Vector4f;
  * <p>
  * Colors are immutable objects. This is to prevent unexpected behavior when
  * modifying the components of a color. The {@link Color#setR(float)},
- * {@link Color#setR(float)}, {@link Color#setR(float)},
- * {@link Color#setR(float)}, while appearing to modify the color, they create a
+ * {@link Color#setG(float)}, {@link Color#setB(float)},
+ * {@link Color#setA(float)}, while appearing to modify the color, they create a
  * color instance and returns it.
  */
 public class Color {
@@ -133,6 +133,8 @@ public class Color {
 	 * red, green, blue and alpha components.
 	 * 
 	 * @param hex
+	 * @throws IllegalArgumentException if {@code hex} is not exactly 6 or 8
+	 *                                  characters or contains an invalid character.
 	 */
 	public Color(String hex) {
 		if (!hex.matches(Color.HEX_REGEX)) {
@@ -156,7 +158,7 @@ public class Color {
 	}
 
 	/**
-	 * Creates a {@link Color} from a Java AWT Color.
+	 * Creates a {@link Color} from {@link java.awt.Color}.
 	 * 
 	 * @param color
 	 */
@@ -165,9 +167,10 @@ public class Color {
 	}
 
 	/**
-	 * Creates a new color with {@link Vector4f#x} as the red component,
-	 * {@link Vector4f#y} as the green component, {@link Vector4f#z} as the blue
-	 * component and {@link Vector4f#w} as the alpha component.
+	 * Creates a new color from a {@link Vector4}. {@link Vector4f#x} is used for
+	 * the red component, {@link Vector4f#y} for the green component,
+	 * {@link Vector4f#z} for the blue component and {@link Vector4f#w} as the alpha
+	 * component.
 	 * 
 	 * @param vector the vector to create the color from.
 	 */
@@ -214,6 +217,11 @@ public class Color {
 		return new Color(this.r, this.g, this.b, alpha);
 	}
 
+	/**
+	 * Converts this color to a {@link java.awt.Color} color.
+	 * 
+	 * @return a {@link java.awt.Color} representing this color
+	 */
 	public java.awt.Color toAwtColor() {
 		return new java.awt.Color(this.r, this.g, this.b, this.a);
 	}
@@ -253,6 +261,11 @@ public class Color {
 		return Objects.hash(this.a, this.b, this.g, this.r);
 	}
 
+	/**
+	 * Checks if two colors are equal. Two colors are considered equal if their red,
+	 * green, blue and alpha components are identical, as determined by
+	 * {@link Float#floatToIntBits(float)}.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -271,6 +284,14 @@ public class Color {
 				&& Float.floatToIntBits(r) == Float.floatToIntBits(other.r);
 	}
 
+	/**
+	 * Linearly interpolates between two colors.
+	 * 
+	 * @param color1 the first color
+	 * @param color2 the second color
+	 * @param t      where between the two colors to return, as a value from 0 to 1
+	 * @return the interpolated color
+	 */
 	public static Color lerp(Color color1, Color color2, float t) {
 		t = Math.clamp(0f, 1f, t);
 		float r = Math.fma(color2.r - color1.r, t, color1.r);
