@@ -6,9 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Provides a link to an online help resource for the Component. When present,
- * the help button is enabled in the components header and will open
- * {@link value} as a URL in the System's web browser.
+ * Provides a link to an online help resource for the Component. When this
+ * annotation is present on a {@link JelloComponent}, the Help Button is enabled
+ * in the component's inspector header and will open {@link value} as a URL in the
+ * System's web browser.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -17,5 +18,5 @@ public @interface ComponentHelpUrl {
 	/**
 	 * The help URL to online documentation for the component.
 	 */
-	public String value() default "https://www.google.com/search?q=jello component"; // TODO
+	public String value(); // Example: https://github.com/CodeShaper13/Jello/wiki/Components
 }
