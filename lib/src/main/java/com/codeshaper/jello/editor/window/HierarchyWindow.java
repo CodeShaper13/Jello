@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.Stack;
 
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
@@ -80,6 +81,20 @@ public class HierarchyWindow extends EditorWindow {
 		}
 
 		return null;
+	}
+	
+	public void setSelected(GameObject selected) {
+		Stack<Object> stack = new Stack<Object>();
+		stack.add(JelloEditor.instance.sceneManager);
+		stack.add(selected.getScene());
+		
+		GameObject obj = selected;
+		do {
+			stack.insertElementAt(obj, 0);
+			obj = obj.getParent();
+		} while(obj != null);
+				
+		this.tree.setSelectionPath(new TreePath(stack.toArray()));
 	}
 
 	private void refreshEntireTree() {

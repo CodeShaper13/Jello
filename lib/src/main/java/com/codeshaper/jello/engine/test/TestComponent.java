@@ -28,7 +28,7 @@ public class TestComponent extends JelloComponent {
 	public boolean printCallbackTraces = true;
 
 	@Space
-	
+
 	public byte myByte = 1;
 	public int myInt = 2;
 	public short myShort = 3;
@@ -42,7 +42,7 @@ public class TestComponent extends JelloComponent {
 	public int[] myArray = new int[] { 1, 2, 3 };
 	public Color myColor = Color.red;
 	public Texture myAssetReference = null;
-	
+
 	@Space
 
 	@DisableIf("!myBool")
@@ -71,13 +71,13 @@ public class TestComponent extends JelloComponent {
 	public String textbox = "Textbox";
 	@ToolTip("An example of a tooltip")
 	public int tooltip = 1;
-	
+
 	@Override
 	public void onDrawGizmos(GizmoDrawer gizmos, boolean isSelected) {
 		gizmos.color(Color.white.setA(0.5f));
 		gizmos.drawCube(this.gameObject().getPosition(), new Quaternionf(), Vector.vector3Zero());
 	}
-	
+
 	@Override
 	public void onConstruct() {
 		if (this.printCallbackTraces) {
@@ -128,11 +128,23 @@ public class TestComponent extends JelloComponent {
 		System.out.println("2");
 	}
 
+	@Button("")
+	public void fun() {
+		Debug.logWithContext(this.gameObject(), "help");
+	}
+
+	public Texture texture;
+
+	@Button
+	public void func() {
+		Debug.logWithContext(this.texture, "texture");
+	}
+
 	@SuppressWarnings("unused")
 	private boolean disableIfFunc() {
 		return true;
 	}
-		
+
 	public enum EnumTest {
 		APPLE,
 		BANANA,

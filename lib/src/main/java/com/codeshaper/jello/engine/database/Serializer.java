@@ -235,7 +235,7 @@ public class Serializer {
 			object.onDeserialize();
 			return true;
 		} catch (Exception e) {
-			Debug.log(e, this);
+			Debug.log(e, object);
 			return false;
 		}
 	}
@@ -245,7 +245,7 @@ public class Serializer {
 			object.onDeserialize();
 			return true;
 		} catch (Exception e) {
-			Debug.log(e, this);
+			Debug.log(e, object);
 			return false;
 		}
 	}

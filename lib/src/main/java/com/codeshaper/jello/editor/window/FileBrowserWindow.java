@@ -42,7 +42,7 @@ public class FileBrowserWindow extends EditorWindow {
 
 	private static final String PROP_SHOW_EXTENSIONS = "showExtensions";
 	private static final String PROP_DIVIDER_LOCATION = "dividerLocation";
-	
+
 	/**
 	 * The /assets folder.
 	 */
@@ -59,7 +59,7 @@ public class FileBrowserWindow extends EditorWindow {
 		super("Project", "fileViewer");
 
 		this.setLayout(new BorderLayout());
-		
+
 		this.rootDirectory = JelloEditor.instance.assetsFolder.toFile();
 
 		this.popupMenu = new FileBrowserPopupMenu(this.rootDirectory.toPath()) {
@@ -71,26 +71,26 @@ public class FileBrowserWindow extends EditorWindow {
 
 			@Override
 			protected void onRename(File file) {
-				if(file.isDirectory()) {
+				if (file.isDirectory()) {
 					folderTree.startEditingAtPath(folderTree.getSelectionPath());
 				} else {
-					String newFileName = (String)JOptionPane.showInputDialog(
-			                this,
-			                "New Name:",
-			                "Rename File",
-			                JOptionPane.PLAIN_MESSAGE,
-			                null,
-			                null,
-			                FilenameUtils.removeExtension(file.getName()));
-					if(newFileName != null) {
+					String newFileName = (String) JOptionPane.showInputDialog(
+							this,
+							"New Name:",
+							"Rename File",
+							JOptionPane.PLAIN_MESSAGE,
+							null,
+							null,
+							FilenameUtils.removeExtension(file.getName()));
+					if (newFileName != null) {
 						boolean success = JelloEditor.instance.assetDatabase.renameAsset(
 								new AssetLocation(file), newFileName);
-						if(success) {
+						if (success) {
 							fileList.refresh();
 						} else {
 							Toolkit.getDefaultToolkit().beep();
 						}
-					}				
+					}
 				}
 			}
 
@@ -127,23 +127,23 @@ public class FileBrowserWindow extends EditorWindow {
 		this.searchBar = new FileSearchBar("Search");
 		this.searchBar.addActionListener((e) -> {
 			String s = this.searchBar.getSearchText().trim();
-			if(!StringUtils.isWhitespace(s)) {
+			if (!StringUtils.isWhitespace(s)) {
 				this.fileList.setTarget(this.rootDirectory, s);
 			}
 		});
 		this.add(this.searchBar, BorderLayout.NORTH);
-		
+
 		this.fileTreeModel = new FolderHierarchyModel(rootDirectory);
 		this.folderTree = new FolderHierarchy(this.fileTreeModel);
-		
+
 		JScrollPane fileListScrollBar = new JScrollPane(this.folderTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
 		JScrollPane folderContentsScrollBar = new JScrollPane(this.fileList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-		this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileListScrollBar, folderContentsScrollBar);		
-		this.splitPane.setDividerLocation(JelloEditor.instance.properties.getInt(PROP_DIVIDER_LOCATION, 100));		
+		this.splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, fileListScrollBar, folderContentsScrollBar);
+		this.splitPane.setDividerLocation(JelloEditor.instance.properties.getInt(PROP_DIVIDER_LOCATION, 100));
 		this.splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
 			int location = this.splitPane.getDividerLocation();
 			JelloEditor.instance.properties.setInt(PROP_DIVIDER_LOCATION, location);
@@ -151,12 +151,11 @@ public class FileBrowserWindow extends EditorWindow {
 		this.splitPane.setAutoscrolls(false);
 		this.add(this.splitPane, BorderLayout.CENTER);
 
-		
 		this.showExtensions = new JCheckBoxMenuItem("Show Extensions");
 		boolean show = JelloEditor.instance.properties.getBoolean(PROP_SHOW_EXTENSIONS, true);
 		this.showExtensions.setSelected(show);
 		this.fileList.setShowExtensions(show);
-		
+
 		this.showExtensions.addActionListener(e -> {
 			boolean show1 = this.showExtensions.isSelected();
 			JelloEditor.instance.properties.setBoolean(PROP_SHOW_EXTENSIONS, show1);
@@ -171,7 +170,7 @@ public class FileBrowserWindow extends EditorWindow {
 			this.fileTreeModel.reload();
 		});
 		menu.add(refresh);
-		
+
 		menu.add(this.showExtensions);
 	}
 
@@ -179,7 +178,19 @@ public class FileBrowserWindow extends EditorWindow {
 	public boolean isWrappableInScrollpane() {
 		return false;
 	}
-	
+
+	/**
+	 * Sets the FileBrowser's target. If the target doesn't exist, nothing happens.
+	 * 
+	 * @param location the location of the target
+	 */
+	public void setTarget(AssetLocation location) {
+		System.out.println("setTarget " + location);
+		if (location.isValid() && !location.isBuiltin()) {
+			this.fileList.setTarget(location.getFile());
+		}
+	}
+
 	private class FolderHierarchyModel implements TreeModel {
 
 		private final ArrayList<TreeModelListener> mListeners = new ArrayList<>();
@@ -206,7 +217,7 @@ public class FileBrowserWindow extends EditorWindow {
 
 		@Override
 		public boolean isLeaf(Object node) {
-			return ((File)node).listFiles((FileFilter) FileFilterUtils.directoryFileFilter()).length == 0;
+			return ((File) node).listFiles((FileFilter) FileFilterUtils.directoryFileFilter()).length == 0;
 		}
 
 		@Override
@@ -256,7 +267,7 @@ public class FileBrowserWindow extends EditorWindow {
 		 * </p>
 		 */
 		public void reload() {
-			fileList.refresh();//.setTarget(null);
+			fileList.refresh();// .setTarget(null);
 
 			// Need to duplicate the code because the root can formally be
 			// no an instance of the TreeNode.
@@ -308,7 +319,7 @@ public class FileBrowserWindow extends EditorWindow {
 	}
 
 	private class FolderHierarchy extends JTree {
-		
+
 		private static final ImageIcon FOLDER_CLOSED_ICON = new ImageIcon(
 				ComponentEditor.class.getResource("/editor/icons/folder_closed.png"));
 		private static final ImageIcon FOLDER_OPEN_ICON = new ImageIcon(
@@ -316,11 +327,11 @@ public class FileBrowserWindow extends EditorWindow {
 
 		public FolderHierarchy(FolderHierarchyModel fileTreeModel) {
 			super(fileTreeModel);
-			
+
 			DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) this.getCellRenderer();
-		    renderer.setLeafIcon(FOLDER_CLOSED_ICON);
-		    renderer.setClosedIcon(FOLDER_CLOSED_ICON);
-		    renderer.setOpenIcon(FOLDER_OPEN_ICON);
+			renderer.setLeafIcon(FOLDER_CLOSED_ICON);
+			renderer.setClosedIcon(FOLDER_CLOSED_ICON);
+			renderer.setOpenIcon(FOLDER_OPEN_ICON);
 
 			this.setCellEditor(new MyTreeCellEditor(folderTree, renderer));
 			this.setShowsRootHandles(true);
@@ -336,7 +347,7 @@ public class FileBrowserWindow extends EditorWindow {
 						fileList.setTarget(selected);
 					}
 				}
-			});	    
+			});
 		}
 
 		@Override

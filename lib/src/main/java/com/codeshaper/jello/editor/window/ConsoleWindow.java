@@ -25,7 +25,9 @@ import javax.swing.UIManager;
 import com.codeshaper.jello.editor.EditorProperties;
 import com.codeshaper.jello.editor.JelloEditor;
 import com.codeshaper.jello.editor.event.PlayModeListener.State;
+import com.codeshaper.jello.engine.AssetLocation;
 import com.codeshaper.jello.engine.GameObject;
+import com.codeshaper.jello.engine.JelloComponent;
 import com.codeshaper.jello.engine.asset.Asset;
 import com.codeshaper.jello.engine.logging.ILogHandler;
 import com.codeshaper.jello.engine.logging.LogEntry;
@@ -193,13 +195,17 @@ public class ConsoleWindow extends EditorWindow implements ILogHandler {
 					this.traceModel.addElement(element);
 				}
 			}
-
+			
 			if (entry.context instanceof GameObject) {
-				// TODO highlight in hierarchy.
-			} else if (entry.context instanceof Component) {
-				// TODO highlight in hierarchy.
+				JelloEditor.getWindow(HierarchyWindow.class).setSelected(((GameObject)entry.context));
+			} else if (entry.context instanceof JelloComponent) {
+				JelloEditor.getWindow(HierarchyWindow.class).setSelected(((JelloComponent)entry.context).gameObject());
 			} else if (entry.context instanceof Asset) {
-				// TODO highlight in file browser.
+				// Select the Asset in the File Browser:
+				AssetLocation location = ((Asset)entry.context).location;
+				if(location != null) {
+					JelloEditor.getWindow(FileBrowserWindow.class).setTarget(location);					
+				}
 			}
 		}
 	}

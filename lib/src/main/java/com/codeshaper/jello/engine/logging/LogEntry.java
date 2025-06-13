@@ -3,6 +3,8 @@ package com.codeshaper.jello.engine.logging;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.codeshaper.jello.engine.JelloObject;
+
 public class LogEntry {
 
 	/**
@@ -13,7 +15,7 @@ public class LogEntry {
 	/**
 	 * The object that triggered this log, or null if there was no object.
 	 */
-	public final Object context;
+	public final JelloObject context;
 	/**
 	 * The trace leading to the log. Null is allowed.
 	 */
@@ -23,11 +25,11 @@ public class LogEntry {
 	 */
 	public final Date time;
 
-	public LogEntry(LogType logType, Object context, String text, String[] trace) {
+	public LogEntry(LogType logType, JelloObject context, String text, String[] trace) {
 		this(logType, context, text, trace, Calendar.getInstance().getTime());
 	}
 
-	public LogEntry(LogType logType, Object context, String text, String[] trace, Date time) {
+	public LogEntry(LogType logType, JelloObject context, String text, String[] trace, Date time) {
 		this.logType = logType;
 		this.context = context;
 		this.text = text;
