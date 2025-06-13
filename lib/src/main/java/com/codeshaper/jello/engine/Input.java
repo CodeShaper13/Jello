@@ -11,10 +11,12 @@ import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Provides a collection of static methods for gathering input from the keyboard
- * and mouse. This is not suitable for input gathering within the Editor,
- * instead normal Swing methods should be used.
+ * and mouse.
+ * <p>
+ * This is not suitable for input gathering within the Editor, instead normal
+ * Swing methods should be used.
  */
-public class Input {
+public final class Input {
 
 	/**
 	 * The id of the left mouse button.
@@ -79,8 +81,14 @@ public class Input {
 		});
 	}
 
+	/**
+	 * Initializes the Input system. This must be called before any calls can me
+	 * made to query for input.
+	 * 
+	 * @param window the GLFW window handle.
+	 */
 	static void initialize(long window) {
-		if (instance != null) {
+		if(isEnabled()) {
 			Debug.logError("Input has already been initialized");
 			return;
 		}
@@ -92,7 +100,11 @@ public class Input {
 		instance = null;
 	}
 
-	static void onEndOfFrame() {
+	/**
+	 * Resets the input state. This is called by the main loop after all update
+	 * calls have happened, just before rendering.
+	 */
+	static void reset() {
 		Arrays.fill(instance.keyStates, ButtonPressState.NEITHER);
 		Arrays.fill(instance.mouseBtnStates, ButtonPressState.NEITHER);
 		instance.mouseScroll = 0;
@@ -304,7 +316,7 @@ public class Input {
 			return;
 		}
 
-		if(state != null) {
+		if (state != null) {
 			GLFW.glfwSetInputMode(instance.window, GLFW.GLFW_CURSOR, state.value);
 		}
 	}

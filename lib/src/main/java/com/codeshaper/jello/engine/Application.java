@@ -268,7 +268,7 @@ public class Application {
 				updateTime = now;
 				deltaUpdate--;
 				
-				Input.onEndOfFrame();
+				Input.reset();
 			}
 
 			if (appSettings.targetFps <= 0 || deltaFps >= 1) {
