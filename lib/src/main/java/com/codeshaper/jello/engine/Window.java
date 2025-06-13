@@ -9,7 +9,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class Window {
+public final class Window {
 
 	public final long windowHandle;
 
@@ -98,26 +98,26 @@ public class Window {
 	}
 
 	/**
-	 * Gets the height on the window in pixels.
+	 * Gets the height on the application's window in pixels.
 	 * 
-	 * @return
+	 * @return the window's height
 	 */
 	public int getHeight() {
 		return height;
 	}
 
 	/**
-	 * Gets the width of the window in pixels.
+	 * Gets the width of the application's window in pixels.
 	 * 
-	 * @return
+	 * @return the window's width
 	 */
 	public int getWidth() {
 		return width;
 	}
 
 	/**
-	 * Sets the size of the window. If the window is in full screen mode, this sets
-	 * the resolution of the window.
+	 * Sets the size of the application's window. If the window is in full screen
+	 * mode, this sets the resolution of the window.
 	 * 
 	 * @param width  the new width of the window
 	 * @param height the new height of the window
@@ -127,6 +127,7 @@ public class Window {
 	}
 
 	/**
+	 * Check's if the application's window is in full screen or not.
 	 * 
 	 * @return {@code true} if the window is in full screen mode;
 	 */
@@ -137,13 +138,13 @@ public class Window {
 	/**
 	 * Sets if the window is full screen or not.
 	 * 
-	 * @param fullScreen should the windwow be in full screen mode?
+	 * @param fullScreen should the window be full screen or not
 	 */
 	public void setFullsreen(boolean fullScreen) {
 		long monitor = fullScreen ? glfwGetPrimaryMonitor() : NULL;
 		glfwSetWindowMonitor(this.windowHandle, monitor, 0, 0, this.width, this.height, GL_DONT_CARE);
 	}
-
+	
 	private void onError(int errorCode, long msgPtr) {
 		System.err.println(String.format("Error code [%s], msg [%s]", errorCode, MemoryUtil.memUTF8(msgPtr)));
 	}
