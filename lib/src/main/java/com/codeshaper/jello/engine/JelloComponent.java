@@ -33,32 +33,51 @@ import com.codeshaper.jello.editor.property.modifier.Button;
  */
 public abstract class JelloComponent extends JelloObject {
 
+	/**
+	 * Is the component enabled, and thus should receive callbacks.
+	 */
 	boolean enabled;
-
+	/**
+	 * The {@link GameObject} this component is attached to.
+	 */
 	transient GameObject owner;
+	/**
+	 * Has the {@link JelloComponent#onStart()} method been invoked yet. This flag
+	 * is necessary because the onStart method is not always invoked when the
+	 * GameObject is created, in the event of the GameObject being instantiated from
+	 * a prefab where it is disabled.
+	 */
 	transient boolean hasOnStartBeenCalled;
 
 	/**
 	 * Gets the {@link GameObject} that owns this Component. The owning GameObject
 	 * is the GameObject that this Component is attached to.
+	 * <p>
+	 * This method should more accurately be nammed "getGameObject" but has been
+	 * shortened to keep code lines shorter.
 	 * 
-	 * @return the GameObject that owns this GameObject.
+	 * @return the GameObject that owns this GameObject
 	 */
 	public final GameObject gameObject() {
 		return this.owner;
 	}
-	
+
 	@Override
-	public String getPersistencePath() {
+	public final String getPersistencePath() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public Editor<?> getEditor(JPanel panel) {
 		return new ComponentEditor<JelloComponent>(this, panel);
 	}
 
+	/**
+	 * TODO write this
+	 * 
+	 * @param enabled should the Component be enabled
+	 */
 	public final void setEnabled(boolean enabled) {
 		if (this.enabled == enabled) {
 			return; // Nothing changed.
@@ -78,8 +97,10 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	/**
-	 * Checks if the Component is enabled. This only checks the {@code enabled} flag
-	 * and not if it is active in it's Scene.
+	 * Checks if the Component is enabled. This only checks the component itself is
+	 * enabled flag and not if owning {@link GameObject} is active in it's Scene.
+	 * This means that while a component may be enabled, it won't necessarily
+	 * receive callbacks.
 	 * 
 	 * @return {@code true} if the Component is enabled.
 	 * @see GameObject#isActiveInScene()
@@ -101,29 +122,37 @@ public abstract class JelloComponent extends JelloObject {
 		return this.enabled && this.owner.isActiveInScene();
 	}
 
+	/**
+	 * Destroys the Component and removes it from it's owning {@link GameObject}. If
+	 * this Component has already been destroyed, nothing happens. When a Component
+	 * is destroyed, it is first removed from from it's owner's list of Components,
+	 * then the {@link JelloComponent#onDisable()} and
+	 * {@link JelloComponent#onDestroy()} callbacks are invoked. These callbacks are
+	 * not invoked in the Editor.
+	 */
 	@Override
 	public void destroy() {
-		if(this.isDestroyed()) {
+		if (this.isDestroyed()) {
 			return; // Already destroyed, don't do anything.
 		}
-		
+
 		super.destroy();
-		
-		if(Application.isPlaying()) {
-			if(this.isEnabled()) {
+
+		this.gameObject().removeComponent(this);
+
+		if (Application.isPlaying()) {
+			if (this.isEnabled()) {
 				this.invokeOnDisable();
 			}
 			this.invokeOnDestroy();
 		}
-		
-		this.gameObject().removeComponent(this);
 	}
-	
+
 	/**
 	 * {@code onConstruct} is called when a Component is first created. This is
 	 * where initialization happens that you would normally do in the constructor.
 	 * Unlike {@link JelloComponent#onStart()}, this will be called even if the
-	 * Component is disabled.
+	 * Component is disabled and/or it's owning GameObject is disabled.
 	 * <p>
 	 * Execution of this method is wrapped in a try block, so if an exception is
 	 * thrown it will not compromise the state of the Application or Editor.
@@ -147,12 +176,14 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	/**
-	 * {@code onUpdate} is called every frame. Game logic should happen here.
+	 * {@code onUpdate} is called every frame that the Component is enabled within
+	 * the {@link Scene} Game logic should happen here.
 	 * <p>
 	 * Execution of this method is wrapped in a try block, so if an exception is
 	 * thrown it will not compromise the state of the Application or Editor.
 	 * 
 	 * @param deltaTime the amount of time since the last call to onUpdate.
+	 * @see JelloComponent#isEnabledInScene()
 	 */
 	protected void onUpdate(float deltaTime) {
 
@@ -197,8 +228,12 @@ public abstract class JelloComponent extends JelloObject {
 
 	/**
 	 * Called every frame to draw gizmos (helpful lines, icons, and more) for the
-	 * component. This is not called if gizmos are disabled in the scene view, and
+	 * Component. This is not called if gizmos are disabled in the Scene view, and
 	 * never in builds.
+	 * <p>
+	 * By default this method will draw handles showing the orientation of the
+	 * owning GameObject. It is recommended to still call this when overriding this
+	 * method, but not necessary.
 	 * <p>
 	 * Execution of this method is wrapped in a try block, so if an exception is
 	 * thrown it will not compromise the state of the Application or Editor.
@@ -220,6 +255,7 @@ public abstract class JelloComponent extends JelloObject {
 		}
 	}
 
+	// Called internally by the Editor.
 	void invokeOnConstruct() {
 		// When Play Mode is exited and started again, this flag is never reset. Hacky
 		// temp fix right here...
@@ -232,6 +268,7 @@ public abstract class JelloComponent extends JelloObject {
 		}
 	}
 
+	// Called internally by the Editor.
 	void invokeOnStart() {
 		try {
 			this.onStart();
@@ -240,6 +277,7 @@ public abstract class JelloComponent extends JelloObject {
 		}
 	}
 
+	// Called internally by the Editor.
 	void invokeOnEnable() {
 		try {
 			this.onEnable();
@@ -248,6 +286,7 @@ public abstract class JelloComponent extends JelloObject {
 		}
 	}
 
+	// Called internally by the Editor.
 	void invokeOnUpdate(float deltaTime) {
 		try {
 			this.onUpdate(deltaTime);
@@ -256,6 +295,7 @@ public abstract class JelloComponent extends JelloObject {
 		}
 	}
 
+	// Called internally by the Editor.
 	void invokeOnDisable() {
 		try {
 			this.onDisable();
@@ -264,6 +304,7 @@ public abstract class JelloComponent extends JelloObject {
 		}
 	}
 
+	// Called internally by the Editor.
 	void invokeOnDestroy() {
 		try {
 			this.onDestroy();
