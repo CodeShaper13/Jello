@@ -256,7 +256,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	// Called internally by the Editor.
-	void invokeOnConstruct() {
+	final void invokeOnConstruct() {
 		// When Play Mode is exited and started again, this flag is never reset. Hacky
 		// temp fix right here...
 		this.hasOnStartBeenCalled = false;
@@ -269,7 +269,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	// Called internally by the Editor.
-	void invokeOnStart() {
+	final void invokeOnStart() {
 		try {
 			this.onStart();
 		} catch (Exception e) {
@@ -278,7 +278,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	// Called internally by the Editor.
-	void invokeOnEnable() {
+	final void invokeOnEnable() {
 		try {
 			this.onEnable();
 		} catch (Exception e) {
@@ -287,7 +287,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	// Called internally by the Editor.
-	void invokeOnUpdate(float deltaTime) {
+	final void invokeOnUpdate(float deltaTime) {
 		try {
 			this.onUpdate(deltaTime);
 		} catch (Exception e) {
@@ -296,7 +296,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	// Called internally by the Editor.
-	void invokeOnDisable() {
+	final void invokeOnDisable() {
 		try {
 			this.onDisable();
 		} catch (Exception e) {
@@ -305,7 +305,7 @@ public abstract class JelloComponent extends JelloObject {
 	}
 
 	// Called internally by the Editor.
-	void invokeOnDestroy() {
+	final void invokeOnDestroy() {
 		try {
 			this.onDestroy();
 		} catch (Exception e) {
