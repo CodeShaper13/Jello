@@ -2,6 +2,7 @@ package com.codeshaper.jello.engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SceneManager {
 
@@ -43,12 +44,10 @@ public class SceneManager {
 	 * 
 	 * @param scene the Scene to unload.
 	 * @return {code true} if the Scene was unloaded.
-	 * @throws IllegalArgumentException if scene is {@code null}
+	 * @throws NullPointerException if scene is {@code null}
 	 */
 	public boolean unloadScene(Scene scene) {
-		if (scene == null) {
-			throw new IllegalArgumentException("scene may not be null");
-		}
+		Objects.requireNonNull(scene, "scene must not be null");
 
 		if (!this.isSceneLoaded(scene)) {
 			return false;
@@ -66,7 +65,7 @@ public class SceneManager {
 	}
 
 	/**
-	 * Unloads all Scenes.
+	 * Unloads all loaded Scenes.
 	 */
 	public void unloadAllScenes() {
 		for (int i = this.loadedScenes.size() - 1; i >= 0; i--) {
@@ -77,8 +76,8 @@ public class SceneManager {
 	/**
 	 * Checks if a Scene is loaded.
 	 * 
-	 * @param scene the Scene to check.
-	 * @return {@code true} if the Scene is loaded.
+	 * @param scene the Scene to check
+	 * @return {@code true} if the Scene is loaded
 	 */
 	public boolean isSceneLoaded(Scene scene) {
 		for (Scene s : this.loadedScenes) {
@@ -92,21 +91,19 @@ public class SceneManager {
 
 	/**
 	 * Gets a loaded Scene with a specific name. If there are multiple Scene's with
-	 * the same name, the first one is returned. If not Scene is loaded with that
-	 * name, {@code null} is returned.
+	 * the same name loaded, the first one is returned. If no Scene is loaded with
+	 * that name, {@code null} is returned.
 	 * 
 	 * @param sceneName the name of the scene to get
 	 * @return a Scene with the specified name
-	 * @throws IllegalArgumentException if sceneName is {@code null}
+	 * @throws NullPointerException if sceneName is {@code null}
 	 */
 	public Scene getScene(String sceneName) {
-		if (sceneName == null) {
-			throw new IllegalArgumentException("sceneName may not be null");
-		}
+		Objects.requireNonNull(sceneName, "sceneName may not be null");
 
-		for (Scene scene : this.loadedScenes) {
-			if (scene.getAssetName().equals(sceneName)) {
-				return scene;
+		for (Scene loadedScene : this.loadedScenes) {
+			if (loadedScene.getAssetName().equals(sceneName)) {
+				return loadedScene;
 			}
 		}
 
