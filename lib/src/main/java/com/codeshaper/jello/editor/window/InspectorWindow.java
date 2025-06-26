@@ -107,12 +107,11 @@ public class InspectorWindow extends EditorWindow {
 		this.target = object;
 		if (this.target != null) {
 			// Create a new editor.
-			
-
 			CustomEditor annotation = this.target.getClass().getAnnotation(CustomEditor.class);
 			if(annotation != null) {
 				Class<? extends Editor> cls = annotation.value();
-				try {					
+				try {
+					// TODO bulletproof this in the event of the passed class being inner/private/whatever
 					this.editor = cls.getDeclaredConstructor(this.target.getClass(), JPanel.class).newInstance(this.target, this.panel);
 				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 						| InvocationTargetException | NoSuchMethodException | SecurityException e) {
