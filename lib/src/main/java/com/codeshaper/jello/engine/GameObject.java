@@ -20,17 +20,38 @@ import com.codeshaper.jello.engine.database.Serializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 
+/**
+ * 
+ */
 public final class GameObject extends JelloObject {
 
+	/**
+	 * The GameObject's name. This could be an empty String, but will never be
+	 * {@code null}.
+	 */
 	private String name;
+	/**
+	 * Is the GameObject active.
+	 */
 	private boolean isActive;
+	/**
+	 * All of the {@link JelloComponent}s attached to the GameObject.
+	 */
 	private List<JelloComponent> components;
 	private List<GameObject> children;
 	private Vector3f localPosition;
 	private Quaternionf localRotation;
 	private Vector3f localScale;
 	private transient Matrix4f localMatrix;
+	/**
+	 * The Scene the GameObject is located in.
+	 */
 	transient Scene scene;
+	/**
+	 * The GameObject's parent {@code null} for root GameObjects.
+	 * 
+	 * @see GameObject#isRoot()
+	 */
 	transient GameObject parent;
 
 	private transient boolean isTransformDirty = true;
@@ -38,16 +59,15 @@ public final class GameObject extends JelloObject {
 	/**
 	 * Creates a new GameObject and adds it to a {@link Scene}.
 	 * 
-	 * @param name  the name of the GameObject.
-	 * @param scene the {@link Scene} to add the GameObjet to.
-	 * @throws IllegalArgumentException if {@code scene} is null.
+	 * @param name  the name of the GameObject
+	 * @param scene the {@link Scene} to add the GameObjet to
+	 * @throws NullPointerException if {@code name} or {@code scene} is null
 	 */
 	public GameObject(String name, Scene scene) {
 		this();
 
-		if (scene == null) {
-			throw new IllegalArgumentException("scene may not be null.");
-		}
+		Objects.requireNonNull(name, "name may not be null");
+		Objects.requireNonNull(scene, "scene may not be null");
 
 		this.setName(name);
 
@@ -61,15 +81,14 @@ public final class GameObject extends JelloObject {
 	 * 
 	 * @param name   the name of the GameObject.
 	 * @param parent the GameObject to make the parent.
-	 * @throws IllegalArgumentException if {@code parent} is null.
+	 * @throws NullPointerException if {@code name} or {@code parent} is null.
 	 */
 	public GameObject(String name, GameObject parent) {
 		this();
 
-		if (parent == null) {
-			throw new IllegalArgumentException("parent may not be null.");
-		}
-
+		Objects.requireNonNull(name, "name may not be null");
+		Objects.requireNonNull(scene, "parent may not be null");
+		
 		this.setName(name);
 
 		Scene parentScene = parent.getScene();
@@ -81,9 +100,9 @@ public final class GameObject extends JelloObject {
 	}
 
 	/**
-	 * Creates a {@link JsonElement} representing the GameObject.
+	 * Creates a {@link JsonElement} representation of the GameObject.
 	 * 
-	 * @return a JsonElement representing the GameObject.
+	 * @return a JsonElement representation the GameObject.
 	 * @see GameObject#fromJson(JsonElement, GameObject)
 	 * @see GameObject#fromJson(JsonElement, Scene)
 	 */
@@ -178,8 +197,6 @@ public final class GameObject extends JelloObject {
 		this.localScale = new Vector3f(1f, 1f, 1f);
 		this.localMatrix = new Matrix4f();
 	}
-
-
 
 	@Override
 	public String toString() {
