@@ -18,6 +18,7 @@ import com.codeshaper.jello.engine.ComponentIcon;
 import com.codeshaper.jello.engine.ComponentName;
 import com.codeshaper.jello.engine.GameObject;
 import com.codeshaper.jello.engine.JelloComponent;
+import com.codeshaper.jello.engine.asset.Material;
 
 /**
  * The Camera component is responsible for rendering your scene to the display.
@@ -41,7 +42,9 @@ public final class Camera extends JelloComponent {
 		return Camera.cameras;
 	}
 
+	public CameraClearMode clearMode = CameraClearMode.COLOR;
 	public Color backgroundColor = new Color(0, 0, 0);
+	public Material skybox = null;
 	public Perspective perspective = Perspective.PERSPECTVE;
 
 	@Space

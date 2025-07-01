@@ -40,6 +40,8 @@ public class InfiniteGrid {
 		glVertex2f(1f, 1f);
 		glVertex2f(1f, -1f);
 		glEnd();
+		
+		glEnable(GL_CULL_FACE);
 
 		this.shaderProgram.unbind();
 	}

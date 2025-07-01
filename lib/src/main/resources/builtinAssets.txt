@@ -15,6 +15,7 @@ builtin/meshes/cylinder.blend
 builtin/meshes/quad.blend
 builtin/meshes/sphere.blend
 builtin/meshes/torus.blend
+builtin/meshes/skybox.blend
 
 # Shader Source Files
 builtin/shaders/scene.vert
@@ -22,9 +23,11 @@ builtin/shaders/scene.frag
 
 # Shaders
 builtin/shaders/error.shader
+builtin/shaders/skybox.shader
 builtin/shaders/ui.shader
 builtin/shaders/unlitTexture.shader
 builtin/shaders/standard.shader
 
 # Textures
 builtin/textures/placeholderTexture.png
+builtin/textures/defaultSkybox.png

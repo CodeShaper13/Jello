@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 public class ShaderData {
 
 	public boolean depth_test = true;
+	public boolean enable_depth_mask = true;
 	public CullMode culling = CullMode.BACK;
 	
 	public ShaderSource[] shaders = new ShaderSource[] {};
